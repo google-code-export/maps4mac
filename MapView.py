@@ -21,6 +21,10 @@ class MapView(NSView):
         self.layers = []
         
         return self
+    
+    def awakeFromNib(self):
+        self.center = [0,0]
+        self.zoom = 1
 
     def drawRect_(self, rect):
         NSColor.darkGrayColor().setFill()
@@ -31,16 +35,20 @@ class MapView(NSView):
         
     def setLayer_(self, layer):
         layer.setSize_(self.bounds().size)
+        
+        layer.setCenter_(self.center)
+        layer.setZoom_(self.zoom)
         self.layers = [layer]
         
         self.setNeedsDisplay_(True)
     
     def setCenter_(self, point):
+        self.center = point
         for layer in self.layers:
             layer.setCenter_(point)
     
     def setZoom_(self, zoom):
+        self.zoom = zoom
         for layer in self.layers:
-            pass
-            #layer.setZoom_(point)
+            layer.setZoom_(zoom)
     

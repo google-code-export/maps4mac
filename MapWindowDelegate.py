@@ -23,10 +23,16 @@ class MapWindowDelegate(NSObject):
         if self is None:
             return None
         
+        self.mapCenterLat = 0.0
+        self.mapCenterLon = 0.0
+        self.mapZoom = 100
+        
         return self
     
     def awakeFromNib(self):
         self.db_args = None
+        self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
+        self.mapView.setZoom_(self.mapZoom)
     
     def setDBParams(self,dbParams):
         #FIXME: This should be replaced by preferences
@@ -48,9 +54,16 @@ class MapWindowDelegate(NSObject):
             center_ll = prj.inverse(mapnik.Coord(center[0], center[1]))
             self.mapCenterLat = center_ll.x
             self.mapCenterLon = center_ll.y
+            self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
         finally:
             con.close()
         
         #FIXME: Calculate Zoom
             
         self.mapWindow.makeKeyAndOrderFront_(self)
+    
+    @objc.IBAction
+    def updateMap_(self, sender):
+        self.mapView.setCenter_([float(self.mapCenterLat), float(self.mapCenterLon)])
+        self.mapView.setZoom_(self.mapZoom)
+        self.mapView.setNeedsDisplay_(True)

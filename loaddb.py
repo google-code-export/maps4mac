@@ -1,6 +1,6 @@
 import subprocess
 import pgdb as DBAPI
-
+import pg as db_errors
 _db_suffixes = ("_point", "_line","_polygon","_roads","_nodes","_ways","_rels")
 
 def get_current_names(**kwargs):
