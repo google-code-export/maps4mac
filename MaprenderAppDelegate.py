@@ -31,6 +31,8 @@ class MaprenderAppDelegate(NSObject):
 
     def applicationDidFinishLaunching_(self, sender):
         NSLog("Application did finish launching.")
+        self.mapWindow.makeFirstResponder_(self.mapView)
+        self.mapWindow.setAcceptsMouseMovedEvents_(True)
         
         db_args = {'host':'localhost', 'user':'postgres', 'database':'osm_test'}
         newList = loaddb.get_current_names(**db_args)
