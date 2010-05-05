@@ -18,6 +18,7 @@ import SourceListDatasource
 import MaprenderAppDelegate
 import MapWindowDelegate
 import MapView
+import MapnikRenderThread
 
 # pass control to AppKit
 AppHelper.runEventLoop()

@@ -18,6 +18,10 @@ class MapWindowDelegate(NSObject):
     mapCenterLon = objc.ivar()
     mapZoom      = objc.ivar()
     
+    latField = objc.IBOutlet()
+    lonField = objc.IBOutlet()
+    zoomField = objc.IBOutlet()
+    
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -31,8 +35,9 @@ class MapWindowDelegate(NSObject):
     
     def awakeFromNib(self):
         self.db_args = None
-        self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
-        self.mapView.setZoom_(self.mapZoom)
+        #self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
+        #self.mapView.setZoom_(self.mapZoom)
+        self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLatLon", 0, None)
     
     def setDBParams(self,dbParams):
         #FIXME: This should be replaced by preferences
@@ -61,9 +66,26 @@ class MapWindowDelegate(NSObject):
         #FIXME: Calculate Zoom
             
         self.mapWindow.makeKeyAndOrderFront_(self)
+        
+        
+    def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
+        # Someday this will track the GPS
+        if keyPath == "fix":
+            fix = object.fix()
+            #if fix["FixType"] != 0:
+            #    self.pdfView.setGPSMarker_((fix["Latitude"], fix["Longitude"]))
+            #else:
+            #    self.pdfView.setGPSMarker_(None)
+        elif keyPath == "centerLatLon":
+            self.mapCenterLat = object.center.x
+            self.mapCenterLon = object.center.y
     
     @objc.IBAction
     def updateMap_(self, sender):
+        self.mapCenterLat = float(self.latField.stringValue())
+        self.mapCenterLon = float(self.lonField.stringValue())
+        self.mapZoom = float(self.zoomField.stringValue())
+        
         self.mapView.setCenter_([float(self.mapCenterLat), float(self.mapCenterLon)])
         self.mapView.setZoom_(self.mapZoom)
         self.mapView.setNeedsDisplay_(True)

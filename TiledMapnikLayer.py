@@ -10,10 +10,12 @@ from Foundation import *
 from AppKit import NSCalibratedRGBColorSpace, NSDeviceRGBColorSpace, NSZeroRect, NSCompositeCopy, NSAlphaFirstBitmapFormat
 from Quartz import *
 
+from MapnikRenderThread import *
+
+import threading
+
 import mapnik
 import cairo
-from array import array
-from StringIO import StringIO
 
 # CATiledLayer?
 
@@ -30,12 +32,18 @@ class TiledMapnikLayer(NSObject):
         self.zoom   = 100
         self.size   = [1,1]
         self.cache  = dict()
+        self.render_thread = MapnikRenderThread.alloc().init()
+        thread = threading.Thread(target=self.render_thread.run, name="Render Thread")
+        thread.start()
+        
+        self.view = None
         
         return self
     
     def setMapXML_(self, xmlPath):
         self.map = mapnik.Map(256,256)
         mapnik.load_map(self.map, str(xmlPath))
+        self.render_thread.loadMap_(str(xmlPath))
         # select ST_XMin(st_estimated_extent),ST_YMin(st_estimated_extent),ST_XMax(st_estimated_extent),ST_YMax(st_estimated_extent) from ST_Estimated_Extent('washington_polygon','way');
     
     def drawRect_(self, rect):
@@ -61,7 +69,11 @@ class TiledMapnikLayer(NSObject):
         while lower_left[0] < c1.x:
             while lower_left[1] < c1.y:
                 img = self.getTileAt_(lower_left)
-                img.drawAtPoint_fromRect_operation_fraction_(NSPoint(point[0],point[1]), NSZeroRect, NSCompositeCopy, 1.0)
+                if img:
+                    img.drawAtPoint_fromRect_operation_fraction_(NSPoint(point[0],point[1]), NSZeroRect, NSCompositeCopy, 1.0)
+                else:
+                    NSColor.darkGrayColor().setFill()
+                    NSRectFill(NSRect(point, [256,256]))
                 point[1] += 256
                 lower_left[1] += tile_size
             point[1] = origin_point[1]
@@ -77,44 +89,21 @@ class TiledMapnikLayer(NSObject):
         else:
             self.cache[origin[0]] = dict()
         
-        c0 = mapnik.Coord(origin[0], origin[1])
-        c1 = c0 + mapnik.Coord(256 * self.zoom, 256 * self.zoom)
-        bbox = mapnik.Envelope(c0.x,c0.y,c1.x,c1.y)
-        self.map.zoom_to_box(bbox)
-        
-        prj = mapnik.Projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over")
-        
-        surface = cairo.ImageSurface(cairo.FORMAT_RGB24,256,256)
-        mapnik.render(self.map, surface)
-        
-        #print "Rendered %d,%d" % (origin[0],origin[1])
+        self.cache[origin[0]][origin[1]] = None
+        self.render_thread.renderTileAt_Zoom_Callback_(mapnik.Coord(origin[0], origin[1]), self.zoom, self)
+        return None
 
-        cairoData = surface.get_data()
-        stride = surface.get_width() * 3
-        
-        rep = NSBitmapImageRep.alloc()
-        rep.initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_(
-        None, surface.get_width(), surface.get_height(), 8, 3, False, False, NSDeviceRGBColorSpace, stride, 24)
-        
-        newDataIndex = 0
-        newData = rep.bitmapData()
-        for row in range(0,surface.get_height()):
-            for col in range(0,surface.get_width()):
-                offset = surface.get_stride() * row + (col * 4)
-                pixel = cairoData[offset:offset+4]
-                newData[newDataIndex] = pixel[2]
-                newDataIndex += 1
-                newData[newDataIndex] = pixel[1]
-                newDataIndex += 1
-                newData[newDataIndex] = pixel[0]
-                newDataIndex += 1
-        
-        img = NSImage.alloc().init()
-        img.addRepresentation_(rep)
-        
-        self.cache[origin[0]][origin[1]] = img
-        return img
-        
+    
+    def finishedTile_(self, tile):
+        if self.zoom == tile.zoom:
+            self.cache[tile.cord.x][tile.cord.y] = tile.img
+        if self.view:
+            self.view.setNeedsDisplay_(True)
+        print tile.cord
+    
+    def setView_(self, view):
+        self.view = view
+    
     def setCenter_(self, point):
         self.center = point
     
