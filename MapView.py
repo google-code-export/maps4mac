@@ -15,8 +15,11 @@ import mapnik
 class MapView(NSView):
     layers = objc.ivar()
     center = objc.ivar()
-    centerLatLon = objc.ivar()
+    centerLonLat = objc.ivar()
     zoom = objc.ivar()
+    
+    centerDot = objc.ivar()
+    gpsFix = objc.ivar()
 
     def initWithFrame_(self, frame):
         self = super(MapView, self).initWithFrame_(frame)
@@ -26,6 +29,9 @@ class MapView(NSView):
         self.layers = []
         self.zoom = 1
         
+        self.centerDot = False
+        self.gpsFix = None
+        
         return self
     
     def awakeFromNib(self):
@@ -34,8 +40,8 @@ class MapView(NSView):
         
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_(self, objc.selector(None, selector="frameChanged", signature="v:"), NSViewFrameDidChangeNotification, self)
     
-    def acceptsFirstResponder(self):
-        return True
+#    def acceptsFirstResponder(self):
+#        return True
         
     def frameChanged(self):
         size = self.bounds().size
@@ -47,7 +53,7 @@ class MapView(NSView):
         shift = self.projection.inverse(shift)
         
         self.center = self.center + shift
-        self.centerLatLon = self.projection.forward(self.center)
+        self.centerLonLat = self.projection.forward(self.center)
         
         for layer in self.layers:
             layer.setCenter_([self.center.x,self.center.y])
@@ -59,7 +65,7 @@ class MapView(NSView):
         shift = self.projection.inverse(shift)
         
         self.center = self.center + shift
-        self.centerLatLon = self.projection.forward(self.center)
+        self.centerLonLat = self.projection.forward(self.center)
         
         for layer in self.layers:
             layer.setCenter_([self.center.x,self.center.y])
@@ -72,6 +78,49 @@ class MapView(NSView):
         
         for layer in self.layers:
             layer.drawRect_(rect)
+            
+        if self.centerDot:
+            center = [0,0]
+            center[0] = self.bounds().origin.x + (self.bounds().size.width / 2)
+            center[1] = self.bounds().origin.y + (self.bounds().size.height / 2)
+            
+            color = NSColor.colorWithDeviceRed_green_blue_alpha_(0.0, 0.0, 0.5, 0.8)
+            color.setFill()
+            rect = NSRect((0,0), (10,10))
+            path = NSBezierPath.bezierPathWithOvalInRect_(rect)
+            
+            xform = NSAffineTransform.transform()
+            xform.translateXBy_yBy_(center[0] - rect.size[0] / 2.0, center[1] - rect.size[1] / 2.0)
+            xform.concat()
+            path.fill()
+            xform.invert()
+            xform.concat()
+        
+        if self.gpsFix is not None:
+            prj_gps = self.projection.forward(self.gpsFix)
+            rect = self.bounds()
+            prj_center = self.projection.forward(self.center)
+            shift = (prj_gps - prj_center) / self.zoom
+
+            center = [0,0]
+            center[0] = self.bounds().origin.x + (self.bounds().size.width / 2)
+            center[1] = self.bounds().origin.y + (self.bounds().size.height / 2)
+            
+            center[0] += shift.x
+            center[1] += shift.y
+            
+            color = NSColor.colorWithDeviceRed_green_blue_alpha_(0.5, 0.0, 0.0, 0.8)
+            color.setFill()
+            rect = NSRect((0,0), (10,10))
+            path = NSBezierPath.bezierPathWithOvalInRect_(rect)
+            
+            xform = NSAffineTransform.transform()
+            xform.translateXBy_yBy_(center[0] - rect.size[0] / 2.0, center[1] - rect.size[1] / 2.0)
+            xform.concat()
+            path.fill()
+            xform.invert()
+            xform.concat()
+            
         
     def setLayer_(self, layer):
         layer.setSize_(self.bounds().size)
@@ -84,13 +133,25 @@ class MapView(NSView):
         self.setNeedsDisplay_(True)
     
     def setCenter_(self, point):
+        changed = (self.center != mapnik.Coord(point[0],point[1]))
+    
         self.center = mapnik.Coord(point[0],point[1])
-        self.centerLatLon = self.projection.forward(self.center)
+        self.centerLonLat = self.projection.forward(self.center)
         for layer in self.layers:
             layer.setCenter_([self.center.x,self.center.y])
+        
+        if changed:
+            self.setNeedsDisplay_(True)
     
     def setZoom_(self, zoom):
         self.zoom = int(zoom)
         for layer in self.layers:
             layer.setZoom_(zoom)
-        
+    
+    def setFixLat_Lon_(self, lat, lon):
+        self.gpsFix = mapnik.Coord(lon, lat)
+    
+    def clearFix(self):
+        self.gpsFix = None
+    
+    

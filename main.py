@@ -19,6 +19,7 @@ import MaprenderAppDelegate
 import MapWindowDelegate
 import MapView
 import MapnikRenderThread
+import SearchWindowDelegate
 
 # pass control to AppKit
 AppHelper.runEventLoop()

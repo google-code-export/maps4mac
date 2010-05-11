@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 import subprocess
 import pgdb as DBAPI
-import pg as db_errors
+import pg
 _db_suffixes = ("_point", "_line","_polygon","_roads","_nodes","_ways","_rels")
 
 def get_current_names(**kwargs):
@@ -35,7 +37,10 @@ def loadExtract(osmFile,extractName,**kwargs):
         raise Exception("Extract with that name already in DB")
     
     #FIXME: use host, password
-    args = ["./osm2pgsql", "-s", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
+    # Slim mode doesn't seem to agree with all the cloudmade extracts
+    #args = ["./osm2pgsql", "-s", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
+    args = ["./osm2pgsql", "-G", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
+    print args
     
     output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
     #print output
@@ -57,9 +62,9 @@ def dropExtract(extractName,**kwargs):
                 print tbl_name
                 cur.execute("SELECT DropGeometryTable('%s')" % (tbl_name))
                 print cur.fetchone()[0]
-            except db_errors.ProgrammingError as e:
+                con.commit()
+            except pg.DatabaseError as e:
                 print "Couldn't drop %s: %s" % (tbl_name, e)
-        con.commit()
     finally:
         con.close()
 
@@ -72,7 +77,7 @@ def buildMapnikXML(extractName, **kwargs):
     mapnik_args['dbname'] = kwargs.get('database','osm')
     
     #FIXME: We can probably calculate this based on the extract
-    mapnik_args['estimate_extent'] = 'true'
+    mapnik_args['estimate_extent'] = 'false'
     mapnik_args['extent'] = ''
     
     mapnik_args['prefix'] = extractName

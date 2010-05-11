@@ -20,14 +20,14 @@ import cairo
 # CATiledLayer?
 
 class TiledMapnikLayer(NSObject):
-    map = objc.ivar()
+    projectionString = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
             return None
         
-        self.map = None
+        self.projectionString = None
         self.center = [0,0]
         self.zoom   = 100
         self.size   = [1,1]
@@ -41,8 +41,11 @@ class TiledMapnikLayer(NSObject):
         return self
     
     def setMapXML_(self, xmlPath):
-        self.map = mapnik.Map(256,256)
-        mapnik.load_map(self.map, str(xmlPath))
+        map = mapnik.Map(256,256)
+        mapnik.load_map(map, str(xmlPath))
+        self.projectionString = map.srs
+        self.projection = mapnik.Projection(self.projectionString)
+        
         self.render_thread.loadMap_(str(xmlPath))
         # select ST_XMin(st_estimated_extent),ST_YMin(st_estimated_extent),ST_XMax(st_estimated_extent),ST_YMax(st_estimated_extent) from ST_Estimated_Extent('washington_polygon','way');
     
@@ -54,6 +57,9 @@ class TiledMapnikLayer(NSObject):
         prj_size   = mapnik.Coord(rect.size[0], rect.size[1]) * self.zoom
         c0 = prj_center + prj_origin
         c1 = c0 + prj_size
+        
+        #c0 = mapnik.Coord(rect.origin[0],rect.origin[1])
+        #c1 = c0 + mapnik.Coord(rect.size[0],rect.size[1])
         
         tile_size = (256 * self.zoom)
         
@@ -99,7 +105,6 @@ class TiledMapnikLayer(NSObject):
             self.cache[tile.cord.x][tile.cord.y] = tile.img
         if self.view:
             self.view.setNeedsDisplay_(True)
-        print tile.cord
     
     def setView_(self, view):
         self.view = view

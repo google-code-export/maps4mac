@@ -7,6 +7,7 @@
 #
 
 from Foundation import *
+from AppKit import NSStringPboardType
 import pgdb as DBAPI
 import mapnik
 
@@ -22,6 +23,8 @@ class MapWindowDelegate(NSObject):
     lonField = objc.IBOutlet()
     zoomField = objc.IBOutlet()
     
+    useGPS = objc.ivar()
+    
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -31,13 +34,15 @@ class MapWindowDelegate(NSObject):
         self.mapCenterLon = 0.0
         self.mapZoom = 100
         
+        self.useGPS = False
+        
         return self
     
     def awakeFromNib(self):
         self.db_args = None
         #self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
         #self.mapView.setZoom_(self.mapZoom)
-        self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLatLon", 0, None)
+        self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLonLat", 0, None)
     
     def setDBParams(self,dbParams):
         #FIXME: This should be replaced by preferences
@@ -69,23 +74,42 @@ class MapWindowDelegate(NSObject):
         
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
-        # Someday this will track the GPS
-        if keyPath == "fix":
-            fix = object.fix()
-            #if fix["FixType"] != 0:
-            #    self.pdfView.setGPSMarker_((fix["Latitude"], fix["Longitude"]))
-            #else:
-            #    self.pdfView.setGPSMarker_(None)
-        elif keyPath == "centerLatLon":
-            self.mapCenterLat = object.center.x
-            self.mapCenterLon = object.center.y
+        if keyPath == "centerLonLat":
+            self.mapCenterLat = object.center.y
+            self.mapCenterLon = object.center.x
     
     @objc.IBAction
     def updateMap_(self, sender):
         self.mapCenterLat = float(self.latField.stringValue())
         self.mapCenterLon = float(self.lonField.stringValue())
-        self.mapZoom = float(self.zoomField.stringValue())
+        self.mapZoom = int(self.zoomField.stringValue())
         
-        self.mapView.setCenter_([float(self.mapCenterLat), float(self.mapCenterLon)])
+        self.mapView.setCenter_([float(self.mapCenterLon), float(self.mapCenterLat)])
         self.mapView.setZoom_(self.mapZoom)
         self.mapView.setNeedsDisplay_(True)
+        
+    @objc.IBAction
+    def copyPosition_(self, sender):
+        posString = "%f %f" % (self.mapCenterLat, self.mapCenterLon)
+    
+        pasteBoard = NSPasteboard.generalPasteboard()
+        pasteBoard.declareTypes_owner_(NSArray.arrayWithObjects_(NSStringPboardType), None)
+        pasteBoard.setString_forType_(posString, NSStringPboardType)
+    
+    @objc.IBAction
+    def copyViewBounds_(self, sender):
+        size = self.mapView.bounds().size
+        zoom = self.mapView.zoom
+        prj  = self.mapView.projection
+        prj_center = prj.forward(self.mapView.center)
+        prj_origin = mapnik.Coord(-(size[0] / 2) * zoom, -(size[1] / 2) * zoom)
+        prj_size   = mapnik.Coord(size[0], size[1]) * zoom
+        c0 = prj_center + prj_origin
+        c1 = c0 + prj_size
+        c0 = prj.inverse(c0)
+        c1 = prj.inverse(c1)
+        bbString = "%f, %f; %f, %f" % (c1.x, c1.y, c0.x, c0.y)
+        
+        pasteBoard = NSPasteboard.generalPasteboard()
+        pasteBoard.declareTypes_owner_(NSArray.arrayWithObjects_(NSStringPboardType), None)
+        pasteBoard.setString_forType_(bbString, NSStringPboardType)
