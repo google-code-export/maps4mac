@@ -20,6 +20,7 @@ import MapWindowDelegate
 import MapView
 import MapnikRenderThread
 import SearchWindowDelegate
+import InspectWindowDelegate
 
 # pass control to AppKit
 AppHelper.runEventLoop()

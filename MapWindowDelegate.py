@@ -43,6 +43,7 @@ class MapWindowDelegate(NSObject):
         #self.mapView.setCenter_([self.mapCenterLat, self.mapCenterLon])
         #self.mapView.setZoom_(self.mapZoom)
         self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLonLat", 0, None)
+        self.mapView.addObserver_forKeyPath_options_context_(self, u"zoom", 0, None)
     
     def setDBParams(self,dbParams):
         #FIXME: This should be replaced by preferences
@@ -69,6 +70,7 @@ class MapWindowDelegate(NSObject):
             con.close()
         
         #FIXME: Calculate Zoom
+        self.mapZoom = self.mapView.zoom
             
         self.mapWindow.makeKeyAndOrderFront_(self)
         
@@ -77,6 +79,8 @@ class MapWindowDelegate(NSObject):
         if keyPath == "centerLonLat":
             self.mapCenterLat = object.center.y
             self.mapCenterLon = object.center.x
+        elif keyPath == "zoom":
+            self.mapZoom = object.zoom
     
     @objc.IBAction
     def updateMap_(self, sender):

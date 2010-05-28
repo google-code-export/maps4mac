@@ -7,6 +7,7 @@
 #
 
 from Foundation import *
+from AppKit import *
 
 import mapnik
 
@@ -20,6 +21,8 @@ class GenericDataset(NSObject):
             return None
         
         self.points = list()
+        path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
+        self.icon = NSImage.alloc().initByReferencingFile_(path)
         
         return self
     
@@ -37,13 +40,15 @@ class GenericDataLayer(NSObject):
         
         return self
     
-    def drawRect_WithProjection_(self, rect, proj):
+    def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
         
         for ds in self.datasets:
             icon = ds.icon
             
-            for point in ds.points
-                loc = proj.forward(mapnik.Coord(point.lon, point.lat))
+            for point in ds.points:
+                loc = proj.forward(mapnik.Coord(point.x, point.y))
+                loc = loc - origin
+                loc = loc / zoom
                 
-                icon.drawAtPoint_(NSPoint(loc.y,loc.x))
+                icon.drawAtPoint_fromRect_operation_fraction_(NSPoint(loc.x,loc.y), NSZeroRect, NSCompositeSourceOver, 1.0)

@@ -49,6 +49,48 @@ class TiledMapnikLayer(NSObject):
         self.render_thread.loadMap_(str(xmlPath))
         # select ST_XMin(st_estimated_extent),ST_YMin(st_estimated_extent),ST_XMax(st_estimated_extent),ST_YMax(st_estimated_extent) from ST_Estimated_Extent('washington_polygon','way');
     
+    #def drawRect_WithOrigin_Zoom_(self, rect, origin, zoom):
+    def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
+        try:
+            if int(zoom) != self.zoom:
+                self.cache = dict()
+                self.zoom  = int(zoom)
+        
+            c0 = origin
+            c1 = origin + mapnik.Coord(rect.size[0] * zoom, rect.size[1] * zoom)
+            
+            tile_size = (256 * zoom)
+            
+            # Build the tile list, tiles are identified by their lower left corner
+            origin_lower_left = [int(c0.x) - int(c0.x) % tile_size, int(c0.y) - int(c0.y) % tile_size]
+            lower_left = origin_lower_left[:]
+            
+            # Offset for the lower corner will be (origin_lower_left - c0) / zoom
+            point = [(origin_lower_left[0] - c0.x) / self.zoom, (origin_lower_left[1] - c0.y) / self.zoom]
+            point = [int(i) for i in point]
+            origin_point = point[:]
+            
+            while lower_left[0] < c1.x:
+                while lower_left[1] < c1.y:
+                    img = self.getTileAt_(lower_left)
+                    if img:
+                        img.drawAtPoint_fromRect_operation_fraction_(NSPoint(point[0],point[1]), NSZeroRect, NSCompositeCopy, 1.0)
+                    else:
+                        NSColor.darkGrayColor().setFill()
+                        NSRectFill(NSRect(point, [256,256]))
+                    point[1] += 256
+                    lower_left[1] += tile_size
+                point[1] = origin_point[1]
+                lower_left[1] = origin_lower_left[1]
+                point[0] += 256
+                lower_left[0] += tile_size
+        except Exception as e:
+            print e
+            NSColor.redColor().setFill()
+            NSRectFill(rect)
+    
+        
+    
     def drawRect_(self, rect):
         #FIXME: Get projection from the layer itself
         prj = mapnik.Projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over")

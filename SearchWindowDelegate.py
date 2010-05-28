@@ -68,7 +68,7 @@ class SearchWindowDelegate(NSObject):
             self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
         finally:
             con.close()
-            
+        
         if self.resultsView is not None:
             self.resultsView.reloadData()
 
@@ -86,10 +86,8 @@ class SearchWindowDelegate(NSObject):
     def doubleClicked_(self,sender):
         row = sender.clickedRow()
         
-        #name ilike 'safeway'
         if row != -1:
             loc = self.results[row]['loc'].split(',')
             loc = map(float, loc)
             if self.mapView:
                 self.mapView.setCenter_([loc[1],loc[0]])
-    #[aTableView setTarget:self]; [aTableView setDoubleAction:@selector(myTableDoubleClickAction:)];
