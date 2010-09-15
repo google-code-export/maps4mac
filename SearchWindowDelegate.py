@@ -42,12 +42,12 @@ class SearchWindowDelegate(NSObject):
         
         self.results = list()
         
-        transform = \
-        {"point":"way",
-         "line" :"ST_StartPoint(way)",
-         "polygon":"ST_Centroid(way)"}
-        
-        try:
+        def doQuery(commands):
+            transform = \
+            {"point":"way",
+             "line" :"ST_StartPoint(way)",
+             "polygon":"ST_Centroid(way)"}
+             
             tables = ["point", "line", "polygon"]
             for tableSuffix in tables:
                 table = self.mapName + "_" + tableSuffix
@@ -64,8 +64,16 @@ class SearchWindowDelegate(NSObject):
                     loc = map(float, loc)
                     loc = "%.4f,%.4f" % (loc[1],loc[0])
                     self.results.append({"type":tableSuffix, "name":row[0], "loc":loc})
+        
+        try:
+            doQuery(commands)
         except pg.DatabaseError:
-            self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
+            try:
+                con.rollback()
+                doQuery("name = '%s'" % commands.replace("'","\\'"))
+            except pg.DatabaseError as error:
+                print error
+                self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
         finally:
             con.close()
         
