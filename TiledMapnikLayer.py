@@ -27,6 +27,8 @@ class TiledMapnikLayer(NSObject):
         if self is None:
             return None
         
+        self.name = "Mapnik"
+        
         self.projectionString = None
         self.center = [0,0]
         self.zoom   = 100
@@ -40,13 +42,21 @@ class TiledMapnikLayer(NSObject):
         
         return self
     
-    def setMapXML_(self, xmlPath):
+    def setMapXML_(self, xml):
+        map = mapnik.Map(256,256)
+        mapnik.load_map_from_string(map, xml)
+        self.projectionString = map.srs
+        self.projection = mapnik.Projection(self.projectionString)
+        
+        self.render_thread.loadMapString_(xml)
+    
+    def setMapXMLFile_(self, xmlPath):
         map = mapnik.Map(256,256)
         mapnik.load_map(map, str(xmlPath))
         self.projectionString = map.srs
         self.projection = mapnik.Projection(self.projectionString)
         
-        self.render_thread.loadMap_(str(xmlPath))
+        self.render_thread.loadMapFile_(str(xmlPath))
         # select ST_XMin(st_estimated_extent),ST_YMin(st_estimated_extent),ST_XMax(st_estimated_extent),ST_YMax(st_estimated_extent) from ST_Estimated_Extent('washington_polygon','way');
     
     #def drawRect_WithOrigin_Zoom_(self, rect, origin, zoom):
@@ -55,6 +65,8 @@ class TiledMapnikLayer(NSObject):
             if int(zoom) != self.zoom:
                 self.cache = dict()
                 self.zoom  = int(zoom)
+                #print "Outer Cancel"
+                self.render_thread.cancelTiles()
         
             c0 = origin
             c1 = origin + mapnik.Coord(rect.size[0] * zoom, rect.size[1] * zoom)
@@ -147,6 +159,9 @@ class TiledMapnikLayer(NSObject):
             self.cache[tile.cord.x][tile.cord.y] = tile.img
         if self.view:
             self.view.setNeedsDisplay_(True)
+    
+    def setName_(self, name):
+        self.name = name
     
     def setView_(self, view):
         self.view = view

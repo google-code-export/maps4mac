@@ -111,14 +111,20 @@ if __name__ == "__main__":
     
     print get_current_names(**db_args)
     
-    db_name = sys.argv[1]
-    file_name = "./%s.osm" % db_name
+    db_name = sys.argv[2]
+    file_name = "./%s.osm.bz2" % db_name
 
-    loadExtract(file_name,db_name,**db_args)
-    buildMapnikXML(db_name, **db_args)
+    command = sys.argv[1]
+    if command == "load":
+        loadExtract(file_name,db_name,**db_args)
+        print get_current_names(**db_args)
+    elif command == "drop":
+        dropExtract(db_name,**db_args)
+        print get_current_names(**db_args)
+    #elif command == "buildxml":
+    #    buildMapnikXML(db_name, **db_args)
+    elif command == "list":
+        print get_current_names(**db_args)
+    else:
+        print "Unknown command %s." % command
 
-    print get_current_names(**db_args)
-
-    #dropExtract("arcata",**db_args)
-
-    #print get_current_names(**db_args)

@@ -21,6 +21,7 @@ import MapView
 import MapnikRenderThread
 import SearchWindowDelegate
 import InspectWindowDelegate
+import StyleMenuDelegate
 
 # pass control to AppKit
 AppHelper.runEventLoop()

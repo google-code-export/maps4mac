@@ -56,6 +56,7 @@ class MapnikRenderThread(NSObject):
             self.work_sem.acquire(True)
             self.queue_lock.acquire(True)
             if self.queue:
+                print "Queue", len(self.queue)
                 tile = self.queue.pop(0)
             else:
                 tile = None
@@ -107,9 +108,14 @@ class MapnikRenderThread(NSObject):
         
         callback.performSelectorOnMainThread_withObject_waitUntilDone_("finishedTile:", result, False)
 
-    def loadMap_(self, xmlPath):
+    def loadMapFile_(self, xmlPath):
         self.cancelTiles()
         mapnik.load_map(self.map, xmlPath)
+        self.prj = mapnik.Projection(self.map.srs)
+    
+    def loadMapString_(self, xml):
+        self.cancelTiles()
+        mapnik.load_map_from_string(self.map, xml)
         self.prj = mapnik.Projection(self.map.srs)
     
     def renderTileAt_Zoom_Callback_(self, cord, zoom, callback):
@@ -121,6 +127,7 @@ class MapnikRenderThread(NSObject):
     
     def cancelTiles(self):
         self.queue_lock.acquire(True)
+        print "Mapnik Render Queue Canceled"
         self.queue = list()
         self.queue_lock.release()
     

@@ -9,6 +9,7 @@ import pgdb as DBAPI
 import pg
 
 from Foundation import *
+from GenericDataLayer import GenericDataLayer, GenericDataset
 
 class SearchWindowDelegate(NSObject):
     searchField = objc.IBOutlet()
@@ -42,6 +43,8 @@ class SearchWindowDelegate(NSObject):
         
         self.results = list()
         
+        points = list()
+        
         def doQuery(commands):
             transform = \
             {"point":"way",
@@ -60,8 +63,14 @@ class SearchWindowDelegate(NSObject):
                 
                 for row in rows:
                     loc = row[1]
-                    loc = loc.split("(")[1].split(")")[0].split(" ")
+                    try:
+                        loc = loc.split("(")[1].split(")")[0].split(" ")
+                    except IndexError as e:
+                        # This is a really horrid thing to ignore, but yet more bugs in the cloudmade exracts
+                        print "Bad geometry for \"%s\": %s" % (row[0], loc)
+                        break
                     loc = map(float, loc)
+                    points.append(NSPoint(loc[0],loc[1]))
                     loc = "%.4f,%.4f" % (loc[1],loc[0])
                     self.results.append({"type":tableSuffix, "name":row[0], "loc":loc})
         
@@ -76,6 +85,15 @@ class SearchWindowDelegate(NSObject):
                 self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
         finally:
             con.close()
+        
+        
+        if points:
+            dataset = GenericDataset.alloc().init()
+            layer   = GenericDataLayer.alloc().init()
+            for p in points:
+                dataset.points.append(p)
+            layer.datasets.append(dataset)
+            self.mapView.addLayer_(layer)
         
         if self.resultsView is not None:
             self.resultsView.reloadData()

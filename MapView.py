@@ -164,6 +164,12 @@ class MapView(NSView):
             del self.layers[layerIndex]
         self.setNeedsDisplay_(True)
     
+    def clearLayers(self):
+        """Remove all layers except the base"""
+        while len(self.layers) > 1:
+            del self.layers[-1]
+        self.setNeedsDisplay_(True)
+    
     def getLayers(self):
         """Return a list of layers being rendered, including the map layer"""
         return self.layers
