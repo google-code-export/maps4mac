@@ -54,11 +54,41 @@ class GenericDataLayer(NSObject):
         # FIXME: Cache projections
         if not self.cache:
             self.cache = dict()
-            self.cache['proj'] = None
-            self.cache['zoom'] = None
+            self.cache["proj"] = None
+            self.cache["zoom"] = None
         
         if self.cache["proj"] != proj or self.cache["zoom"] != zoom:
             self.cache = dict()
+            self.cache["proj"] = None
+            self.cache["zoom"] = None
+            
+            
+            for ds in self.datasets:
+                #FIXME: points...
+            
+                self.cache["tracks"] = []
+                for track in ds.tracks:
+                    path = NSBezierPath.alloc().init()
+                    path.setLineWidth_(5.0)
+                    path.setLineCapStyle_(NSRoundLineCapStyle)
+                    path.setLineJoinStyle_(NSRoundLineJoinStyle)
+                    
+                    if track:
+                        point = track[0]
+                        loc = proj.forward(mapnik.Coord(point.x, point.y))
+                        loc = loc - origin
+                        loc = loc / zoom
+                        loc = NSPoint(loc.x,loc.y)
+                        
+                        path.moveToPoint_(loc)
+                
+                    for point in track:
+                        loc = proj.forward(mapnik.Coord(point.x, point.y))
+                        loc = loc - origin
+                        loc = loc / zoom
+                        path.lineToPoint_(NSPoint(loc.x,loc.y))
+            
+                    self.cache["tracks"].append(path)
         
         for ds in self.datasets:
             icon = ds.icon
@@ -71,27 +101,9 @@ class GenericDataLayer(NSObject):
                 
                 icon.drawAtPoint_fromRect_operation_fraction_(NSPoint(loc.x - icon_hotspot.x,loc.y - icon_hotspot.y), NSZeroRect, NSCompositeSourceOver, 1.0)
             
-            for track in ds.tracks:
-                path = NSBezierPath.alloc().init()
-                path.setLineWidth_(5.0)
-                path.setLineCapStyle_(NSRoundLineCapStyle)
-                path.setLineJoinStyle_(NSRoundLineJoinStyle)
-                
-                if track:
-                    point = track[0]
-                    loc = proj.forward(mapnik.Coord(point.x, point.y))
-                    loc = loc - origin
-                    loc = loc / zoom
-                    loc = NSPoint(loc.x,loc.y)
-                    
-                    path.moveToPoint_(loc)
-            
-                for point in track:
-                    loc = proj.forward(mapnik.Coord(point.x, point.y))
-                    loc = loc - origin
-                    loc = loc / zoom
-                    path.lineToPoint_(NSPoint(loc.x,loc.y))
-                
+            for path in self.cache["tracks"]:
+                color = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.6)
+                color.setStroke()
                 path.stroke()
     
     def setName_(self, name):
@@ -120,18 +132,15 @@ def fromGPXFile(filename):
             ds.points.append(point)
             
         for trk in gpx_data.findall(prefix + "trk"):
-            print "Segments", len(trk)
             for seg in trk.findall(prefix + "trkseg"):
-                print "Points", len(seg)
                 segment = []
                 for trkpt in seg.findall(prefix + "trkpt"):
                     point = NSPoint(float(trkpt.get("lon")), float(trkpt.get("lat")))
                     segment.append(point)
                     
                     # If there's a comment consider it the same as a waypoint
-                    if trkpt.find(prefix + "cmt"):
-                        print "Comment Point", point
-                        ds.points.append(point)
+                    #if trkpt.find(prefix + "cmt") is not None:
+                    #    ds.points.append(point)
                 ds.tracks.append(segment)
         
         layer = GenericDataLayer.alloc().init()
