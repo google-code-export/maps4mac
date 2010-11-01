@@ -178,3 +178,6 @@ class TiledMapnikLayer(NSObject):
     
     def setSize_(self, size):
         self.size = [size.width, size.height]
+        
+    def layerDeleted(self):
+        self.render_thread.stop()

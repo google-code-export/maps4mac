@@ -56,7 +56,6 @@ class MapnikRenderThread(NSObject):
             self.work_sem.acquire(True)
             self.queue_lock.acquire(True)
             if self.queue:
-                print "Queue", len(self.queue)
                 tile = self.queue.pop(0)
             else:
                 tile = None
@@ -64,7 +63,7 @@ class MapnikRenderThread(NSObject):
             if tile:
                 self._renderTile(tile)
         
-        pool.release()
+        #pool.release()
     
     def _renderTile(self, tile):
         origin = tile[0]
@@ -127,13 +126,13 @@ class MapnikRenderThread(NSObject):
     
     def cancelTiles(self):
         self.queue_lock.acquire(True)
-        print "Mapnik Render Queue Canceled"
         self.queue = list()
         self.queue_lock.release()
     
     def stop(self):
         self.queue_lock.acquire(True)
         self.queue = list()
-        self.stop = True
+        self.stop_flag = True
         self.queue_lock.release()
+        self.work_sem.release()
     

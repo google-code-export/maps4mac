@@ -13,6 +13,7 @@ import glob, os.path
 
 class StyleMenuDelegate(NSObject):
     items = objc.ivar()
+    appDelegate = objc.IBOutlet()
     
     def menuNeedsUpdate_(self, menu):
         if not self.items:
@@ -20,29 +21,37 @@ class StyleMenuDelegate(NSObject):
             kUserDomain = -32763
             kApplicationSupportFolderType = 'asup'
             
-            path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/styles/"
-            #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
+            # NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0]
             
-            print "Looking for styles:", path_prefix
+            #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/styles/"
             
-            files = glob.glob(path_prefix + "*.template")
+            #path_prefix = NSBundle.mainBundle().resourcePath() + "/styles/"
+            
+            resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/"
+            app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/"
+            
+            path_prefixs = [resources_prefix, app_support_prefix]
             
             self.items = list()
             
-            for stylefile in files:
-                stylename = os.path.basename(stylefile)[:-9]
-                #sel = objc.selector(None, selector="styleSelected_", signature="v:@")
-                sel = objc.selector(self.styleSelected_, signature="v:@@")
+            for path_prefix in path_prefixs:
+                #print "Looking for styles:", path_prefix
+                
+                files = glob.glob(path_prefix + "*.template")
+                
+                for stylefile in files:
+                    stylename = os.path.basename(stylefile)[:-9]
+                    #sel = objc.selector(None, selector="styleSelected_", signature="v:@")
+                    sel = objc.selector(self.styleSelected_, signature="v:@@")
 
-                print sel
-                menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(stylename, sel, "")
-                menuitem.setTarget_(self)
-                #menuitem.setEnabled_(True)
+                    menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(stylename, sel, "")
+                    menuitem.setTarget_(self)
+                    #menuitem.setEnabled_(True)
+                    
+                    item = [menuitem, stylefile]
+                    
+                    self.items.append(item)
                 
-                item = [menuitem, stylefile]
-                
-                self.items.append(item)
-            
             for i in self.items:
                 menu.addItem_(i[0])
     
@@ -52,4 +61,6 @@ class StyleMenuDelegate(NSObject):
             if item[0] == sender:
                 selected = item[1]
                 break
-        print "Selected" + selected
+        #print "Selected " + selected
+        if selected:
+            self.appDelegate.setMapStyle_(selected)

@@ -109,16 +109,14 @@ if __name__ == "__main__":
     import sys
     db_args = {'host':'localhost', 'user':'postgres', 'database':'osm_test'}
     
-    print get_current_names(**db_args)
-    
-    db_name = sys.argv[2]
-    file_name = "./%s.osm.bz2" % db_name
-
     command = sys.argv[1]
     if command == "load":
+        db_name = sys.argv[2]
+        file_name = "./%s.osm.bz2" % db_name
         loadExtract(file_name,db_name,**db_args)
         print get_current_names(**db_args)
     elif command == "drop":
+        db_name = sys.argv[2]
         dropExtract(db_name,**db_args)
         print get_current_names(**db_args)
     #elif command == "buildxml":

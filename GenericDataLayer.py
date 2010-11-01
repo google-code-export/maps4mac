@@ -51,6 +51,8 @@ class GenericDataLayer(NSObject):
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
         
+        # FIXME: Test rect
+        
         # FIXME: Cache projections
         if not self.cache:
             self.cache = dict()
@@ -113,7 +115,6 @@ class GenericDataLayer(NSObject):
         self.size = [size.width, size.height]
 
 def fromGPXFile(filename):
-    file = open(filename)
     try:
         import xml.etree
         gpx_data = xml.etree.ElementTree.parse(filename)
@@ -150,5 +151,3 @@ def fromGPXFile(filename):
     except Exception as e:
         print e
         raise e
-    finally:
-        file.close()

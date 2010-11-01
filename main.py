@@ -22,6 +22,8 @@ import MapnikRenderThread
 import SearchWindowDelegate
 import InspectWindowDelegate
 import StyleMenuDelegate
+import LayersOutlineDataSource
+import LayersWindowDelegate
 
 # pass control to AppKit
 AppHelper.runEventLoop()

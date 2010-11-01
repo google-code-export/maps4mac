@@ -11,6 +11,7 @@ from AppKit import *
 
 import pgdb as DBAPI
 import loaddb
+import os.path
 
 class MaprenderAppDelegate(NSObject):
     dbListSource = objc.IBOutlet()
@@ -73,17 +74,19 @@ class MaprenderAppDelegate(NSObject):
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if keyPath == "fix":
             fix = object.fix()
-            if fix is not None and fix["FixType"]:
-                self.mapView.setFixLat_Lon_(fix["Latitude"], fix["Longitude"])
-                if self.mapWindowDelegate.useGPS:
-                    self.mapView.setCenter_((fix["Longitude"], fix["Latitude"]))
+            if fix is not None and fix["FixType"] != 0:
+                self.mapView.setFixLat_Lon_CenterOnGPS(fix["Latitude"], fix["Longitude"],self.mapWindowDelegate.useGPS)
+            #else:
+            #    self.mapView.clearFix()
     
-    def buildXML(self, db_prefix):
-        path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
+    def buildXML(self, db_prefix, style_filename):
+        #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
+        path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
-        xml_file = open(path_prefix + "styles/osm_style.xml.template")
-        xml = xml_file.read()
-        xml_file.close()
+        #xml_file = open(path_prefix + "styles/osm_style.xml.template")
+        
+        with open(style_filename) as style_file:
+            xml = style_file.read()
         
         con = DBAPI.connect(**self.db_args)
         try:
@@ -154,6 +157,11 @@ class MaprenderAppDelegate(NSObject):
     def loadMap_(self, sender):
         row = self.dbTableView.selectedRow()
         if self.dbList is not None and row != -1:
+            #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
+            path_prefix = NSBundle.mainBundle().resourcePath() + "/"
+            
+            style_filename = path_prefix + "styles/osm_style.xml.template"
+            
             mapName = self.dbList[row]
             
             self.mapWindowDelegate.setDBParams(self.db_args)
@@ -165,7 +173,9 @@ class MaprenderAppDelegate(NSObject):
             
             layer = TiledMapnikLayer.alloc().init()
             #layer.setMapXMLFile_(path)
-            layer.setMapXML_(self.buildXML(mapName))
+            layer.setMapXML_(self.buildXML(mapName,style_filename))
+            layer.setName_("Mapnik: " + mapName)
+            
             self.mapView.setMapLayer_(layer)
             
             self.mapName = mapName
@@ -175,6 +185,16 @@ class MaprenderAppDelegate(NSObject):
             self.inspectWindowDelegate.setMapName_(mapName)
             
             self.selectDBWindow.orderOut_(self)
+    
+    @objc.IBAction
+    def setMapStyle_(self, style_filename):
+        from TiledMapnikLayer import TiledMapnikLayer
+        
+        layer = TiledMapnikLayer.alloc().init()
+        #layer.setMapXMLFile_(path)
+        layer.setMapXML_(self.buildXML(self.mapName,style_filename))
+        self.mapView.setMapLayer_(layer)
+
 
     @objc.IBAction
     def clearLayers_(self, sender):
@@ -190,8 +210,14 @@ class MaprenderAppDelegate(NSObject):
         panel = NSOpenPanel.alloc().init()
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx"]):
             path = panel.filename()
+            ext = os.path.splitext(path)[1].lower()
             
-            from GenericDataLayer import fromGPXFile
-            layer = fromGPXFile(path)
+            if ext == ".gpx" or ext == "":
+                from GenericDataLayer import fromGPXFile
+                try:
+                    layer = fromGPXFile(path)
+                    layer.setName_("GPX: " + os.path.splitext(os.path.basename(path))[0])
+                    self.mapView.addLayer_(layer)
+                except xml.parsers.expat.ExpatError as error:
+                    print error
             
-            self.mapView.addLayer_(layer)

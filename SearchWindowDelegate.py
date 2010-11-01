@@ -66,7 +66,7 @@ class SearchWindowDelegate(NSObject):
                     try:
                         loc = loc.split("(")[1].split(")")[0].split(" ")
                     except IndexError as e:
-                        # This is a really horrid thing to ignore, but yet more bugs in the cloudmade exracts
+                        # This is a really horrid thing to ignore, but yet more bugs in the cloudmade extracts
                         print "Bad geometry for \"%s\": %s" % (row[0], loc)
                         break
                     loc = map(float, loc)
@@ -79,7 +79,9 @@ class SearchWindowDelegate(NSObject):
         except pg.DatabaseError:
             try:
                 con.rollback()
-                doQuery("name = '%s'" % commands.replace("'","\\'"))
+                #doQuery("name = '%s'" % commands.replace("'","\\'"))
+                # This version takes advantage of vector indexes if available
+                doQuery("to_tsvector('simple',name) @@ to_tsquery('simple','''%s''')" % commands.replace("'","\\'"))
             except pg.DatabaseError as error:
                 print error
                 self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
@@ -93,6 +95,7 @@ class SearchWindowDelegate(NSObject):
             for p in points:
                 dataset.points.append(p)
             layer.datasets.append(dataset)
+            layer.setName_("Search Results")
             self.mapView.addLayer_(layer)
         
         if self.resultsView is not None:

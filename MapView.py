@@ -12,7 +12,7 @@ from AppKit import *
 
 import mapnik
 
-#defaultZooms = [1,5,25,50,100,500,1000]
+defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
 class MapView(NSView):
     layers = objc.ivar()
@@ -78,11 +78,22 @@ class MapView(NSView):
         #    layer.setCenter_([self.center.x,self.center.y])
         
         if event.deltaY() > 0:
-            self.zoom = int(self.zoom * 2)
+            if self.zoom >= defaultZooms[-1]:
+                self.zoom = int(self.zoom * 2)
+            else:
+                zoomIndex = 0
+                while defaultZooms[zoomIndex] <= self.zoom:
+                    zoomIndex += 1
+                self.zoom = defaultZooms[zoomIndex]
+                
         elif event.deltaY() < 0:
-            self.zoom = int(self.zoom / 2)
-            if self.zoom < 1:
-                self.zoom = 1
+            if int(self.zoom / 2) >= defaultZooms[-1]:
+                self.zoom = int(self.zoom / 2)
+            else:
+                zoomIndex = len(defaultZooms) - 1
+                while defaultZooms[zoomIndex] >= self.zoom and zoomIndex > 0:
+                    zoomIndex -= 1
+                self.zoom = defaultZooms[zoomIndex]
         
         self.setNeedsDisplay_(True)
 
@@ -147,6 +158,8 @@ class MapView(NSView):
         
         #layer.setCenter_([self.center.x,self.center.y])
         #layer.setZoom_(self.zoom)
+        self.clearLayers()
+        self.removeLayerAtIndex_(0)
         layer.setView_(self)
         self.layers = [layer]
         
@@ -154,20 +167,42 @@ class MapView(NSView):
     
     def addLayer_(self, layer):
         """Add a layer to the top of the layer stack"""
+        
+        self.willChangeValueForKey_("layers")
         self.layers.append(layer)
+        self.didChangeValueForKey_("layers")
         self.setNeedsDisplay_(True)
     
-    def removeLayer_(self, layerIndex):
+    def removeLayerAtIndex_(self, layerIndex):
         """Remove a layer"""
-        
-        if layerIndex > 0 and layerIndex < len(self.layers):
+        if layerIndex >= 0 and layerIndex < len(self.layers):
+            self.willChangeValueForKey_("layers")
+            if hasattr(self.layers[layerIndex], "layerDeleted"):
+                self.layers[layerIndex].layerDeleted()
             del self.layers[layerIndex]
-        self.setNeedsDisplay_(True)
+            self.didChangeValueForKey_("layers")
+            self.setNeedsDisplay_(True)
+    
+    def removeLayerByObject_(self, layer):
+        """Remove a layer"""
+        try:
+            index = self.layers.index(layer)
+        except ValueError:
+            index = -1
+        if index == 0:
+            self.clearLayers()
+        if index != -1:
+            self.removeLayerAtIndex_(index)
     
     def clearLayers(self):
         """Remove all layers except the base"""
+        self.willChangeValueForKey_("layers")
         while len(self.layers) > 1:
+            if hasattr(self.layers[-1], "layerDeleted"):
+                self.layers[-1].layerDeleted()
             del self.layers[-1]
+            
+        self.didChangeValueForKey_("layers")
         self.setNeedsDisplay_(True)
     
     def getLayers(self):
@@ -192,10 +227,17 @@ class MapView(NSView):
         #for layer in self.layers:
         #    layer.setZoom_(zoom)
     
-    def setFixLat_Lon_(self, lat, lon):
+    def setFixLat_Lon_CenterOnGPS_(self, lat, lon, center_map_on_gps):
         self.gpsFix = mapnik.Coord(lon, lat)
+        
+        if center_map_on_gps:
+            self.mapView.setCenter_(lon, lat)
+        else:
+            #FIXME: We only need to redisplay the GPS dot
+            self.setNeedsDisplay_(True)
     
     def clearFix(self):
         self.gpsFix = None
+        self.setNeedsDisplay_(True)
     
     
