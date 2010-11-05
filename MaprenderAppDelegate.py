@@ -75,7 +75,7 @@ class MaprenderAppDelegate(NSObject):
         if keyPath == "fix":
             fix = object.fix()
             if fix is not None and fix["FixType"] != 0:
-                self.mapView.setFixLat_Lon_CenterOnGPS(fix["Latitude"], fix["Longitude"],self.mapWindowDelegate.useGPS)
+                self.mapView.setFixLat_Lon_CenterOnGPS_(fix["Latitude"], fix["Longitude"],self.mapWindowDelegate.useGPS)
             #else:
             #    self.mapView.clearFix()
     
@@ -201,14 +201,14 @@ class MaprenderAppDelegate(NSObject):
         self.mapView.clearLayers()
     
     @objc.IBAction
-    def loadGPXFile_(self, sender):
+    def loadLayerFromFile_(self, sender):
         #FIXME: Disable the menu too
         if (not self.mapView.getLayers()):
             # No map layer, datalayer won't work
             return
         
         panel = NSOpenPanel.alloc().init()
-        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx"]):
+        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx", "kml"]):
             path = panel.filename()
             ext = os.path.splitext(path)[1].lower()
             
@@ -220,4 +220,11 @@ class MaprenderAppDelegate(NSObject):
                     self.mapView.addLayer_(layer)
                 except xml.parsers.expat.ExpatError as error:
                     print error
-            
+            elif ext == ".kml":
+                from GenericDataLayer import fromKMLFile
+                try:
+                    layer = fromKMLFile(path)
+                    layer.setName_("KML: " + os.path.splitext(os.path.basename(path))[0])
+                    self.mapView.addLayer_(layer)
+                except xml.parsers.expat.ExpatError as error:
+                    print error

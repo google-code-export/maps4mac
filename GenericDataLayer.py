@@ -11,11 +11,41 @@ from AppKit import *
 
 import mapnik
 
+class GenericDataPoint(NSObject):
+    x = objc.ivar()
+    y = objc.ivar()
+    name = objc.ivar()
+    
+    def init(self):
+        self = super(self.__class__, self).init()
+        if self is None:
+            return None
+        return self
+    
+    @classmethod
+    def GenericDataPointWithX_Y_Name_(cls, x, y, name):
+        p = cls.alloc().init()
+        p.x = x
+        p.y = y
+        p.name = name
+        
+        return p
+        
+    @classmethod
+    def GenericDataPointWithX_Y_(cls, x, y):
+        p = cls.alloc().init()
+        p.x = x
+        p.y = y
+        p.name = None
+        
+        return p
+
 class GenericDataset(NSObject):
     icon = objc.ivar() # NSImage used to represent the dataset
     icon_hotspot = objc.ivar() # Where to center the image
     points = objc.ivar()
     tracks = objc.ivar()
+    text_format = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -28,6 +58,11 @@ class GenericDataset(NSObject):
         self.icon = NSImage.alloc().initByReferencingFile_(path)
         size = self.icon.size()
         self.icon_hotspot = NSPoint(size.width / 2, size.height / 2)
+        
+        self.text_format = { 
+            NSFontAttributeName : NSFont.fontWithName_size_("Andale Mono", 10.0),
+            NSForegroundColorAttributeName : NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 1.0),
+        }
         
         return self
     
@@ -95,6 +130,7 @@ class GenericDataLayer(NSObject):
         for ds in self.datasets:
             icon = ds.icon
             icon_hotspot = ds.icon_hotspot
+            font_height  = ds.text_format[NSFontAttributeName]
             
             for point in ds.points:
                 loc = proj.forward(mapnik.Coord(point.x, point.y))
@@ -102,6 +138,12 @@ class GenericDataLayer(NSObject):
                 loc = loc / zoom
                 
                 icon.drawAtPoint_fromRect_operation_fraction_(NSPoint(loc.x - icon_hotspot.x,loc.y - icon_hotspot.y), NSZeroRect, NSCompositeSourceOver, 1.0)
+                if hasattr(point,"name") and point.name is not None:
+                    name = NSString.stringWithString_(point.name)
+                    string_size = name.sizeWithAttributes_(ds.text_format)
+                    x_shift = ds.icon.size().width / 2 + 1 # FIXME: If the hotspot isn't centered this will be wrong
+                    y_shift = -(string_size.height / 2)
+                    NSString.drawAtPoint_withAttributes_(name, NSPoint(loc.x + x_shift, loc.y + y_shift), ds.text_format)
             
             for path in self.cache["tracks"]:
                 color = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.6)
@@ -129,7 +171,14 @@ def fromGPXFile(filename):
         ds = GenericDataset.alloc().init()
         # Find all waypoints
         for wpt in gpx_data.findall(prefix + "wpt"):
-            point = NSPoint(float(wpt.get("lon")), float(wpt.get("lat")))
+            #point = NSPoint(float(wpt.get("lon")), float(wpt.get("lat")))
+            point = GenericDataPoint.GenericDataPointWithX_Y_(float(wpt.get("lon")), float(wpt.get("lat")))
+            name = wpt.find(prefix + "name")
+            cmt  = wpt.find(prefix + "cmt")
+            if name is not None:
+                point.name = name.text
+            elif cmt is not None:
+                point.name = cmt.text
             ds.points.append(point)
             
         for trk in gpx_data.findall(prefix + "trk"):
@@ -143,6 +192,54 @@ def fromGPXFile(filename):
                     #if trkpt.find(prefix + "cmt") is not None:
                     #    ds.points.append(point)
                 ds.tracks.append(segment)
+        
+        layer = GenericDataLayer.alloc().init()
+        layer.datasets.append(ds)
+        return layer
+        
+    except Exception as e:
+        print e
+        raise e
+        
+def fromKMLFile(filename):
+    try:
+        import xml.etree
+        kml_data = xml.etree.ElementTree.parse(filename)
+        
+        if kml_data.getroot().tag[-3:] != "kml":
+            print "KML Load: No root element"
+            return None
+        
+        # Handle etree namespace
+        prefix = kml_data.getroot().tag[:-3]
+        kml_doc = kml_data.find(prefix + "Document")
+        document_name = kml_doc.find(prefix + "name")
+        
+        ds = GenericDataset.alloc().init()
+        # Find all placemarks
+        def do_placemarks(node):
+            #print kml_doc
+            for placemark in node.findall(prefix + "Placemark"):
+                #print placemark
+                placemark_point = placemark.find(prefix + "Point")
+                if placemark_point:
+                    cord = placemark_point.find(prefix + "coordinates")
+                    #print cord
+                    if cord is not None:
+                        #print cord.text
+                        cord = cord.text.split(",")
+                        #print cord
+                        point = GenericDataPoint.GenericDataPointWithX_Y_(float(cord[0]), float(cord[1]))
+                    
+                        name = placemark.find(prefix + "name")
+                        if name is not None:
+                            point.name = name.text
+                
+                        ds.points.append(point)
+            
+            for folder in node.findall(prefix + "Folder"):
+                do_placemarks(folder)
+        do_placemarks(kml_doc)
         
         layer = GenericDataLayer.alloc().init()
         layer.datasets.append(ds)

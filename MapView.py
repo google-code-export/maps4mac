@@ -231,7 +231,7 @@ class MapView(NSView):
         self.gpsFix = mapnik.Coord(lon, lat)
         
         if center_map_on_gps:
-            self.mapView.setCenter_(lon, lat)
+            self.setCenter_((lon, lat))
         else:
             #FIXME: We only need to redisplay the GPS dot
             self.setNeedsDisplay_(True)
