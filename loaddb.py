@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os.path
 import subprocess
 import pgdb as DBAPI
 import pg
@@ -113,6 +114,8 @@ if __name__ == "__main__":
     if command == "load":
         db_name = sys.argv[2]
         file_name = "./%s.osm.bz2" % db_name
+        if not os.path.isfile(file_name):
+            file_name = "./%s.osm" % db_name
         loadExtract(file_name,db_name,**db_args)
         print get_current_names(**db_args)
     elif command == "drop":

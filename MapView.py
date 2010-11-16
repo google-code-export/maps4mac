@@ -158,11 +158,16 @@ class MapView(NSView):
         
         #layer.setCenter_([self.center.x,self.center.y])
         #layer.setZoom_(self.zoom)
-        self.clearLayers()
-        self.removeLayerAtIndex_(0)
         layer.setView_(self)
-        self.layers = [layer]
         
+        self.willChangeValueForKey_("layers")
+        if self.layers and hasattr(self.layers[0], "layerDeleted"):
+            self.layers[0].layerDeleted()
+            self.layers[0] = layer
+        else:
+            self.layers = [layer]
+        
+        self.didChangeValueForKey_("layers")
         self.setNeedsDisplay_(True)
     
     def addLayer_(self, layer):
@@ -187,12 +192,11 @@ class MapView(NSView):
         """Remove a layer"""
         try:
             index = self.layers.index(layer)
-        except ValueError:
-            index = -1
-        if index == 0:
-            self.clearLayers()
-        if index != -1:
             self.removeLayerAtIndex_(index)
+        except ValueError:
+            # No such object
+            print "Object: %s is not a layer", str(layer)
+            
     
     def clearLayers(self):
         """Remove all layers except the base"""

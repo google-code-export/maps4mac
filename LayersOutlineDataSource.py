@@ -32,15 +32,19 @@ class LayersOutlineDataSource(NSObject):
     def outlineView_child_ofItem_(self, outlineView, index, item):
         if item is None:
             return self.mapView.getLayers()[index]
+        else:
+            return item.outline[index]
         
     def outlineView_isItemExpandable_(self, outlineView, item):
+        if hasattr(item, "outline") and item.outline is not None:
+            return True
         return False
     
     def outlineView_numberOfChildrenOfItem_(self, outlineView, item):
         if item is None:
-            #print "Num children of", item, "=", len(self.mapView.getLayers())
             return len(self.mapView.getLayers())
-        #print "Num children of", item, "=", 0
+        if hasattr(item, "outline") and item.outline is not None:
+            return len(item.outline)
         return 0
     
     def outlineView_objectValueForTableColumn_byItem_(self, outlineView, tableColumn, item):

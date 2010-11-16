@@ -61,6 +61,7 @@ class TiledMapnikLayer(NSObject):
     
     #def drawRect_WithOrigin_Zoom_(self, rect, origin, zoom):
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
+        #FIXME: Handle out of bounds values
         try:
             if int(zoom) != self.zoom:
                 self.cache = dict()
@@ -105,7 +106,8 @@ class TiledMapnikLayer(NSObject):
     
     def drawRect_(self, rect):
         #FIXME: Get projection from the layer itself
-        prj = mapnik.Projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over")
+        #prj = mapnik.Projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over")
+        prj = mapnik.Projection(self.projectionString)
         prj_center = prj.forward(mapnik.Coord(self.center[0],self.center[1]))
         prj_origin = mapnik.Coord(rect.origin[0] - (self.size[0] / 2) * self.zoom, rect.origin[1] - (self.size[1] / 2) * self.zoom)
         prj_size   = mapnik.Coord(rect.size[0], rect.size[1]) * self.zoom

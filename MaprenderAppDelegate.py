@@ -43,11 +43,12 @@ class MaprenderAppDelegate(NSObject):
     
     def awakeFromNib(self):
         self.dbList = None
-
-    def applicationDidFinishLaunching_(self, sender):
+        
+    def applicationWillFinishLaunching_(self, sender):
         #self.mapWindow.makeFirstResponder_(self.mapView)
         self.mapWindow.setAcceptsMouseMovedEvents_(True)
-        
+
+    def applicationDidFinishLaunching_(self, sender):
         defaults = NSUserDefaults.standardUserDefaults()
         
         port = defaults.stringForKey_("db_portnumber")
@@ -186,6 +187,47 @@ class MaprenderAppDelegate(NSObject):
             
             self.selectDBWindow.orderOut_(self)
     
+    def loadEmptyGlobe(self):
+        path_prefix = NSBundle.mainBundle().resourcePath() + "/"
+        
+        style_filename = path_prefix + "Empty Globe.template"
+        with open(style_filename) as style_file:
+            xml = style_file.read()
+        
+        mapName = "Empty Globe"
+        
+        #self.mapWindowDelegate.setDBParams(self.db_args)
+        #self.mapWindowDelegate.loadMap_(mapName)
+        
+        from TiledMapnikLayer import TiledMapnikLayer
+        
+        parameters = {
+            "symbols":path_prefix + "symbols/",
+            "osm2pgsql_projection": "&srs900913;",
+            #"osm2pgsql_projection":proj4,
+            "world_boundaries":path_prefix + "world_boundaries/",
+            #"prefix":db_prefix,
+        }
+        
+        layer = TiledMapnikLayer.alloc().init()
+        layer.setMapXML_(str(xml % parameters))
+        
+        layer.setName_("Mapnik: " + mapName)
+        
+        self.mapView.setMapLayer_(layer)
+        
+        self.mapName = mapName
+        #self.searchWindowDelegate.db_args = self.db_args
+        #self.searchWindowDelegate.mapName = mapName
+        #self.inspectWindowDelegate.setDBParams(self.db_args)
+        #self.inspectWindowDelegate.setMapName_(mapName)
+        
+        #self.selectDBWindow.orderOut_(self)
+        
+        self.mapView.setCenter_([0, 0])
+        #self.mapView.setZoom_(50000)
+        self.mapWindow.orderBack_(self)
+    
     @objc.IBAction
     def setMapStyle_(self, style_filename):
         from TiledMapnikLayer import TiledMapnikLayer
@@ -199,6 +241,32 @@ class MaprenderAppDelegate(NSObject):
     @objc.IBAction
     def clearLayers_(self, sender):
         self.mapView.clearLayers()
+        
+    def loadFile_(self,path):
+        ext = os.path.splitext(path)[1].lower()
+        
+        if ext == ".gpx" or ext == "":
+            from GenericDataLayer import fromGPXFile
+            try:
+                layer = fromGPXFile(path)
+                layer.setName_("GPX: " + os.path.splitext(os.path.basename(path))[0])
+                self.mapView.addLayer_(layer)
+            except Exception as error:
+                print error
+        elif ext == ".kml":
+            from GenericDataLayer import fromKMLFile
+            try:
+                layer = fromKMLFile(path)
+                layer.setName_("KML: " + os.path.splitext(os.path.basename(path))[0])
+                self.mapView.addLayer_(layer)
+            except Exception as error:
+                print error
+    
+    def application_openFile_(self, app, filename):
+        if self.mapName is None:
+            self.loadEmptyGlobe()
+        
+        self.loadFile_(filename)
     
     @objc.IBAction
     def loadLayerFromFile_(self, sender):
@@ -209,22 +277,4 @@ class MaprenderAppDelegate(NSObject):
         
         panel = NSOpenPanel.alloc().init()
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx", "kml"]):
-            path = panel.filename()
-            ext = os.path.splitext(path)[1].lower()
-            
-            if ext == ".gpx" or ext == "":
-                from GenericDataLayer import fromGPXFile
-                try:
-                    layer = fromGPXFile(path)
-                    layer.setName_("GPX: " + os.path.splitext(os.path.basename(path))[0])
-                    self.mapView.addLayer_(layer)
-                except xml.parsers.expat.ExpatError as error:
-                    print error
-            elif ext == ".kml":
-                from GenericDataLayer import fromKMLFile
-                try:
-                    layer = fromKMLFile(path)
-                    layer.setName_("KML: " + os.path.splitext(os.path.basename(path))[0])
-                    self.mapView.addLayer_(layer)
-                except xml.parsers.expat.ExpatError as error:
-                    print error
+            self.loadFile_(panel.filename())

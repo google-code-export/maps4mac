@@ -70,7 +70,9 @@ class GenericDataset(NSObject):
 
 class GenericDataLayer(NSObject):
     datasets = objc.ivar()
+    outline  = objc.ivar()
     cache    = objc.ivar()
+    name     = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -80,8 +82,16 @@ class GenericDataLayer(NSObject):
         self.datasets = list()
         self.name = "Untitled"
         self.cache = None
+        self.outline = None
         
         return self
+    
+    #FIXME: Call this automaticaly
+    def updateOutline(self):
+        self.outline = list()
+        for ds in self.datasets:
+            for point in ds.points:
+                self.outline.append(point)
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
@@ -195,6 +205,9 @@ def fromGPXFile(filename):
         
         layer = GenericDataLayer.alloc().init()
         layer.datasets.append(ds)
+        
+        layer.updateOutline()
+        
         return layer
         
     except Exception as e:
@@ -243,6 +256,9 @@ def fromKMLFile(filename):
         
         layer = GenericDataLayer.alloc().init()
         layer.datasets.append(ds)
+        
+        layer.updateOutline()
+        
         return layer
         
     except Exception as e:

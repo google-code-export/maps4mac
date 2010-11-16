@@ -11,6 +11,10 @@ from Foundation import *
 class LayersWindowDelegate(NSObject):
     outlineView = objc.IBOutlet()
     mapView     = objc.IBOutlet()
+    
+    def awakeFromNib(self):
+        self.outlineView.setTarget_(self)
+        self.outlineView.setDoubleAction_(self.doubleClicked)
 
     @objc.IBAction
     def deleteSelectedLayers_(self, sender):
@@ -20,3 +24,12 @@ class LayersWindowDelegate(NSObject):
                 toDelete.append(self.outlineView.itemAtRow_(index))
         for layer in toDelete:
             self.mapView.removeLayerByObject_(layer)
+    
+    def doubleClicked(self):
+        row = self.outlineView.clickedRow()
+        if row != -1:
+            item = self.outlineView.itemAtRow_(row)
+            try:
+                self.mapView.setCenter_([item.x,item.y])
+            except AttributeError:
+                pass
