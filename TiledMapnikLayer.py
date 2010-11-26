@@ -16,12 +16,13 @@ import threading
 
 import mapnik
 import cairo
+import MapLayer
 
 # CATiledLayer?
 
-class TiledMapnikLayer(NSObject):
-    projectionString = objc.ivar()
-    
+class TiledMapnikLayer(MapLayer.MapLayer):
+    zoom = objc.ivar()
+
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -30,10 +31,8 @@ class TiledMapnikLayer(NSObject):
         self.name = "Mapnik"
         
         self.projectionString = None
-        self.center = [0,0]
-        self.zoom   = 100
-        self.size   = [1,1]
         self.cache  = dict()
+        self.zoom   = 0
         self.render_thread = MapnikRenderThread.alloc().init()
         thread = threading.Thread(target=self.render_thread.run, name="Render Thread")
         thread.start()
@@ -57,9 +56,7 @@ class TiledMapnikLayer(NSObject):
         self.projection = mapnik.Projection(self.projectionString)
         
         self.render_thread.loadMapFile_(str(xmlPath))
-        # select ST_XMin(st_estimated_extent),ST_YMin(st_estimated_extent),ST_XMax(st_estimated_extent),ST_YMax(st_estimated_extent) from ST_Estimated_Extent('washington_polygon','way');
     
-    #def drawRect_WithOrigin_Zoom_(self, rect, origin, zoom):
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         #FIXME: Handle out of bounds values
         try:
@@ -101,47 +98,6 @@ class TiledMapnikLayer(NSObject):
             print e
             NSColor.redColor().setFill()
             NSRectFill(rect)
-    
-        
-    
-    def drawRect_(self, rect):
-        #FIXME: Get projection from the layer itself
-        #prj = mapnik.Projection("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over")
-        prj = mapnik.Projection(self.projectionString)
-        prj_center = prj.forward(mapnik.Coord(self.center[0],self.center[1]))
-        prj_origin = mapnik.Coord(rect.origin[0] - (self.size[0] / 2) * self.zoom, rect.origin[1] - (self.size[1] / 2) * self.zoom)
-        prj_size   = mapnik.Coord(rect.size[0], rect.size[1]) * self.zoom
-        c0 = prj_center + prj_origin
-        c1 = c0 + prj_size
-        
-        #c0 = mapnik.Coord(rect.origin[0],rect.origin[1])
-        #c1 = c0 + mapnik.Coord(rect.size[0],rect.size[1])
-        
-        tile_size = (256 * self.zoom)
-        
-        # Build the tile list, tiles are identified by their lower left corner
-        origin_lower_left = [int(c0.x) - int(c0.x) % tile_size, int(c0.y) - int(c0.y) % tile_size]
-        lower_left = origin_lower_left[:]
-        
-        # Offset for the lower corner will be (origin_lower_left - c0) / zoom
-        point = [(origin_lower_left[0] - c0.x) / self.zoom, (origin_lower_left[1] - c0.y) / self.zoom]
-        point = [int(i) for i in point]
-        origin_point = point[:]
-        
-        while lower_left[0] < c1.x:
-            while lower_left[1] < c1.y:
-                img = self.getTileAt_(lower_left)
-                if img:
-                    img.drawAtPoint_fromRect_operation_fraction_(NSPoint(point[0],point[1]), NSZeroRect, NSCompositeCopy, 1.0)
-                else:
-                    NSColor.darkGrayColor().setFill()
-                    NSRectFill(NSRect(point, [256,256]))
-                point[1] += 256
-                lower_left[1] += tile_size
-            point[1] = origin_point[1]
-            lower_left[1] = origin_lower_left[1]
-            point[0] += 256
-            lower_left[0] += tile_size
         
     def getTileAt_(self, origin):
         if origin[0] in self.cache:
@@ -167,19 +123,6 @@ class TiledMapnikLayer(NSObject):
     
     def setView_(self, view):
         self.view = view
-    
-    def setCenter_(self, point):
-        self.center = point
-    
-    def setZoom_(self, zoom):
-        # Empty the cache on zoom change
-        if int(zoom) != self.zoom:
-            self.cache = dict()
-        
-        self.zoom = int(zoom)
-    
-    def setSize_(self, size):
-        self.size = [size.width, size.height]
         
     def layerDeleted(self):
         self.render_thread.stop()

@@ -9,7 +9,7 @@ import pgdb as DBAPI
 import pg
 
 from Foundation import *
-from GenericDataLayer import GenericDataLayer, GenericDataset
+from GenericDataLayer import GenericDataLayer, GenericDataset, GenericDataPoint
 
 class SearchWindowDelegate(NSObject):
     searchField = objc.IBOutlet()
@@ -100,7 +100,7 @@ select name, ST_AsText(ST_Transform(point, 4269)), type from results order by di
             dataset = GenericDataset.alloc().init()
             layer   = GenericDataLayer.alloc().init()
             for p in points:
-                dataset.points.append(p)
+                dataset.points.append(GenericDataPoint.GenericDataPointWithX_Y_(p.x, p.y))
             layer.datasets.append(dataset)
             layer.setName_("Search Results")
             self.mapView.addLayer_(layer)

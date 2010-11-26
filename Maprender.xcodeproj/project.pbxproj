@@ -38,6 +38,7 @@
 		EDCC2827124DA22200C835C7 /* styles in Copy Additional Resources */ = {isa = PBXBuildFile; fileRef = EDCC2824124DA22200C835C7 /* styles */; };
 		EDCF0341124486570038C74E /* symbols in Resources */ = {isa = PBXBuildFile; fileRef = EDCF0272124486570038C74E /* symbols */; };
 		EDCF035F1244866F0038C74E /* world_boundaries in Resources */ = {isa = PBXBuildFile; fileRef = EDCF03421244866E0038C74E /* world_boundaries */; };
+		EDE8702F129D0A6500D06129 /* Layers.icns in Resources */ = {isa = PBXBuildFile; fileRef = EDE8702E129D0A6500D06129 /* Layers.icns */; };
 		EDF652D11284658B00DD10AE /* Empty Globe.template in Resources */ = {isa = PBXBuildFile; fileRef = EDF652D01284658A00DD10AE /* Empty Globe.template */; };
 		EDF67DBC127E2EB00054EDCC /* KeyResponderTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = EDF67DBB127E2EB00054EDCC /* KeyResponderTableView.m */; };
 		EDF67E06127E533C0054EDCC /* LayersOutlineDataSource.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF67E05127E533C0054EDCC /* LayersOutlineDataSource.py */; };
@@ -104,6 +105,7 @@
 		EDCC2824124DA22200C835C7 /* styles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = styles; sourceTree = "<group>"; };
 		EDCF0272124486570038C74E /* symbols */ = {isa = PBXFileReference; lastKnownFileType = folder; path = symbols; sourceTree = "<group>"; };
 		EDCF03421244866E0038C74E /* world_boundaries */ = {isa = PBXFileReference; lastKnownFileType = folder; path = world_boundaries; sourceTree = "<group>"; };
+		EDE8702E129D0A6500D06129 /* Layers.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Layers.icns; sourceTree = "<group>"; };
 		EDF652D01284658A00DD10AE /* Empty Globe.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Empty Globe.template"; sourceTree = "<group>"; };
 		EDF67DBA127E2EB00054EDCC /* KeyResponderTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyResponderTableView.h; sourceTree = "<group>"; };
 		EDF67DBB127E2EB00054EDCC /* KeyResponderTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeyResponderTableView.m; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				ED03FF181293370100465563 /* MapLayer.py */,
+				ED03FF11129336C000465563 /* Layer.py */,
 				EDCB8F611260145100280C01 /* Logger.py */,
 				ED14E57911A3126600C8472D /* JSON */,
 				ED86B29111989C48007D969F /* GenericDataLayer.py */,
@@ -144,7 +147,6 @@
 				ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */,
 				EDF67DBA127E2EB00054EDCC /* KeyResponderTableView.h */,
 				EDF67DBB127E2EB00054EDCC /* KeyResponderTableView.m */,
-				ED03FF11129336C000465563 /* Layer.py */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -205,6 +207,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				EDE8702E129D0A6500D06129 /* Layers.icns */,
 				EDF652D01284658A00DD10AE /* Empty Globe.template */,
 				EDCF03421244866E0038C74E /* world_boundaries */,
 				EDCF0272124486570038C74E /* symbols */,
@@ -328,6 +331,7 @@
 				EDF652D11284658B00DD10AE /* Empty Globe.template in Resources */,
 				ED03FF12129336C000465563 /* Layer.py in Resources */,
 				ED03FF191293370100465563 /* MapLayer.py in Resources */,
+				EDE8702F129D0A6500D06129 /* Layers.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -375,6 +379,8 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

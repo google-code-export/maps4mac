@@ -52,8 +52,6 @@ class MapView(NSView):
         
     def frameChanged(self):
         size = self.bounds().size
-        for layer in self.layers:
-            layer.setSize_(size)
     
     def scrollWheel_(self, event):
         shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
@@ -154,14 +152,13 @@ class MapView(NSView):
     
     def setMapLayer_(self, layer):
         """Set the base map layer for this view, which will define the projection"""
-        #layer.setSize_(self.bounds().size)
         
         #layer.setCenter_([self.center.x,self.center.y])
         #layer.setZoom_(self.zoom)
         layer.setView_(self)
         
         self.willChangeValueForKey_("layers")
-        if self.layers and hasattr(self.layers[0], "layerDeleted"):
+        if self.layers:
             self.layers[0].layerDeleted()
             self.layers[0] = layer
         else:
@@ -182,9 +179,10 @@ class MapView(NSView):
         """Remove a layer"""
         if layerIndex >= 0 and layerIndex < len(self.layers):
             self.willChangeValueForKey_("layers")
-            if hasattr(self.layers[layerIndex], "layerDeleted"):
-                self.layers[layerIndex].layerDeleted()
+            
+            self.layers[layerIndex].layerDeleted()
             del self.layers[layerIndex]
+            
             self.didChangeValueForKey_("layers")
             self.setNeedsDisplay_(True)
     
@@ -202,8 +200,7 @@ class MapView(NSView):
         """Remove all layers except the base"""
         self.willChangeValueForKey_("layers")
         while len(self.layers) > 1:
-            if hasattr(self.layers[-1], "layerDeleted"):
-                self.layers[-1].layerDeleted()
+            self.layers[-1].layerDeleted()
             del self.layers[-1]
             
         self.didChangeValueForKey_("layers")

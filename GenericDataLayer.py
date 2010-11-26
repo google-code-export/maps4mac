@@ -10,16 +10,24 @@ from Foundation import *
 from AppKit import *
 
 import mapnik
+import Layer
 
 class GenericDataPoint(NSObject):
     x = objc.ivar()
     y = objc.ivar()
     name = objc.ivar()
+    #FIXME: This doesn't belong on the point
+    outline = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
             return None
+        
+        x = 0.0
+        y = 0.0
+        name = None
+        
         return self
     
     @classmethod
@@ -65,14 +73,10 @@ class GenericDataset(NSObject):
         }
         
         return self
-    
-    
 
-class GenericDataLayer(NSObject):
+class GenericDataLayer(Layer.Layer):
     datasets = objc.ivar()
-    outline  = objc.ivar()
     cache    = objc.ivar()
-    name     = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -148,7 +152,7 @@ class GenericDataLayer(NSObject):
                 loc = loc / zoom
                 
                 icon.drawAtPoint_fromRect_operation_fraction_(NSPoint(loc.x - icon_hotspot.x,loc.y - icon_hotspot.y), NSZeroRect, NSCompositeSourceOver, 1.0)
-                if hasattr(point,"name") and point.name is not None:
+                if point.name is not None:
                     name = NSString.stringWithString_(point.name)
                     string_size = name.sizeWithAttributes_(ds.text_format)
                     x_shift = ds.icon.size().width / 2 + 1 # FIXME: If the hotspot isn't centered this will be wrong
@@ -162,9 +166,6 @@ class GenericDataLayer(NSObject):
     
     def setName_(self, name):
         self.name = name
-    
-    def setSize_(self, size):
-        self.size = [size.width, size.height]
 
 def fromGPXFile(filename):
     try:

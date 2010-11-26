@@ -39,7 +39,7 @@ def loadExtract(osmFile,extractName,**kwargs):
     
     #FIXME: use host, password
     # Slim mode doesn't seem to agree with all the cloudmade extracts
-    #args = ["./osm2pgsql", "-s", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
+    #args = ["./osm2pgsql", "-G", "-s", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
     args = ["./osm2pgsql", "-G", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
     print args
     
@@ -109,6 +109,7 @@ def buildMapnikXML(extractName, **kwargs):
 if __name__ == "__main__":
     import sys
     db_args = {'host':'localhost', 'user':'postgres', 'database':'osm_test'}
+    db_args = {'host':'localhost', 'user':'osm_user', 'database':'osm_mapnik'}
     
     command = sys.argv[1]
     if command == "load":

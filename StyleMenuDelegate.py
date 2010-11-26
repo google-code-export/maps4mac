@@ -15,6 +15,13 @@ class StyleMenuDelegate(NSObject):
     items = objc.ivar()
     appDelegate = objc.IBOutlet()
     
+    def init(self):
+        self = super(self.__class__, self).init()
+        if self is None:
+            return None
+        
+        items = None
+    
     def menuNeedsUpdate_(self, menu):
         if not self.items:
             kLocalDomain = -32765
