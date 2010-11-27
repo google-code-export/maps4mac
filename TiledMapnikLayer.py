@@ -120,9 +120,6 @@ class TiledMapnikLayer(MapLayer.MapLayer):
     
     def setName_(self, name):
         self.name = name
-    
-    def setView_(self, view):
-        self.view = view
         
     def layerDeleted(self):
         self.render_thread.stop()

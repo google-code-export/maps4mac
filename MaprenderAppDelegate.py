@@ -165,8 +165,7 @@ class MaprenderAppDelegate(NSObject):
             
             mapName = self.dbList[row]
             
-            self.mapWindowDelegate.setDBParams(self.db_args)
-            self.mapWindowDelegate.loadMap_(mapName)
+            self.mapWindow.makeKeyAndOrderFront_(self)
             
             #path = "/Users/argon/Prog/Maprender/" + mapName + ".xml"
             
@@ -177,7 +176,20 @@ class MaprenderAppDelegate(NSObject):
             layer.setMapXML_(self.buildXML(mapName,style_filename))
             layer.setName_("Mapnik: " + mapName)
             
+            #FIXME: This should probably be a feature of the layer but I don't want to put DB code in that class if it can be avoided
+            center = None
+            if self.mapView.center is None:
+                con = DBAPI.connect(**self.db_args)
+                try:
+                    cur = con.cursor()
+                    cur.execute("select ST_AsText(ST_centroid(transform(ST_SetSRID(ST_estimated_extent('%s','way'), Find_SRID('public','%s','way')),4326)))" % (mapName + "_point", mapName + "_point"))
+                    center = map(float, cur.fetchall()[0][0][6:-1].split())
+                finally:
+                    con.close()
+            
             self.mapView.setMapLayer_(layer)
+            if center is not None:
+                self.mapView.setCenter_(center)
             
             self.mapName = mapName
             self.searchWindowDelegate.db_args = self.db_args
@@ -195,9 +207,6 @@ class MaprenderAppDelegate(NSObject):
             xml = style_file.read()
         
         mapName = "Empty Globe"
-        
-        #self.mapWindowDelegate.setDBParams(self.db_args)
-        #self.mapWindowDelegate.loadMap_(mapName)
         
         from TiledMapnikLayer import TiledMapnikLayer
         
@@ -226,7 +235,8 @@ class MaprenderAppDelegate(NSObject):
         
         self.mapView.setCenter_([0, 0])
         #self.mapView.setZoom_(50000)
-        self.mapWindow.orderBack_(self)
+        #self.mapWindow.orderBack_(self)
+        self.mapWindow.orderFront_(self)
     
     @objc.IBAction
     def setMapStyle_(self, style_filename):

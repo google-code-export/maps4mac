@@ -102,7 +102,8 @@ class GenericDataLayer(Layer.Layer):
         
         # FIXME: Test rect
         
-        # FIXME: Cache projections
+        # FIXME: Need to monitor changes 
+        
         if not self.cache:
             self.cache = dict()
             self.cache["proj"] = None
@@ -110,34 +111,41 @@ class GenericDataLayer(Layer.Layer):
         
         if self.cache["proj"] != proj or self.cache["zoom"] != zoom:
             self.cache = dict()
-            self.cache["proj"] = None
-            self.cache["zoom"] = None
+            self.cache["proj"] = proj
+            self.cache["zoom"] = zoom
             
             
             for ds in self.datasets:
-                #FIXME: points...
+                self.cache["points"] = []
+                for point in ds.points:
+                    point = proj.forward(mapnik.Coord(point.x, point.y))
+                    self.cache["points"].append(point)
             
                 self.cache["tracks"] = []
                 for track in ds.tracks:
                     path = NSBezierPath.alloc().init()
-                    path.setLineWidth_(5.0)
+                    #path.setLineWidth_(5.0)
                     path.setLineCapStyle_(NSRoundLineCapStyle)
                     path.setLineJoinStyle_(NSRoundLineJoinStyle)
                     
+                    lastloc = None
                     if track:
                         point = track[0]
                         loc = proj.forward(mapnik.Coord(point.x, point.y))
-                        loc = loc - origin
-                        loc = loc / zoom
                         loc = NSPoint(loc.x,loc.y)
                         
                         path.moveToPoint_(loc)
+                        path.lineToPoint_(loc)
+                        lastloc = loc
                 
-                    for point in track:
+                    total = 0
+                    for point in track[1:]:
                         loc = proj.forward(mapnik.Coord(point.x, point.y))
-                        loc = loc - origin
-                        loc = loc / zoom
-                        path.lineToPoint_(NSPoint(loc.x,loc.y))
+                        loc = NSPoint(loc.x,loc.y)
+                        if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
+                            # only include the point if it will move the line at least 1 zoomed pixel
+                            path.lineToPoint_(loc)
+                            lastloc = loc
             
                     self.cache["tracks"].append(path)
         
@@ -146,8 +154,9 @@ class GenericDataLayer(Layer.Layer):
             icon_hotspot = ds.icon_hotspot
             font_height  = ds.text_format[NSFontAttributeName]
             
-            for point in ds.points:
-                loc = proj.forward(mapnik.Coord(point.x, point.y))
+            for point,loc in zip(ds.points, self.cache["points"]):
+                #loc = proj.forward(mapnik.Coord(point.x, point.y))
+                # The cache only contains the location
                 loc = loc - origin
                 loc = loc / zoom
                 
@@ -159,10 +168,18 @@ class GenericDataLayer(Layer.Layer):
                     y_shift = -(string_size.height / 2)
                     NSString.drawAtPoint_withAttributes_(name, NSPoint(loc.x + x_shift, loc.y + y_shift), ds.text_format)
             
+            # Translate the origin for cached paths
+            trans = NSAffineTransform.alloc().init()
+            trans.scaleBy_(1.0 / zoom)
+            trans.translateXBy_yBy_(-origin.x, -origin.y)
+            trans.concat()
             for path in self.cache["tracks"]:
                 color = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.6)
                 color.setStroke()
+                path.setLineWidth_(5.0 * zoom)
                 path.stroke()
+            trans.invert()
+            trans.concat()
     
     def setName_(self, name):
         self.name = name

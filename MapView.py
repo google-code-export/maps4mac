@@ -30,7 +30,8 @@ class MapView(NSView):
             return self
         
         self.layers = []
-        self.zoom = 25
+        self.zoom = None
+        self.center = None
         
         self.centerDot = False
         self.gpsFix = None
@@ -47,63 +48,58 @@ class MapView(NSView):
     def isOpaque(self):
         return True
     
-#    def acceptsFirstResponder(self):
-#        return True
+    def acceptsFirstResponder(self):
+        return True
         
     def frameChanged(self):
         size = self.bounds().size
     
     def scrollWheel_(self, event):
-        shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
-        shift = self.projection.inverse(shift)
-        
-        self.center = self.center + shift
-        self.centerLonLat = self.projection.forward(self.center)
-        
-        #for layer in self.layers:
-        #    layer.setCenter_([self.center.x,self.center.y])
+        if self.layers:
+            # Don't try to scroll if there's nothing there
+            shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
+            shift = self.projection.inverse(shift)
+            
+            self.center = self.center + shift
+            self.centerLonLat = self.projection.forward(self.center)
         
         self.setNeedsDisplay_(True)
                     
     def swipeWithEvent_(self, event):
-        #shift = mapnik.Coord((-100 * self.zoom) * event.deltaX(), (100 * self.zoom) * event.deltaY())
-        #shift = self.projection.inverse(shift)
-        
-        #self.center = self.center + shift
-        #self.centerLonLat = self.projection.forward(self.center)
-        
-        #for layer in self.layers:
-        #    layer.setCenter_([self.center.x,self.center.y])
-        
-        if event.deltaY() > 0:
-            if self.zoom >= defaultZooms[-1]:
-                self.zoom = int(self.zoom * 2)
-            else:
-                zoomIndex = 0
-                while defaultZooms[zoomIndex] <= self.zoom:
-                    zoomIndex += 1
-                self.zoom = defaultZooms[zoomIndex]
-                
-        elif event.deltaY() < 0:
-            if int(self.zoom / 2) >= defaultZooms[-1]:
-                self.zoom = int(self.zoom / 2)
-            else:
-                zoomIndex = len(defaultZooms) - 1
-                while defaultZooms[zoomIndex] >= self.zoom and zoomIndex > 0:
-                    zoomIndex -= 1
-                self.zoom = defaultZooms[zoomIndex]
-        
-        self.setNeedsDisplay_(True)
+        if self.layers:
+            # Don't try to zoom if there's nothing there
+            if event.deltaY() > 0:
+                if self.zoom >= defaultZooms[-1]:
+                    self.zoom = int(self.zoom * 2)
+                else:
+                    zoomIndex = 0
+                    while defaultZooms[zoomIndex] <= self.zoom:
+                        zoomIndex += 1
+                    self.zoom = defaultZooms[zoomIndex]
+                    
+            elif event.deltaY() < 0:
+                if int(self.zoom / 2) >= defaultZooms[-1]:
+                    self.zoom = int(self.zoom / 2)
+                else:
+                    zoomIndex = len(defaultZooms) - 1
+                    while defaultZooms[zoomIndex] >= self.zoom and zoomIndex > 0:
+                        zoomIndex -= 1
+                    self.zoom = defaultZooms[zoomIndex]
+            
+            self.setNeedsDisplay_(True)
 
     def drawRect_(self, rect):
         size = self.bounds().size
         
+        NSColor.darkGrayColor().setFill()
+        NSRectFill(rect)
+        
+        if not self.projection or not self.center:
+            return
+        
         prj_center = self.projection.forward(self.center)
         prj_shift  = mapnik.Coord(rect.origin[0] - (size[0] / 2) * self.zoom, rect.origin[1] - (size[1] / 2) * self.zoom)
         prj_origin = prj_center + prj_shift
-    
-        NSColor.darkGrayColor().setFill()
-        NSRectFill(rect)
         
         for layer in self.layers:
             layer.drawRect_WithProjection_Origin_Zoom_(rect, self.projection, prj_origin, self.zoom)
@@ -157,14 +153,21 @@ class MapView(NSView):
         #layer.setZoom_(self.zoom)
         layer.setView_(self)
         
+        # Get a default center if we have none, otherwise stay where the last map was centered
+        #FIXME: Get the center from the map layer
+        if self.center is None:
+            self.setCenter_([0,0])
+        if self.zoom is None:
+            self.zoom = 25
+        
         self.willChangeValueForKey_("layers")
         if self.layers:
             self.layers[0].layerDeleted()
             self.layers[0] = layer
         else:
             self.layers = [layer]
-        
         self.didChangeValueForKey_("layers")
+        
         self.setNeedsDisplay_(True)
     
     def addLayer_(self, layer):

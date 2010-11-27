@@ -34,3 +34,6 @@ class Layer(NSObject):
     def layerDeleted(self):
         """They layer has been deleted and should clean up"""
         return True
+        
+    def setView_(self, view):
+        self.view = view

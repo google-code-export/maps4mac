@@ -20,3 +20,7 @@ class MapLayer(Layer.Layer):
         self.projectionString = None
         
         return self
+    
+    def getDefaultCenter(self):
+        """Return a default center point as [lat,lon]"""
+        return [0.0,0.0]
