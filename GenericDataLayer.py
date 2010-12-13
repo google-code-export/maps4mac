@@ -16,6 +16,8 @@ class GenericDataPoint(NSObject):
     x = objc.ivar()
     y = objc.ivar()
     name = objc.ivar()
+    icon = objc.ivar()
+    font = objc.ivar()
     #FIXME: This doesn't belong on the point
     outline = objc.ivar()
     
@@ -27,6 +29,8 @@ class GenericDataPoint(NSObject):
         x = 0.0
         y = 0.0
         name = None
+        icon = None
+        font = None
         
         return self
     
@@ -47,6 +51,27 @@ class GenericDataPoint(NSObject):
         p.name = None
         
         return p
+
+class GenericDataLayerIcon(NSObject):
+    icon = objc.ivar() # NSImage used to represent the dataset
+    icon_hotspot = objc.ivar() # Where to center the image
+    
+    @classmethod
+    def initWithFile_(cls, path):
+        self = cls.alloc().init()
+        self.icon = NSImage.alloc().initByReferencingFile_(path)
+        size = self.icon.size()
+        self.icon_hotspot = NSPoint(size.width / 2, size.height / 2)
+        
+        return self
+    
+    @classmethod
+    def initWithFile_Hotspot_(cls, path, hotspot):
+        self = cls.alloc().init()
+        self.icon = NSImage.alloc().initByReferencingFile_(path)
+        self.icon_hotspot = hotspot
+        
+        return self
 
 class GenericDataset(NSObject):
     icon = objc.ivar() # NSImage used to represent the dataset
@@ -77,18 +102,42 @@ class GenericDataset(NSObject):
 class GenericDataLayer(Layer.Layer):
     datasets = objc.ivar()
     cache    = objc.ivar()
+    default_icon = objc.ivar()
+    default_text_format = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
             return None
         
-        self.datasets = list()
+        self.datasets = [GenericDataset.alloc().init()]
         self.name = "Untitled"
         self.cache = None
         self.outline = None
         
+        self.default_icon = GenericDataLayerIcon.initWithFile_(NSBundle.mainBundle().pathForResource_ofType_("target0", "png"))
+        self.default_text_format = { 
+            NSFontAttributeName : NSFont.fontWithName_size_("Andale Mono", 10.0),
+            NSForegroundColorAttributeName : NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 1.0),
+        }
+        
         return self
+    
+    def addPoint_(self, p):
+        self.datasets[0].points.append(p)
+    
+    def addPointWithX_Y_Name_(self, x, y, name):
+        if name is not None:
+            point = GenericDataPoint.GenericDataPointWithX_Y_Name_(x,y,name)
+        else:
+            point = GenericDataPoint.GenericDataPointWithX_Y_(x,y)
+        self.datasets[0].points.append(point)
+        if not self.outline:
+            self.outline = list()
+        self.outline.append(point)
+    
+    def addTrack_(self, t):
+        self.datasets[0].tracks.append(t)
     
     #FIXME: Call this automaticaly
     def updateOutline(self):

@@ -21,7 +21,8 @@ class StyleMenuDelegate(NSObject):
             return None
         
         items = None
-    
+        return self
+        
     def menuNeedsUpdate_(self, menu):
         if not self.items:
             kLocalDomain = -32765
@@ -42,7 +43,7 @@ class StyleMenuDelegate(NSObject):
             self.items = list()
             
             for path_prefix in path_prefixs:
-                #print "Looking for styles:", path_prefix
+                print "Looking for styles:", path_prefix
                 
                 files = glob.glob(path_prefix + "*.template")
                 

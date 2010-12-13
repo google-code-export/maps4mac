@@ -63,7 +63,7 @@ class MapnikRenderThread(NSObject):
             if tile:
                 self._renderTile(tile)
         
-        #pool.release()
+        pool.release()
     
     def _renderTile(self, tile):
         origin = tile[0]

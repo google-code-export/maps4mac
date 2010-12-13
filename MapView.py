@@ -16,6 +16,7 @@ defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
 class MapView(NSView):
     layers = objc.ivar()
+    #FIXME: The meanings of center and centerLonLat are inverted!!!
     center = objc.ivar()
     centerLonLat = objc.ivar()
     zoom = objc.ivar()

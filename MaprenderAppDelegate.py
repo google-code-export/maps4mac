@@ -11,7 +11,7 @@ from AppKit import *
 
 import pgdb as DBAPI
 import loaddb
-import os.path
+import os.path, os
 
 class MaprenderAppDelegate(NSObject):
     dbListSource = objc.IBOutlet()
@@ -33,6 +33,8 @@ class MaprenderAppDelegate(NSObject):
     mapName = objc.ivar()
     
     gpsdConnection = objc.ivar()
+    
+    downloadWindowDelegate = objc.IBOutlet()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -71,6 +73,32 @@ class MaprenderAppDelegate(NSObject):
         self.gpsdConnection = GPSdConnection.alloc().init()
         self.gpsdConnection.connect()
         self.gpsdConnection.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
+        
+        self.fetchMapnikFiles()
+        
+    def fetchMapnikFiles(self):
+        urls = [
+        ("http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/10m-populated-places.zip",
+            "10m-populated-places.zip"),
+        ("http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/110m-admin-0-boundary-lines.zip",
+            "110m-admin-0-boundary-lines.zip"),
+        ("http://tile.openstreetmap.org/world_boundaries-spherical.tgz",
+            "world_boundaries-spherical.tgz"),
+        ("http://tile.openstreetmap.org/processed_p.tar.bz2",
+            "processed_p.tar.bz2"),
+        ("http://tile.openstreetmap.org/shoreline_300.tar.bz2",
+            "shoreline_300.tar.bz2"),
+        ]
+
+        save_path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/mapnik_osm/"        
+        
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        
+        for url,file in urls:
+            path = save_path + file
+            if not os.path.exists(path):
+                self.downloadWindowDelegate.queueURL_toPath_(url, path)
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if keyPath == "fix":

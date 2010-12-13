@@ -77,7 +77,7 @@ select name, ST_AsText(ST_Transform(point, 4269)), type from results order by di
                     print "Bad geometry for \"%s\": %s" % (row[0], loc)
                     break
                 loc = map(float, loc)
-                points.append(NSPoint(loc[0],loc[1]))
+                points.append((loc[0],loc[1],row[0]))
                 loc = "%.4f,%.4f" % (loc[1],loc[0])
                 self.results.append({"type":row[2], "name":row[0], "loc":loc})
         
@@ -97,11 +97,13 @@ select name, ST_AsText(ST_Transform(point, 4269)), type from results order by di
         
         
         if points:
-            dataset = GenericDataset.alloc().init()
-            layer   = GenericDataLayer.alloc().init()
+            layer = GenericDataLayer.alloc().init()
             for p in points:
-                dataset.points.append(GenericDataPoint.GenericDataPointWithX_Y_(p.x, p.y))
-            layer.datasets.append(dataset)
+                p_name = p[2]
+                if p_name == "":
+                    p_name = None
+                layer.addPointWithX_Y_Name_(p[0],p[1],p_name)
+                #dataset.points.append(GenericDataPoint.GenericDataPointWithX_Y_(p.x, p.y))
             layer.setName_("Search Results")
             self.mapView.addLayer_(layer)
         

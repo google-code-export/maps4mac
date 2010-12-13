@@ -36,4 +36,8 @@ class Layer(NSObject):
         return True
         
     def setView_(self, view):
+        """Set the view the layer is displayed in so it can be notified when the layer changes"""
         self.view = view
+    
+    def extent(self):
+        return None

@@ -24,6 +24,7 @@ import InspectWindowDelegate
 import StyleMenuDelegate
 import LayersOutlineDataSource
 import LayersWindowDelegate
+import DownloadWindowDelegate
 
 # pass control to AppKit
 AppHelper.runEventLoop()

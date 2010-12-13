@@ -57,8 +57,8 @@ class MapWindowDelegate(NSObject):
         
     @objc.IBAction
     def copyPosition_(self, sender):
-        lon, lat = self.mapView.centerLonLat
-        posString = "%f %f" % (lat, lon)
+        centerCoord = self.mapView.center
+        posString = "%f, %f" % (centerCoord.y, centerCoord.x)
     
         pasteBoard = NSPasteboard.generalPasteboard()
         pasteBoard.declareTypes_owner_(NSArray.arrayWithObjects_(NSStringPboardType), None)
