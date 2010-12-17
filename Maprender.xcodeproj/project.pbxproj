@@ -39,6 +39,7 @@
 		EDB2850911832A93007D021A /* MapWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2850811832A93007D021A /* MapWindowDelegate.py */; };
 		EDB3B0E512A0ADDE00DF65CD /* DownloadWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB3B0E412A0ADDE00DF65CD /* DownloadWindowDelegate.py */; };
 		EDB405CC1194FBFF00E82D01 /* SearchWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB405CB1194FBFF00E82D01 /* SearchWindowDelegate.py */; };
+		EDC3E3EF12BB67850044102F /* osm2pgsql_SearchProvider.py in Resources */ = {isa = PBXBuildFile; fileRef = EDC3E3EE12BB67850044102F /* osm2pgsql_SearchProvider.py */; };
 		EDCB8F621260145100280C01 /* Logger.py in Resources */ = {isa = PBXBuildFile; fileRef = EDCB8F611260145100280C01 /* Logger.py */; };
 		EDCC2827124DA22200C835C7 /* styles in Copy Additional Resources */ = {isa = PBXBuildFile; fileRef = EDCC2824124DA22200C835C7 /* styles */; };
 		EDCF0341124486570038C74E /* symbols in Resources */ = {isa = PBXBuildFile; fileRef = EDCF0272124486570038C74E /* symbols */; };
@@ -110,6 +111,7 @@
 		EDB2850811832A93007D021A /* MapWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapWindowDelegate.py; sourceTree = "<group>"; };
 		EDB3B0E412A0ADDE00DF65CD /* DownloadWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = DownloadWindowDelegate.py; sourceTree = "<group>"; };
 		EDB405CB1194FBFF00E82D01 /* SearchWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SearchWindowDelegate.py; sourceTree = "<group>"; };
+		EDC3E3EE12BB67850044102F /* osm2pgsql_SearchProvider.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2pgsql_SearchProvider.py; sourceTree = "<group>"; };
 		EDCB8F611260145100280C01 /* Logger.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Logger.py; sourceTree = "<group>"; };
 		EDCC2824124DA22200C835C7 /* styles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = styles; sourceTree = "<group>"; };
 		EDCF0272124486570038C74E /* symbols */ = {isa = PBXFileReference; lastKnownFileType = folder; path = symbols; sourceTree = "<group>"; };
@@ -265,6 +267,7 @@
 			children = (
 				ED7D85F912B84634007A33F8 /* osm2pgsql_MapnikLayer.py */,
 				ED1EB58612BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py */,
+				EDC3E3EE12BB67850044102F /* osm2pgsql_SearchProvider.py */,
 			);
 			name = osm2pgsql_MapnikLayer;
 			sourceTree = "<group>";
@@ -356,6 +359,7 @@
 				ED7D85FA12B84634007A33F8 /* osm2pgsql_MapnikLayer.py in Resources */,
 				ED1EB56812BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib in Resources */,
 				ED1EB58712BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py in Resources */,
+				EDC3E3EF12BB67850044102F /* osm2pgsql_SearchProvider.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

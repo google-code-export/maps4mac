@@ -107,13 +107,20 @@ class MaprenderAppDelegate(NSObject):
         
         self.fetchMapnikFiles()
     
-        import osm2pgsql_MapnikLayer_OpenDialogDelegate
-        self.openDelegate = osm2pgsql_MapnikLayer_OpenDialogDelegate.osm2pgsql_MapnikLayer_OpenDialogDelegate.alloc().init()
-        self.openDelegate.appDelegate = self
-        
-        NSBundle.loadNibNamed_owner_("osm2pgsql_MapnikLayer", self.openDelegate)
-        self.openDelegate.setDBParams_(db_args)
-        self.openDelegate.window.makeKeyAndOrderFront_(self)
+        try:
+            import osm2pgsql_MapnikLayer_OpenDialogDelegate
+            self.openDelegate = osm2pgsql_MapnikLayer_OpenDialogDelegate.osm2pgsql_MapnikLayer_OpenDialogDelegate.alloc().init()
+            self.openDelegate.appDelegate = self
+            
+            NSBundle.loadNibNamed_owner_("osm2pgsql_MapnikLayer", self.openDelegate)
+            self.openDelegate.setDBParams_(db_args)
+            self.openDelegate.window.makeKeyAndOrderFront_(self)
+        except ImportError as error:
+            self.openDelegate.window.orderOut_(self)
+            title = "Import failed"
+            msg = "Couldn't find the modules needed for the osm2pgsql layer.\nYou probably need to install PyGreSQL.\n\n%s" % str(error)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+            alert.runModal()
     
     def loadosm2pgsqlWithName_dbArgs_(self, mapName, db_args):
         path_prefix = NSBundle.mainBundle().resourcePath() + "/"

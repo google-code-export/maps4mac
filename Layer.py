@@ -12,6 +12,7 @@ class Layer(NSObject):
     outline  = objc.ivar()
     name     = objc.ivar()
     description = objc.ivar()
+    view     = objc.ivar()
     
     def init(self):
         self = super(Layer, self).init()
@@ -39,5 +40,10 @@ class Layer(NSObject):
         """Set the view the layer is displayed in so it can be notified when the layer changes"""
         self.view = view
     
-    def extent(self):
+    def getExtent(self):
+        """Return the layers extent [left, top, right, bottom]"""
+        return None
+    
+    def getSearchProvider(self):
+        """Return a search provider if this layer can be searched, otherwise None"""
         return None

@@ -65,7 +65,7 @@ class TiledMapnikLayer(MapLayer.MapLayer):
                 self.zoom  = int(zoom)
                 #print "Outer Cancel"
                 self.render_thread.cancelTiles()
-        
+            
             c0 = origin
             c1 = origin + mapnik.Coord(rect.size[0] * zoom, rect.size[1] * zoom)
             

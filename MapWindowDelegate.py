@@ -29,7 +29,6 @@ class MapWindowDelegate(NSObject):
         return self
     
     def awakeFromNib(self):
-        self.db_args = None
         self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLonLat", 0, None)
         self.mapView.addObserver_forKeyPath_options_context_(self, u"zoom", 0, None)
         self.mapWindow.makeFirstResponder_(self.mapView)

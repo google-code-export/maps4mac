@@ -5,8 +5,6 @@
 #  Created by Daniel Sabo on 5/7/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.
 #
-import pgdb as DBAPI
-import pg
 
 from Foundation import *
 from GenericDataLayer import GenericDataLayer, GenericDataset, GenericDataPoint
@@ -15,103 +13,81 @@ class SearchWindowDelegate(NSObject):
     searchField = objc.IBOutlet()
     resultsView = objc.IBOutlet()
     mapView     = objc.IBOutlet()
+    ruleEditor  = objc.IBOutlet()
     
-    db_args = objc.ivar()
-    mapName = objc.ivar()
     results = objc.ivar()
     
+    search_providers = objc.ivar()
+    searchable = objc.ivar()
+        
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
             return None
         
         self.results = list()
+        self.searchable = False
         
         return self
     
     def awakeFromNib(self):
         self.resultsView.setTarget_(self)
         self.resultsView.setDoubleAction_("doubleClicked:")
+        self.mapView.addObserver_forKeyPath_options_context_(self, u"layers", 0, None)
+
+        
+    def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
+        if keyPath == "layers":
+            self.search_providers = dict()
+            for layer in self.mapView.layers:
+                provider = layer.getSearchProvider()
+                if provider:
+                    name = layer.name
+                    suffix = 1
+                    while name in self.search_providers.keys():
+                        name = layer.name + " (%d)" % suffix
+                        suffix += 1
+                    self.search_providers[name] = provider
+            
+            print "Search: Layers did change, %d providers" % len(self.search_providers)
+            
+            if self.search_providers:
+                self.searchable = True
+            else:
+                self.searchable = False
 
     @objc.IBAction
     def search_(self, sender):
-        if self.mapName is None:
+        if not  self.search_providers:
             return
-        
         commands = self.searchField.stringValue()
-        host = self.db_args["host"]
-        if "port" in self.db_args:
-            host += ":" + str(self.db_args["port"])
-        con = DBAPI.connect(user=self.db_args["user"],
-                            password=self.db_args["password"],
-                            host=host,
-                            database=self.db_args["database"])
-        
-        self.results = list()
-        
-        points = list()
-        
-        def doQuery(commands):
-         
-            cur = con.cursor()
-            #TODO: Keep lines instead of centroid
-            #sql = "select name, ST_AsText(ST_Transform(%s, 4269)) from %s where %s" % (transform[tableSuffix], table, commands)
-            sql = \
-"""with unsorted_results as (
-(select name, way as point, way, 'point' as type from %(mapName)s_point where %(query)s)
-union
-(select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line where %(query)s)
-union
-(select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
-), results as (
-select name, point, ST_Distance_Sphere(ST_Transform(way, 4269), ST_GeomFromText('%(center)s', 4269)) as distance, type from unsorted_results
-)
-
-select name, ST_AsText(ST_Transform(point, 4269)), type from results order by distance
-""" % {"mapName":self.mapName, "query":commands, "center":"POINT(%f %f)" % (self.mapView.center.x, self.mapView.center.y)}
-            cur.execute(sql)
-            #print sql
-        
-            rows = cur.fetchall()
-            
-            for row in rows:
-                loc = row[1]
-                try:
-                    loc = loc.split("(")[1].split(")")[0].split(" ")
-                except IndexError as e:
-                    # This is a really horrid thing to ignore, but yet more bugs in the cloudmade extracts
-                    print "Bad geometry for \"%s\": %s" % (row[0], loc)
-                    break
-                loc = map(float, loc)
-                points.append((loc[0],loc[1],row[0]))
-                loc = "%.4f,%.4f" % (loc[1],loc[0])
-                self.results.append({"type":row[2], "name":row[0], "loc":loc})
-        
+        center   = NSPoint(self.mapView.center.x, self.mapView.center.y)
+    
+        results = None
+        self.resultsView.setToolTip_(None)
+        #FIXME: For now there's only one possible provider, but there needs to be a list to pick from in the search window
         try:
-            doQuery(commands)
-        except pg.DatabaseError:
-            try:
-                con.rollback()
-                #doQuery("name = '%s'" % commands.replace("'","\\'"))
-                # This version takes advantage of vector indexes if available
-                doQuery("to_tsvector('simple',name) @@ to_tsquery('simple','''%s''')" % commands.replace("'","\\'"))
-            except pg.DatabaseError as error:
-                print error
-                self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
-        finally:
-            con.close()
+            results = self.search_providers.values()[0].doSearch(["?",commands,center])
+        except Exception as error:
+            self.resultsView.setToolTip_(str(error))
         
-        
-        if points:
+        if results is not None:
+            self.results = list()
             layer = GenericDataLayer.alloc().init()
-            for p in points:
-                p_name = p[2]
-                if p_name == "":
-                    p_name = None
-                layer.addPointWithX_Y_Name_(p[0],p[1],p_name)
-                #dataset.points.append(GenericDataPoint.GenericDataPointWithX_Y_(p.x, p.y))
+            for result in results:
+                name = result["name"]
+                if name == "":
+                    name = None
+                layer.addPointWithX_Y_Name_(result["loc"][0],result["loc"][1],name)
+                
+                result["loc"] = "%f, %f" % (result["loc"][1],result["loc"][0])
+                self.results.append(result)
+            
             layer.setName_("Search Results")
             self.mapView.addLayer_(layer)
+        else:
+            self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
+        
         
         if self.resultsView is not None:
             self.resultsView.reloadData()

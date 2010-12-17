@@ -9,11 +9,13 @@
 from Foundation import *
 
 import TiledMapnikLayer
+import osm2pgsql_SearchProvider
 
 import pgdb as DBAPI
 
 class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
     mapName = objc.ivar()
+    mapExtent = objc.ivar()
     db_args = objc.ivar()
 
     def init(self):
@@ -73,6 +75,8 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         # Not quite but close to the whole world
         extent = [projection.forward(mapnik.Coord(180.0,89.0)),projection.forward(mapnik.Coord(-180.0,-89.0))]
         
+        self.mapExtent = (extent[0].x,extent[0].y,extent[1].x,extent[1].y)
+        
         datasource_parameters = {
         "password":self.db_args["password"],
         #"host":self.db_args["host"],
@@ -82,7 +86,7 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         "dbname":self.db_args["database"],
         "estimate_extent":"false",
         #"extent":"19926188.852,30240971.9584,-19926188.852,-30240971.9584",
-        "extent":"%f,%f,%f,%f" % (extent[0].x,extent[0].y,extent[1].x,extent[1].y),
+        "extent":"%f,%f,%f,%f" % self.mapExtent,
         }
 
         parameters["datasource_settings"] = \
@@ -103,6 +107,11 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         xml = xml % parameters
         
         return str(xml)
+    
+    def getExtent(self):
+        if not self.mapExtent:
+            return super(osm2pgsql_MapnikLayer, self).getExtent()
+        return self.mapExtent
     
     def getDefaultCenter(self):
         """Return a default center point as [lat,lon]"""
@@ -165,3 +174,5 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             con.close()
         return zoom
     
+    def getSearchProvider(self):
+        return osm2pgsql_SearchProvider.osm2pgsql_SearchProvider.alloc().initWithLayer_(self)

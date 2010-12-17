@@ -61,7 +61,14 @@ class MapView(NSView):
             shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
             shift = self.projection.inverse(shift)
             
-            self.center = self.center + shift
+            newCenter = self.center + shift
+            
+            newCenter.x = max(newCenter.x, -179.999)
+            newCenter.x = min(newCenter.x, 179.999)
+            newCenter.y = max(newCenter.y, -89.999)
+            newCenter.y = min(newCenter.y, 89.999)
+            
+            self.center = newCenter
             self.centerLonLat = self.projection.forward(self.center)
         
         self.setNeedsDisplay_(True)
@@ -215,6 +222,10 @@ class MapView(NSView):
         return self.layers
     
     def setCenter_(self, point):
+        point[0] = max(point[0], -179.999)
+        point[0] = min(point[0], 179.999)
+        point[1] = max(point[1], -89.999)
+        point[1] = min(point[1], 89.999)
         changed = (self.center != mapnik.Coord(point[0],point[1]))
     
         self.center = mapnik.Coord(point[0],point[1])
