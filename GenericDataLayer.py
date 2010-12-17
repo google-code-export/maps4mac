@@ -138,6 +138,7 @@ class GenericDataLayer(Layer.Layer):
     
     def addTrack_(self, t):
         self.datasets[0].tracks.append(t)
+        self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(t[0].x,t[0].y,"<Track>"))
     
     #FIXME: Call this automaticaly
     def updateOutline(self):
@@ -145,6 +146,8 @@ class GenericDataLayer(Layer.Layer):
         for ds in self.datasets:
             for point in ds.points:
                 self.outline.append(point)
+            for track in ds.tracks:
+                self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(track[0].x,track[0].y,"<Track>"))
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""

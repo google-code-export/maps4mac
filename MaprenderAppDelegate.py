@@ -53,14 +53,16 @@ class MaprenderAppDelegate(NSObject):
         self.gpsdConnection.connect()
         self.gpsdConnection.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
-        defaultWindow = defaults.stringForKey_("defaultWindow")
-        #print defaultWindow
-        if not defaultWindow or defaultWindow == "Empty Globe":
-            self.loadEmptyGlobe_(self)
-        elif defaultWindow == "Open osm2pgsql Database":
-            self.openosm2pgsql_(self)
-        else:
-            print "Warning: Unknown default window:", defaultWindow
+        if self.mapName is None:
+            # There may already be a map loaded if we were asked to launch a file
+            defaultWindow = defaults.stringForKey_("defaultWindow")
+            #print defaultWindow
+            if not defaultWindow or defaultWindow == "Empty Globe":
+                self.loadEmptyGlobe_(self)
+            elif defaultWindow == "Open osm2pgsql Database":
+                self.openosm2pgsql_(self)
+            else:
+                print "Warning: Unknown default window:", defaultWindow
         
     def fetchMapnikFiles(self):
         urls = [
@@ -231,7 +233,7 @@ class MaprenderAppDelegate(NSObject):
     
     def application_openFile_(self, app, filename):
         if self.mapName is None:
-            self.loadEmptyGlobe()
+            self.loadEmptyGlobe_(self)
         
         self.loadFile_(filename)
     
