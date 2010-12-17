@@ -41,11 +41,10 @@ class MapnikRenderThread(NSObject):
         self.queue = list()
         self.work_sem = threading.Semaphore(0)
         self.queue_lock = threading.Lock()
-        self.map = mapnik.Map(256,256)
+        self.map = None
         self.prj = None
         self.stop_flag = False
         
-        self.map.buffer_size = 128
         
         return self
     
@@ -109,11 +108,17 @@ class MapnikRenderThread(NSObject):
 
     def loadMapFile_(self, xmlPath):
         self.cancelTiles()
+        
+        self.map = mapnik.Map(256,256)
+        self.map.buffer_size = 128
         mapnik.load_map(self.map, xmlPath)
         self.prj = mapnik.Projection(self.map.srs)
     
     def loadMapString_(self, xml):
         self.cancelTiles()
+        
+        self.map = mapnik.Map(256,256)
+        self.map.buffer_size = 128
         mapnik.load_map_from_string(self.map, xml)
         self.prj = mapnik.Projection(self.map.srs)
     

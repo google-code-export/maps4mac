@@ -39,7 +39,13 @@ class SearchWindowDelegate(NSObject):
             return
         
         commands = self.searchField.stringValue()
-        con = DBAPI.connect(**self.db_args)
+        host = self.db_args["host"]
+        if "port" in self.db_args:
+            host += ":" + str(self.db_args["port"])
+        con = DBAPI.connect(user=self.db_args["user"],
+                            password=self.db_args["password"],
+                            host=host,
+                            database=self.db_args["database"])
         
         self.results = list()
         

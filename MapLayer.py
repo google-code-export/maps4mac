@@ -24,3 +24,7 @@ class MapLayer(Layer.Layer):
     def getDefaultCenter(self):
         """Return a default center point as [lat,lon]"""
         return [0.0,0.0]
+    
+    def getDefaultZoom(self):
+        """Return a default zoom (pixels per projected unit)"""
+        return 25

@@ -23,9 +23,12 @@
 		ED14E58B11A3126600C8472D /* SBJsonParser.m in Sources */ = {isa = PBXBuildFile; fileRef = ED14E58411A3126600C8472D /* SBJsonParser.m */; };
 		ED14E58C11A3126600C8472D /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = ED14E58611A3126600C8472D /* SBJsonWriter.m */; };
 		ED14E5D911A32AF600C8472D /* InspectWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = ED14E5D811A32AF600C8472D /* InspectWindowDelegate.py */; };
+		ED1EB56812BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib in Resources */ = {isa = PBXBuildFile; fileRef = ED1EB56712BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib */; };
+		ED1EB58712BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = ED1EB58612BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py */; };
 		ED410A4A129F880900E44DDB /* HttpTileLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = ED410A49129F880900E44DDB /* HttpTileLayer.py */; };
 		ED4714641248830B00894EBC /* StyleMenuDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = ED4714631248830B00894EBC /* StyleMenuDelegate.py */; };
 		ED5E084C1190BDE200E70DA7 /* MapnikRenderThread.py in Resources */ = {isa = PBXBuildFile; fileRef = ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */; };
+		ED7D85FA12B84634007A33F8 /* osm2pgsql_MapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = ED7D85F912B84634007A33F8 /* osm2pgsql_MapnikLayer.py */; };
 		ED86B29211989C48007D969F /* GenericDataLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = ED86B29111989C48007D969F /* GenericDataLayer.py */; };
 		ED86B2991198FFE6007D969F /* target0.png in Resources */ = {isa = PBXBuildFile; fileRef = ED86B2981198FFE6007D969F /* target0.png */; };
 		ED9891FE117F0E78008A597A /* loaddb.py in Resources */ = {isa = PBXBuildFile; fileRef = ED9891FD117F0E78008A597A /* loaddb.py */; };
@@ -90,9 +93,12 @@
 		ED14E58511A3126600C8472D /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
 		ED14E58611A3126600C8472D /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
 		ED14E5D811A32AF600C8472D /* InspectWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = InspectWindowDelegate.py; sourceTree = "<group>"; };
+		ED1EB56712BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = osm2pgsql_MapnikLayer.xib; sourceTree = "<group>"; };
+		ED1EB58612BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2pgsql_MapnikLayer_OpenDialogDelegate.py; sourceTree = "<group>"; };
 		ED410A49129F880900E44DDB /* HttpTileLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = HttpTileLayer.py; sourceTree = "<group>"; };
 		ED4714631248830B00894EBC /* StyleMenuDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = StyleMenuDelegate.py; sourceTree = "<group>"; };
 		ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapnikRenderThread.py; sourceTree = "<group>"; };
+		ED7D85F912B84634007A33F8 /* osm2pgsql_MapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2pgsql_MapnikLayer.py; sourceTree = "<group>"; };
 		ED86B29111989C48007D969F /* GenericDataLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = GenericDataLayer.py; sourceTree = "<group>"; };
 		ED86B2981198FFE6007D969F /* target0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = target0.png; sourceTree = "<group>"; };
 		ED9891FD117F0E78008A597A /* loaddb.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = loaddb.py; sourceTree = "<group>"; };
@@ -131,6 +137,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				ED1EB58512BB245400EE5C76 /* osm2pgsql_MapnikLayer */,
 				ED03FF181293370100465563 /* MapLayer.py */,
 				ED03FF11129336C000465563 /* Layer.py */,
 				EDCB8F611260145100280C01 /* Logger.py */,
@@ -216,6 +223,7 @@
 				EDCF0272124486570038C74E /* symbols */,
 				ED86B2981198FFE6007D969F /* target0.png */,
 				77C8C1F70C07829500965286 /* MainMenu.xib */,
+				ED1EB56712BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 			);
@@ -251,6 +259,15 @@
 			name = JSON;
 			path = "../GPSd Monitor/JSON";
 			sourceTree = SOURCE_ROOT;
+		};
+		ED1EB58512BB245400EE5C76 /* osm2pgsql_MapnikLayer */ = {
+			isa = PBXGroup;
+			children = (
+				ED7D85F912B84634007A33F8 /* osm2pgsql_MapnikLayer.py */,
+				ED1EB58612BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py */,
+			);
+			name = osm2pgsql_MapnikLayer;
+			sourceTree = "<group>";
 		};
 		EDCC282D124DA27800C835C7 /* Additional Resources */ = {
 			isa = PBXGroup;
@@ -336,6 +353,9 @@
 				ED03FF191293370100465563 /* MapLayer.py in Resources */,
 				ED410A4A129F880900E44DDB /* HttpTileLayer.py in Resources */,
 				EDB3B0E512A0ADDE00DF65CD /* DownloadWindowDelegate.py in Resources */,
+				ED7D85FA12B84634007A33F8 /* osm2pgsql_MapnikLayer.py in Resources */,
+				ED1EB56812BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib in Resources */,
+				ED1EB58712BB249400EE5C76 /* osm2pgsql_MapnikLayer_OpenDialogDelegate.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

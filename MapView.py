@@ -245,4 +245,6 @@ class MapView(NSView):
         self.gpsFix = None
         self.setNeedsDisplay_(True)
     
+    def redrawMap(self):
+        self.setNeedsDisplay_(True)
     

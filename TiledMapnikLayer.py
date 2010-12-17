@@ -24,7 +24,7 @@ class TiledMapnikLayer(MapLayer.MapLayer):
     zoom = objc.ivar()
 
     def init(self):
-        self = super(self.__class__, self).init()
+        self = super(TiledMapnikLayer, self).init()
         if self is None:
             return None
         

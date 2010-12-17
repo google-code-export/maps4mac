@@ -9,18 +9,14 @@
 from Foundation import *
 from AppKit import *
 
-import pgdb as DBAPI
-import loaddb
 import os.path, os
 
 class MaprenderAppDelegate(NSObject):
-    dbListSource = objc.IBOutlet()
-    dbTableView  = objc.IBOutlet()
     mapView   = objc.IBOutlet()
     mapWindow = objc.IBOutlet()
     mapWindowDelegate = objc.IBOutlet()
     
-    selectDBWindow = objc.IBOutlet()
+    openOSM2PGSQLDelegate = objc.ivar()
     
     searchWindow = objc.IBOutlet()
     searchWindowDelegate = objc.IBOutlet()
@@ -50,31 +46,21 @@ class MaprenderAppDelegate(NSObject):
         #self.mapWindow.makeFirstResponder_(self.mapView)
         self.mapWindow.setAcceptsMouseMovedEvents_(True)
 
-    def applicationDidFinishLaunching_(self, sender):
+    def applicationDidFinishLaunching_(self, sender):    
         defaults = NSUserDefaults.standardUserDefaults()
-        
-        port = defaults.stringForKey_("db_portnumber")
-        host = defaults.stringForKey_("db_hostname")
-        if port:
-            host = host + ":" + port
-        
-        self.db_args = {
-            "host":defaults.stringForKey_("db_hostname"),
-            "user":defaults.stringForKey_("db_username"),
-            "database":defaults.stringForKey_("db_database"),
-            "password":defaults.stringForKey_("db_password")
-        }
-        
-        newList = loaddb.get_current_names(**self.db_args)
-        newList.sort()
-        self.dbList = newList
-        self.dbListSource.setList_(newList)
-        
+            
         self.gpsdConnection = GPSdConnection.alloc().init()
         self.gpsdConnection.connect()
         self.gpsdConnection.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
-        self.fetchMapnikFiles()
+        defaultWindow = defaults.stringForKey_("defaultWindow")
+        #print defaultWindow
+        if not defaultWindow or defaultWindow == "Empty Globe":
+            self.loadEmptyGlobe_(self)
+        elif defaultWindow == "Open osm2pgsql Database":
+            self.openosm2pgsql_(self)
+        else:
+            print "Warning: Unknown default window:", defaultWindow
         
     def fetchMapnikFiles(self):
         urls = [
@@ -108,126 +94,73 @@ class MaprenderAppDelegate(NSObject):
             #else:
             #    self.mapView.clearFix()
     
-    def buildXML(self, db_prefix, style_filename):
-        #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
+    @objc.IBAction
+    def openosm2pgsql_(self, sender):
+        defaults = NSUserDefaults.standardUserDefaults()
+        db_args = {
+            "host":defaults.stringForKey_("db_hostname"),
+            "user":defaults.stringForKey_("db_username"),
+            "port":defaults.stringForKey_("db_port"),
+            "database":defaults.stringForKey_("db_database"),
+            "password":defaults.stringForKey_("db_password")
+        }
+        
+        self.fetchMapnikFiles()
+    
+        import osm2pgsql_MapnikLayer_OpenDialogDelegate
+        self.openDelegate = osm2pgsql_MapnikLayer_OpenDialogDelegate.osm2pgsql_MapnikLayer_OpenDialogDelegate.alloc().init()
+        self.openDelegate.appDelegate = self
+        
+        NSBundle.loadNibNamed_owner_("osm2pgsql_MapnikLayer", self.openDelegate)
+        self.openDelegate.setDBParams_(db_args)
+        self.openDelegate.window.makeKeyAndOrderFront_(self)
+    
+    def loadosm2pgsqlWithName_dbArgs_(self, mapName, db_args):
         path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
-        #xml_file = open(path_prefix + "styles/osm_style.xml.template")
+        style_filename = path_prefix + "styles/osm_style.xml.template"
         
-        with open(style_filename) as style_file:
-            xml = style_file.read()
+        self.mapWindow.makeKeyAndOrderFront_(self)
         
-        con = DBAPI.connect(**self.db_args)
-        try:
-            cur = con.cursor()
-            cur.execute("select proj4text from spatial_ref_sys where srid=Find_SRID('public', '%s','way')" % (db_prefix + "_point"))
-            proj4 = cur.fetchall()[0][0]
-        finally:
-            con.close()
+        #path = "/Users/argon/Prog/Maprender/" + mapName + ".xml"
+        from osm2pgsql_MapnikLayer import osm2pgsql_MapnikLayer
+        layer = osm2pgsql_MapnikLayer.alloc().init()
+        layer.loadMap(db_args, mapName, style_filename, path_prefix)
+                    
+        if self.mapView.center is None:
+            self.mapView.setCenter_(layer.getDefaultCenter())
+            self.mapView.setZoom_(layer.getDefaultZoom())
+        self.mapView.setMapLayer_(layer)            
+        self.mapName = mapName
         
-        parameters = {
-        "symbols":path_prefix + "symbols/",
-        #"osm2pgsql_projection": "&srs900913;", #FIXME: Get from DB
-        "osm2pgsql_projection":proj4,
-        "world_boundaries":path_prefix + "world_boundaries/",
-        "prefix":db_prefix,
-        #"datasource_settings":,
-        }
+        self.searchWindowDelegate.db_args = db_args
+        self.searchWindowDelegate.mapName = mapName
         
-        defaults = NSUserDefaults.standardUserDefaults()
-        
-        host = defaults.stringForKey_("db_hostname")
-        port = defaults.stringForKey_("db_portnumber")
-        if not port:
-            port = 5432 #FIXME: Get rid of the magic number
-        user = defaults.stringForKey_("db_username")
-        database = defaults.stringForKey_("db_database")
-        password = defaults.stringForKey_("db_password")
-        
-        
-        import mapnik
-        #projection = mapnik.Projection(proj4)
-        epsg900913 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +units=m +k=1.0 +nadgrids=@null +no_defs"
-        projection = mapnik.Projection(epsg900913)
-        # Not quite but close to the whole world
-        extent = [projection.forward(mapnik.Coord(180.0,89.0)),projection.forward(mapnik.Coord(-180.0,-89.0))]
-        
-        datasource_parameters = {
-        "password":password,
-        "host":host,
-        "port":port,
-        "user":user,
-        "dbname":self.db_args["database"],
-        "estimate_extent":"false",
-        #"extent":"19926188.852,30240971.9584,-19926188.852,-30240971.9584",
-        "extent":"%f,%f,%f,%f" % (extent[0].x,extent[0].y,extent[1].x,extent[1].y),
-        }
+        #self.inspectWindowDelegate.setDBParams(db_args)
+        #self.inspectWindowDelegate.setMapName_(mapName)
 
-        parameters["datasource_settings"] = \
-        """
-        <Parameter name="type">postgis</Parameter>
-        <Parameter name="password">%(password)s</Parameter>
-        <Parameter name="host">%(host)s</Parameter>
-        <Parameter name="port">%(port)s</Parameter>
-        <Parameter name="user">%(user)s</Parameter>
-        <Parameter name="dbname">%(dbname)s</Parameter>
-        <!-- this should be 'false' if you are manually providing the 'extent' -->
-        <Parameter name="estimate_extent">%(estimate_extent)s</Parameter>
-        <!-- manually provided extent in epsg 900913 for whole globe -->
-        <!-- providing this speeds up Mapnik database queries -->
-        <Parameter name="extent">%(extent)s</Parameter>
-        """ % datasource_parameters
-        
-        xml = xml % parameters
-        
-        return str(xml)
-    
     @objc.IBAction
-    def loadMap_(self, sender):
-        row = self.dbTableView.selectedRow()
-        if self.dbList is not None and row != -1:
-            #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/"
-            path_prefix = NSBundle.mainBundle().resourcePath() + "/"
-            
-            style_filename = path_prefix + "styles/osm_style.xml.template"
-            
-            mapName = self.dbList[row]
-            
-            self.mapWindow.makeKeyAndOrderFront_(self)
-            
-            #path = "/Users/argon/Prog/Maprender/" + mapName + ".xml"
+    def openMapnikXML_(self, sender):
+        panel = NSOpenPanel.alloc().init()
+        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["xml"]):
+            filename = panel.filename()
             
             from TiledMapnikLayer import TiledMapnikLayer
-            
             layer = TiledMapnikLayer.alloc().init()
-            #layer.setMapXMLFile_(path)
-            layer.setMapXML_(self.buildXML(mapName,style_filename))
-            layer.setName_("Mapnik: " + mapName)
-            
-            #FIXME: This should probably be a feature of the layer but I don't want to put DB code in that class if it can be avoided
-            center = None
-            if self.mapView.center is None:
-                con = DBAPI.connect(**self.db_args)
-                try:
-                    cur = con.cursor()
-                    cur.execute("select ST_AsText(ST_centroid(transform(ST_SetSRID(ST_estimated_extent('%s','way'), Find_SRID('public','%s','way')),4326)))" % (mapName + "_point", mapName + "_point"))
-                    center = map(float, cur.fetchall()[0][0][6:-1].split())
-                finally:
-                    con.close()
+            layer.setMapXMLFile_(filename)
+            layer.setName_("Mapnik: " + os.path.splitext(os.path.basename(filename))[0])
             
             self.mapView.setMapLayer_(layer)
-            if center is not None:
-                self.mapView.setCenter_(center)
+            self.mapName = "Mapnik"
             
-            self.mapName = mapName
-            self.searchWindowDelegate.db_args = self.db_args
-            self.searchWindowDelegate.mapName = mapName
-            self.inspectWindowDelegate.setDBParams(self.db_args)
-            self.inspectWindowDelegate.setMapName_(mapName)
+            if self.mapView.center is None:
+                self.mapView.setCenter_(layer.getDefaultCenter())
+                self.mapView.setZoom_(layer.getDefaultZoom())
+            self.mapWindow.orderFront_(self)
             
-            self.selectDBWindow.orderOut_(self)
     
-    def loadEmptyGlobe(self):
+    @objc.IBAction
+    def loadEmptyGlobe_(self, sender):
         path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
         style_filename = path_prefix + "Empty Globe.template"
@@ -241,39 +174,28 @@ class MaprenderAppDelegate(NSObject):
         parameters = {
             "symbols":path_prefix + "symbols/",
             "osm2pgsql_projection": "&srs900913;",
-            #"osm2pgsql_projection":proj4,
             "world_boundaries":path_prefix + "world_boundaries/",
-            #"prefix":db_prefix,
         }
         
         layer = TiledMapnikLayer.alloc().init()
         layer.setMapXML_(str(xml % parameters))
-        
         layer.setName_("Mapnik: " + mapName)
         
         self.mapView.setMapLayer_(layer)
-        
         self.mapName = mapName
-        #self.searchWindowDelegate.db_args = self.db_args
-        #self.searchWindowDelegate.mapName = mapName
-        #self.inspectWindowDelegate.setDBParams(self.db_args)
-        #self.inspectWindowDelegate.setMapName_(mapName)
-        
-        #self.selectDBWindow.orderOut_(self)
         
         self.mapView.setCenter_([0, 0])
-        #self.mapView.setZoom_(50000)
-        #self.mapWindow.orderBack_(self)
+        self.mapView.setZoom_(5000)
         self.mapWindow.orderFront_(self)
     
     @objc.IBAction
     def setMapStyle_(self, style_filename):
-        from TiledMapnikLayer import TiledMapnikLayer
+        #from TiledMapnikLayer import TiledMapnikLayer
+        path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
-        layer = TiledMapnikLayer.alloc().init()
-        #layer.setMapXMLFile_(path)
-        layer.setMapXML_(self.buildXML(self.mapName,style_filename))
-        self.mapView.setMapLayer_(layer)
+        #FIXME: This assumes that the maplayer will always be a osm2pgsql_mapnik layer
+        self.mapView.getLayers()[0].setStyle(style_filename, path_prefix)
+        self.mapView.redrawMap()
 
 
     @objc.IBAction
