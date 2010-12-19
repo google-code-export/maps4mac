@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map [
+<!ENTITY srs900913 "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over">
+<!ENTITY srsmercator "+proj=merc +datum=WGS84 +over">
+<!ENTITY srs4326 "+init=epsg:4326">
+]>
+<Map bgcolor="#b5d0d0" srs="&srs900913;" minimum_version="0.6.1">
+  <!--Settings for Mapnik Fonts
+Uncomment the unifont entries if you have that font installed
+in your mapnik fonts dir, and want to use it as a fallback font.
+Mapnik includes this font by default since r1328.
+To see the fonts you have installed with Mapnik do:
+ls `python -c "import mapnik;print mapnik.fontscollectionpath"`-->
+
+<FontSet name="book-fonts">
+  <Font face_name="DejaVu Sans Book" />
+  <!--Font face_name="unifont Medium" /-->
+</FontSet>
+<FontSet name="bold-fonts">
+  <Font face_name="DejaVu Sans Bold" />
+  <!--Font face_name="unifont Medium" /-->
+</FontSet>
+<FontSet name="oblique-fonts">
+  <Font face_name="DejaVu Sans Oblique" />
+  <!--Font face_name="unifont Medium" /-->
+</FontSet>
+
+<Style name="land">
+    <Rule>
+      <PolygonSymbolizer>
+        <CssParameter name="fill">#f2efe9</CssParameter>
+      </PolygonSymbolizer>
+    </Rule>
+</Style>
+<Style name="countries">
+    <Rule>
+      <LineSymbolizer>
+        <CssParameter name="stroke">#6D7767</CssParameter>
+      </LineSymbolizer>
+    </Rule>
+    <Rule>
+      <TextSymbolizer name="name" fontset_name="book-fonts" size="10"/>
+    </Rule>
+</Style>
+<Style name="lakes">
+    <Rule>
+      <PolygonSymbolizer>
+        <CssParameter name="fill">#b5d0d0</CssParameter>
+      </PolygonSymbolizer>
+    </Rule>
+    <!--
+    <Rule>
+      <TextSymbolizer name="name" fontset_name="book-fonts" size="10"/>
+    </Rule>
+    -->
+</Style>
+<Layer name="land" status="on" srs="+proj=latlong +datum=WGS84">
+    <StyleName>land</StyleName>
+    <Datasource>
+      <Parameter name="type">sqlite</Parameter>
+      <Parameter name="file">EmptyGlobe.sqlite</Parameter>
+      <Parameter name="table">land</Parameter>
+      <Parameter name="key_field">id</Parameter>
+      <Parameter name="geometry_field">geom</Parameter>
+      <Parameter name="wkb_format">spatialite</Parameter>
+      <Parameter name="extent">180.0,89.0,-180.0,-89.0</Parameter>
+    </Datasource>
+</Layer>
+<Layer name="lakes" status="on" srs="+proj=latlong +datum=WGS84">
+    <StyleName>lakes</StyleName>
+    <Datasource>
+      <Parameter name="type">sqlite</Parameter>
+      <Parameter name="file">EmptyGlobe.sqlite</Parameter>
+      <Parameter name="table">(select id,geom,name from lakes)</Parameter>
+      <Parameter name="key_field">id</Parameter>
+      <Parameter name="geometry_field">geom</Parameter>
+      <Parameter name="wkb_format">spatialite</Parameter>
+      <Parameter name="extent">180.0,89.0,-180.0,-89.0</Parameter>
+    </Datasource>
+</Layer>
+<Layer name="countries" status="on" srs="+proj=latlong +datum=WGS84">
+    <StyleName>countries</StyleName>
+    <Datasource>
+      <Parameter name="type">sqlite</Parameter>
+      <Parameter name="file">EmptyGlobe.sqlite</Parameter>
+      <Parameter name="table">(select id,geom,name from countries) as countries</Parameter>
+      <Parameter name="key_field">id</Parameter>
+      <Parameter name="geometry_field">geom</Parameter>
+      <Parameter name="wkb_format">spatialite</Parameter>
+      <Parameter name="extent">180.0,89.0,-180.0,-89.0</Parameter>
+    </Datasource>
+</Layer>
+</Map>
+

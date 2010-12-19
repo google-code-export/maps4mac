@@ -43,7 +43,7 @@ class StyleMenuDelegate(NSObject):
             self.items = list()
             
             for path_prefix in path_prefixs:
-                print "Looking for styles:", path_prefix
+                #print "Looking for styles:", path_prefix
                 
                 files = glob.glob(path_prefix + "*.template")
                 

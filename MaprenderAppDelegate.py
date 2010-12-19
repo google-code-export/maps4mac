@@ -17,6 +17,7 @@ class MaprenderAppDelegate(NSObject):
     mapWindowDelegate = objc.IBOutlet()
     
     openOSM2PGSQLDelegate = objc.ivar()
+    httpTileOpenDelegate = objc.ivar()
     
     searchWindow = objc.IBOutlet()
     searchWindowDelegate = objc.IBOutlet()
@@ -61,6 +62,8 @@ class MaprenderAppDelegate(NSObject):
                 self.loadEmptyGlobe_(self)
             elif defaultWindow == "Open osm2pgsql Database":
                 self.openosm2pgsql_(self)
+            elif defaultWindow == "Open http tile layer":
+                self.openHTTPTiles_(self)
             else:
                 print "Warning: Unknown default window:", defaultWindow
         
@@ -98,27 +101,19 @@ class MaprenderAppDelegate(NSObject):
     
     @objc.IBAction
     def openosm2pgsql_(self, sender):
-        defaults = NSUserDefaults.standardUserDefaults()
-        db_args = {
-            "host":defaults.stringForKey_("db_hostname"),
-            "user":defaults.stringForKey_("db_username"),
-            "port":defaults.stringForKey_("db_port"),
-            "database":defaults.stringForKey_("db_database"),
-            "password":defaults.stringForKey_("db_password")
-        }
         
-        self.fetchMapnikFiles()
+        #self.fetchMapnikFiles()
     
         try:
             import osm2pgsql_MapnikLayer_OpenDialogDelegate
-            self.openDelegate = osm2pgsql_MapnikLayer_OpenDialogDelegate.osm2pgsql_MapnikLayer_OpenDialogDelegate.alloc().init()
-            self.openDelegate.appDelegate = self
-            
-            NSBundle.loadNibNamed_owner_("osm2pgsql_MapnikLayer", self.openDelegate)
-            self.openDelegate.setDBParams_(db_args)
-            self.openDelegate.window.makeKeyAndOrderFront_(self)
+            if not self.openOSM2PGSQLDelegate:
+                self.openOSM2PGSQLDelegate = osm2pgsql_MapnikLayer_OpenDialogDelegate.osm2pgsql_MapnikLayer_OpenDialogDelegate.alloc().init()
+                self.openOSM2PGSQLDelegate.appDelegate = self
+                
+                NSBundle.loadNibNamed_owner_("osm2pgsql_MapnikLayer", self.openOSM2PGSQLDelegate)
+            self.openOSM2PGSQLDelegate.window.makeKeyAndOrderFront_(self)
         except ImportError as error:
-            self.openDelegate.window.orderOut_(self)
+            self.openOSM2PGSQLDelegate.window.orderOut_(self)
             title = "Import failed"
             msg = "Couldn't find the modules needed for the osm2pgsql layer.\nYou probably need to install PyGreSQL.\n\n%s" % str(error)
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
@@ -141,12 +136,6 @@ class MaprenderAppDelegate(NSObject):
             self.mapView.setZoom_(layer.getDefaultZoom())
         self.mapView.setMapLayer_(layer)            
         self.mapName = mapName
-        
-        self.searchWindowDelegate.db_args = db_args
-        self.searchWindowDelegate.mapName = mapName
-        
-        #self.inspectWindowDelegate.setDBParams(db_args)
-        #self.inspectWindowDelegate.setMapName_(mapName)
 
     @objc.IBAction
     def openMapnikXML_(self, sender):
@@ -167,35 +156,60 @@ class MaprenderAppDelegate(NSObject):
                 self.mapView.setZoom_(layer.getDefaultZoom())
             self.mapWindow.orderFront_(self)
             
+    @objc.IBAction
+    def openHTTPTiles_(self, sender):
+        if not self.httpTileOpenDelegate:
+            import HttpTileLayer_OpenDialogDelegate
+            self.httpTileOpenDelegate = HttpTileLayer_OpenDialogDelegate.HttpTileLayer_OpenDialogDelegate.alloc().init()
+            self.httpTileOpenDelegate.appDelegate = self
+            
+            NSBundle.loadNibNamed_owner_("HttpTileLayer", self.httpTileOpenDelegate)
+        self.httpTileOpenDelegate.window.makeKeyAndOrderFront_(self)
     
     @objc.IBAction
     def loadEmptyGlobe_(self, sender):
         path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
-        style_filename = path_prefix + "Empty Globe.template"
-        with open(style_filename) as style_file:
-            xml = style_file.read()
-        
         mapName = "Empty Globe"
         
         from TiledMapnikLayer import TiledMapnikLayer
-        
-        parameters = {
-            "symbols":path_prefix + "symbols/",
-            "osm2pgsql_projection": "&srs900913;",
-            "world_boundaries":path_prefix + "world_boundaries/",
-        }
-        
         layer = TiledMapnikLayer.alloc().init()
-        layer.setMapXML_(str(xml % parameters))
-        layer.setName_("Mapnik: " + mapName)
-        
+
+        layer.setMapXMLFile_(path_prefix + "EmptyGlobeSQLite.xml")
+        layer.setName_(mapName)
         self.mapView.setMapLayer_(layer)
         self.mapName = mapName
         
-        self.mapView.setCenter_([0, 0])
-        self.mapView.setZoom_(5000)
+        if self.mapView.center is None:
+            self.mapView.setCenter_([0, 0])
+            self.mapView.setZoom_(5000)
         self.mapWindow.orderFront_(self)
+        
+        if False: # The old empty globe
+            style_filename = path_prefix + "Empty Globe.template"
+            with open(style_filename) as style_file:
+                xml = style_file.read()
+            
+            mapName = "Empty Globe"
+            
+            from TiledMapnikLayer import TiledMapnikLayer
+            
+            parameters = {
+                "symbols":path_prefix + "symbols/",
+                "osm2pgsql_projection": "&srs900913;",
+                "world_boundaries":path_prefix + "world_boundaries/",
+            }
+            
+            layer = TiledMapnikLayer.alloc().init()
+            layer.setMapXML_(str(xml % parameters))
+            layer.setName_("Mapnik: " + mapName)
+            
+            self.mapView.setMapLayer_(layer)
+            self.mapName = mapName
+        
+            self.mapView.setCenter_([0, 0])
+            self.mapView.setZoom_(5000)
+            self.mapWindow.orderFront_(self)
     
     @objc.IBAction
     def setMapStyle_(self, style_filename):

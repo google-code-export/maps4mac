@@ -49,7 +49,7 @@ class SearchWindowDelegate(NSObject):
                         suffix += 1
                     self.search_providers[name] = provider
             
-            print "Search: Layers did change, %d providers" % len(self.search_providers)
+            #print "Search: Layers did change, %d providers" % len(self.search_providers)
             
             if self.search_providers:
                 self.searchable = True

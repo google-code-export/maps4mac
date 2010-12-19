@@ -11,6 +11,7 @@ from Foundation import *
 from AppKit import *
 
 import mapnik
+import math
 
 defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
@@ -59,9 +60,10 @@ class MapView(NSView):
         if self.layers:
             # Don't try to scroll if there's nothing there
             shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
-            shift = self.projection.inverse(shift)
+            #shift = self.projection.inverse(shift)
             
-            newCenter = self.center + shift
+            newCenter = self.centerLonLat + shift
+            newCenter = self.projection.inverse(newCenter)
             
             newCenter.x = max(newCenter.x, -179.999)
             newCenter.x = min(newCenter.x, 179.999)
@@ -110,7 +112,27 @@ class MapView(NSView):
         prj_origin = prj_center + prj_shift
         
         for layer in self.layers:
-            layer.drawRect_WithProjection_Origin_Zoom_(rect, self.projection, prj_origin, self.zoom)
+            #FIXME: Don't ask layers to draw things outside of the world
+            extent = layer.getExtent()
+            clamped_origin = mapnik.Coord(prj_origin.x,prj_origin.y)
+            xform = NSAffineTransform.transform()
+            if extent:
+                if extent and prj_origin.x < extent[2]:
+                    clamped_origin.x = extent[2]
+                if extent and prj_origin.y < extent[3]:
+                    clamped_origin.y = extent[3]
+                offset = prj_origin - clamped_origin
+                offset = offset / self.zoom
+                rect.size[0] -= int(offset.x)
+                rect.size[1] -= int(offset.y)
+                
+                xform.translateXBy_yBy_(int(-offset.x), int(-offset.y))
+            xform.concat()
+            
+            layer.drawRect_WithProjection_Origin_Zoom_(rect, self.projection, clamped_origin, self.zoom)
+            
+            xform.invert()
+            xform.concat()
             
         if self.centerDot:
             center = [0,0]

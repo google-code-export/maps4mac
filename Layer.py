@@ -41,7 +41,7 @@ class Layer(NSObject):
         self.view = view
     
     def getExtent(self):
-        """Return the layers extent [left, top, right, bottom]"""
+        """Return the layers extent [right, top, left, bottom]"""
         return None
     
     def getSearchProvider(self):

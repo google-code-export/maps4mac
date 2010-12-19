@@ -42,6 +42,14 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         self.render_thread.cancelTiles()
     
     def buildXML(self, db_prefix, style_filename, path_prefix):
+        symbols_path = NSBundle.mainBundle().resourcePath() + "/symbols/"
+
+        defaults = NSUserDefaults.standardUserDefaults()
+        world_boundaries_path = defaults.stringForKey_("world_boundaries_path")
+        if not world_boundaries_path:
+            world_boundaries_path = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"]
+            world_boundaries_path += "/osm2pgsql_MapnikLayer/world_boundaries/"
+        
         with open(style_filename) as style_file:
             xml = style_file.read()
         
@@ -60,16 +68,15 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             con.close()
         
         parameters = {
-        "symbols":path_prefix + "symbols/",
-        #"osm2pgsql_projection": "&srs900913;", #FIXME: Get from DB
+        #"symbols":path_prefix + "symbols/",
+        "symbols":symbols_path,
         "osm2pgsql_projection":proj4,
-        "world_boundaries":path_prefix + "world_boundaries/",
+        #"world_boundaries":path_prefix + "world_boundaries/",
+        "world_boundaries":world_boundaries_path,
         "prefix":db_prefix,
-        #"datasource_settings":,
         }
         
         import mapnik
-        #projection = mapnik.Projection(proj4)
         epsg900913 = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +units=m +k=1.0 +nadgrids=@null +no_defs"
         projection = mapnik.Projection(epsg900913)
         # Not quite but close to the whole world
@@ -79,7 +86,6 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         
         datasource_parameters = {
         "password":self.db_args["password"],
-        #"host":self.db_args["host"],
         "host":self.db_args["host"],
         "port":self.db_args["port"],
         "user":self.db_args["user"],

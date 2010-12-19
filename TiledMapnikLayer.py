@@ -15,7 +15,6 @@ from MapnikRenderThread import *
 import threading
 
 import mapnik
-import cairo
 import MapLayer
 
 # CATiledLayer?
