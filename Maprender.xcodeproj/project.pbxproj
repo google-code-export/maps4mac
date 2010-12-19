@@ -29,6 +29,7 @@
 		ED410A4A129F880900E44DDB /* HttpTileLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = ED410A49129F880900E44DDB /* HttpTileLayer.py */; };
 		ED4714641248830B00894EBC /* StyleMenuDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = ED4714631248830B00894EBC /* StyleMenuDelegate.py */; };
 		ED5E084C1190BDE200E70DA7 /* MapnikRenderThread.py in Resources */ = {isa = PBXBuildFile; fileRef = ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */; };
+		ED62566912BE593800D92947 /* Mountains.icns in Resources */ = {isa = PBXBuildFile; fileRef = ED62566812BE593800D92947 /* Mountains.icns */; };
 		ED648B6312BD609B00E199A5 /* HttpTileLayer_OpenDialogDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = ED648B6212BD609B00E199A5 /* HttpTileLayer_OpenDialogDelegate.py */; };
 		ED648B6C12BD61F500E199A5 /* NominatimSearchProvider.py in Resources */ = {isa = PBXBuildFile; fileRef = ED648B6B12BD61F500E199A5 /* NominatimSearchProvider.py */; };
 		ED648B7F12BD63D700E199A5 /* HttpTileLayer.xib in Resources */ = {isa = PBXBuildFile; fileRef = ED648B7E12BD63D700E199A5 /* HttpTileLayer.xib */; };
@@ -102,6 +103,7 @@
 		ED410A49129F880900E44DDB /* HttpTileLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = HttpTileLayer.py; sourceTree = "<group>"; };
 		ED4714631248830B00894EBC /* StyleMenuDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = StyleMenuDelegate.py; sourceTree = "<group>"; };
 		ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapnikRenderThread.py; sourceTree = "<group>"; };
+		ED62566812BE593800D92947 /* Mountains.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Mountains.icns; sourceTree = "<group>"; };
 		ED648B6212BD609B00E199A5 /* HttpTileLayer_OpenDialogDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = HttpTileLayer_OpenDialogDelegate.py; sourceTree = "<group>"; };
 		ED648B6B12BD61F500E199A5 /* NominatimSearchProvider.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = NominatimSearchProvider.py; sourceTree = "<group>"; };
 		ED648B7E12BD63D700E199A5 /* HttpTileLayer.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HttpTileLayer.xib; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ED62566812BE593800D92947 /* Mountains.icns */,
 				ED08086B12BDF095007F36CD /* EmptyGlobe.sqlite */,
 				ED08086C12BDF095007F36CD /* EmptyGlobeSQLite.xml */,
 				EDF652D01284658A00DD10AE /* Empty Globe.template */,
@@ -375,6 +378,7 @@
 				ED648B7F12BD63D700E199A5 /* HttpTileLayer.xib in Resources */,
 				ED08086D12BDF095007F36CD /* EmptyGlobe.sqlite in Resources */,
 				ED08086E12BDF095007F36CD /* EmptyGlobeSQLite.xml in Resources */,
+				ED62566912BE593800D92947 /* Mountains.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
