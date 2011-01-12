@@ -166,6 +166,28 @@ class Logger(NSObject):
         #    time = point[3]
         return points
     
+    def getWaypointsLen(self):
+        cur = self.sqlCon.cursor()
+        return cur.execute("select count(*) from waypoints").fetchall()[0][0]
+    
+    def getWaypoint_(self,num):
+        cur = self.sqlCon.cursor()
+        wpt = cur.execute("select id,latitude,longitude,name.value,time.value from waypoints left join waypoint_tags name on (id=name.waypoint_id and name.tag='name') left join waypoint_tags time on (id=time.waypoint_id and time.tag='time') limit 1 offset (?);", [num]).fetchall()[0]
+        if not wpt:
+            return None
+        return wpt
+    
+    def getTracksLen(self):
+        cur = self.sqlCon.cursor()
+        return cur.execute("select count(*) from tracks").fetchall()[0][0]
+    
+    def getTrack_(self,num):
+        cur = self.sqlCon.cursor()
+        track = cur.execute("select * from tracks limit 1 offset (?);", [num]).fetchall()[0]
+        if not track:
+            return None
+        return track
+    
     def getTracks(self):
         cur = self.sqlCon.cursor()
         tracks = cur.execute("select id,name from tracks").fetchall()
