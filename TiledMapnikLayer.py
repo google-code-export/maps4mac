@@ -12,7 +12,7 @@ from Quartz import *
 
 from MapnikRenderThread import *
 
-import threading
+#import threading
 
 import mapnik
 import MapLayer
@@ -30,11 +30,13 @@ class TiledMapnikLayer(MapLayer.MapLayer):
         self.name = "Mapnik"
         
         self.projectionString = None
+        self.projection = None
         self.cache  = dict()
         self.zoom   = 0
         self.render_thread = MapnikRenderThread.alloc().init()
-        thread = threading.Thread(target=self.render_thread.run, name="Render Thread")
-        thread.start()
+        #thread = threading.Thread(target=self.render_thread.run, name="Render Thread")
+        #thread.start()
+        self.render_thread.run()
         
         self.view = None
         
@@ -46,6 +48,7 @@ class TiledMapnikLayer(MapLayer.MapLayer):
         self.projectionString = map.srs
         self.projection = mapnik.Projection(self.projectionString)
         
+        self.cache = dict()
         self.render_thread.loadMapString_(xml)
     
     def setMapXMLFile_(self, xmlPath):
@@ -54,6 +57,7 @@ class TiledMapnikLayer(MapLayer.MapLayer):
         self.projectionString = map.srs
         self.projection = mapnik.Projection(self.projectionString)
         
+        self.cache = dict()
         self.render_thread.loadMapFile_(str(xmlPath))
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
@@ -115,7 +119,19 @@ class TiledMapnikLayer(MapLayer.MapLayer):
         if self.zoom == tile.zoom:
             self.cache[tile.cord.x][tile.cord.y] = tile.img
         if self.view:
-            self.view.setNeedsDisplay_(True)
+            # Calculate the bounding box to draw
+            zoom = self.view.zoom
+            size = self.view.bounds().size
+            
+            prj = self.projection
+            prj_center = prj.forward(self.view.center)
+            prj_origin = mapnik.Coord(-(size[0] / 2) * zoom, -(size[1] / 2) * zoom)
+            target = tile.cord - (prj_center + prj_origin)
+            #print int(round(target.x / zoom)), int(round(target.y / zoom))
+            
+            #self.view.setNeedsDisplay_(True)
+            #self.view.setNeedsDisplayInRect_(NSRect((round(target.x / zoom), round(target.y / zoom)),(256,256)))
+            self.view.setNeedsDisplayInRect_(NSRect((target.x / zoom, target.y / zoom),(256,256)))
     
     def setName_(self, name):
         self.name = name

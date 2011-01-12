@@ -74,11 +74,8 @@ class GenericDataLayerIcon(NSObject):
         return self
 
 class GenericDataset(NSObject):
-    icon = objc.ivar() # NSImage used to represent the dataset
-    icon_hotspot = objc.ivar() # Where to center the image
     points = objc.ivar()
     tracks = objc.ivar()
-    text_format = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -87,21 +84,12 @@ class GenericDataset(NSObject):
         
         self.points = list()
         self.tracks = list()
-        path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
-        self.icon = NSImage.alloc().initByReferencingFile_(path)
-        size = self.icon.size()
-        self.icon_hotspot = NSPoint(size.width / 2, size.height / 2)
-        
-        self.text_format = { 
-            NSFontAttributeName : NSFont.fontWithName_size_("Andale Mono", 10.0),
-            NSForegroundColorAttributeName : NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 1.0),
-        }
         
         return self
 
 class GenericDataLayer(Layer.Layer):
-    datasets = objc.ivar()
     cache    = objc.ivar()
+    datasets = objc.ivar()
     default_icon = objc.ivar()
     default_text_format = objc.ivar()
     
@@ -115,7 +103,10 @@ class GenericDataLayer(Layer.Layer):
         self.cache = None
         self.outline = None
         
-        self.default_icon = GenericDataLayerIcon.initWithFile_(NSBundle.mainBundle().pathForResource_ofType_("target0", "png"))
+        icon_path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
+        if not icon_path:
+            icon_path = "/Users/argon/Prog/Maprender/target0.png"
+        self.default_icon = GenericDataLayerIcon.initWithFile_(icon_path)
         self.default_text_format = { 
             NSFontAttributeName : NSFont.fontWithName_size_("Andale Mono", 10.0),
             NSForegroundColorAttributeName : NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 1.0),
@@ -125,6 +116,13 @@ class GenericDataLayer(Layer.Layer):
     
     def addPoint_(self, p):
         self.datasets[0].points.append(p)
+        
+        if self.cache and "proj" in self.cache:
+            point = self.cache["proj"].forward(mapnik.Coord(p.x, p.y))
+            self.cache["points"].append(point)
+        
+        if self.view:
+            self.view.setNeedsDisplay_(True)
     
     def addPointWithX_Y_Name_(self, x, y, name):
         if name is not None:
@@ -135,10 +133,28 @@ class GenericDataLayer(Layer.Layer):
         if not self.outline:
             self.outline = list()
         self.outline.append(point)
+        
+        
+        if self.cache and "proj" in self.cache:
+            point = self.cache["proj"].forward(mapnik.Coord(x, y))
+            self.cache["points"].append(point)
+        
+        if self.view:
+            self.view.setNeedsDisplay_(True)
+    
+    def appendToTrack_PointWithX_Y_(self, t, x, y):
+        pass
     
     def addTrack_(self, t):
         self.datasets[0].tracks.append(t)
         self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(t[0].x,t[0].y,"<Track>"))
+        
+        if self.view:
+            self.cache = dict()
+            self.cache["proj"] = None
+            self.cache["zoom"] = None
+
+            self.view.setNeedsDisplay_(True)
     
     #FIXME: Call this automaticaly
     def updateOutline(self):
@@ -202,9 +218,9 @@ class GenericDataLayer(Layer.Layer):
                     self.cache["tracks"].append(path)
         
         for ds in self.datasets:
-            icon = ds.icon
-            icon_hotspot = ds.icon_hotspot
-            font_height  = ds.text_format[NSFontAttributeName]
+            icon = self.default_icon.icon
+            icon_hotspot = self.default_icon.icon_hotspot
+            font_height  = self.default_text_format[NSFontAttributeName]
             
             for point,loc in zip(ds.points, self.cache["points"]):
                 #loc = proj.forward(mapnik.Coord(point.x, point.y))
@@ -215,10 +231,10 @@ class GenericDataLayer(Layer.Layer):
                 icon.drawAtPoint_fromRect_operation_fraction_(NSPoint(loc.x - icon_hotspot.x,loc.y - icon_hotspot.y), NSZeroRect, NSCompositeSourceOver, 1.0)
                 if point.name is not None:
                     name = NSString.stringWithString_(point.name)
-                    string_size = name.sizeWithAttributes_(ds.text_format)
-                    x_shift = ds.icon.size().width / 2 + 1 # FIXME: If the hotspot isn't centered this will be wrong
+                    string_size = name.sizeWithAttributes_(self.default_text_format)
+                    x_shift = icon.size().width / 2 + 1 # FIXME: If the hotspot isn't centered this will be wrong
                     y_shift = -(string_size.height / 2)
-                    NSString.drawAtPoint_withAttributes_(name, NSPoint(loc.x + x_shift, loc.y + y_shift), ds.text_format)
+                    NSString.drawAtPoint_withAttributes_(name, NSPoint(loc.x + x_shift, loc.y + y_shift), self.default_text_format)
             
             # Translate the origin for cached paths
             trans = NSAffineTransform.alloc().init()

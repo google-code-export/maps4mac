@@ -34,6 +34,7 @@ class Layer(NSObject):
         
     def layerDeleted(self):
         """They layer has been deleted and should clean up"""
+        self.view = None
         return True
         
     def setView_(self, view):
@@ -47,3 +48,12 @@ class Layer(NSObject):
     def getSearchProvider(self):
         """Return a search provider if this layer can be searched, otherwise None"""
         return None
+        
+    def getStyles(self):
+        """Return a list of selectable styles, otherwise None
+        A style has the format {"id":id, "name":name}
+        """
+        return None
+    
+    def setStyle_(self, styleid):
+        pass

@@ -10,6 +10,7 @@ from Foundation import *
 from AppKit import *
 
 import os.path, os
+import Logger
 
 class MaprenderAppDelegate(NSObject):
     mapView   = objc.IBOutlet()
@@ -24,12 +25,10 @@ class MaprenderAppDelegate(NSObject):
     loggingWindow = objc.IBOutlet()
     preferencesWindow = objc.IBOutlet()
     
-    inspectWindow = objc.IBOutlet()
-    inspectWindowDelegate = objc.IBOutlet()
-    
     mapName = objc.ivar()
     
     gpsdConnection = objc.ivar()
+    logger = objc.ivar()
     
     downloadWindowDelegate = objc.IBOutlet()
     
@@ -53,6 +52,10 @@ class MaprenderAppDelegate(NSObject):
         self.gpsdConnection = GPSdConnection.alloc().init()
         self.gpsdConnection.connect()
         self.gpsdConnection.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
+        
+        self.logger = Logger.Logger.alloc().init()
+        self.logger.connect_(self.gpsdConnection)
+        self.logger.appDelegate = self
         
         if self.mapName is None:
             # There may already be a map loaded if we were asked to launch a file
@@ -126,10 +129,9 @@ class MaprenderAppDelegate(NSObject):
         
         self.mapWindow.makeKeyAndOrderFront_(self)
         
-        #path = "/Users/argon/Prog/Maprender/" + mapName + ".xml"
         from osm2pgsql_MapnikLayer import osm2pgsql_MapnikLayer
         layer = osm2pgsql_MapnikLayer.alloc().init()
-        layer.loadMap(db_args, mapName, style_filename, path_prefix)
+        layer.loadMap(db_args, mapName, style_filename)
                     
         if self.mapView.center is None:
             self.mapView.setCenter_(layer.getDefaultCenter())
@@ -148,13 +150,15 @@ class MaprenderAppDelegate(NSObject):
             layer.setMapXMLFile_(filename)
             layer.setName_("Mapnik: " + os.path.splitext(os.path.basename(filename))[0])
             
-            self.mapView.setMapLayer_(layer)
-            self.mapName = "Mapnik"
             
             if self.mapView.center is None:
                 self.mapView.setCenter_(layer.getDefaultCenter())
                 self.mapView.setZoom_(layer.getDefaultZoom())
-            self.mapWindow.orderFront_(self)
+                
+            self.mapView.setMapLayer_(layer)
+            self.mapName = "Mapnik"
+            
+            self.mapWindow.makeKeyAndOrderFront_(self)
             
     @objc.IBAction
     def openHTTPTiles_(self, sender):
@@ -177,48 +181,19 @@ class MaprenderAppDelegate(NSObject):
 
         layer.setMapXMLFile_(path_prefix + "EmptyGlobeSQLite.xml")
         layer.setName_(mapName)
-        self.mapView.setMapLayer_(layer)
-        self.mapName = mapName
         
         if self.mapView.center is None:
             self.mapView.setCenter_([0, 0])
-            self.mapView.setZoom_(5000)
-        self.mapWindow.orderFront_(self)
+            self.mapView.setZoom_(50000)
+        self.mapWindow.makeKeyAndOrderFront_(self)
         
-        if False: # The old empty globe
-            style_filename = path_prefix + "Empty Globe.template"
-            with open(style_filename) as style_file:
-                xml = style_file.read()
-            
-            mapName = "Empty Globe"
-            
-            from TiledMapnikLayer import TiledMapnikLayer
-            
-            parameters = {
-                "symbols":path_prefix + "symbols/",
-                "osm2pgsql_projection": "&srs900913;",
-                "world_boundaries":path_prefix + "world_boundaries/",
-            }
-            
-            layer = TiledMapnikLayer.alloc().init()
-            layer.setMapXML_(str(xml % parameters))
-            layer.setName_("Mapnik: " + mapName)
-            
-            self.mapView.setMapLayer_(layer)
-            self.mapName = mapName
-        
-            self.mapView.setCenter_([0, 0])
-            self.mapView.setZoom_(5000)
-            self.mapWindow.orderFront_(self)
+        self.mapView.setMapLayer_(layer)
+        self.mapName = mapName
     
     @objc.IBAction
     def setMapStyle_(self, style_filename):
-        #from TiledMapnikLayer import TiledMapnikLayer
-        path_prefix = NSBundle.mainBundle().resourcePath() + "/"
-        
         #FIXME: This assumes that the maplayer will always be a osm2pgsql_mapnik layer
-        self.mapView.getLayers()[0].setStyle(style_filename, path_prefix)
-        self.mapView.redrawMap()
+        self.mapView.getLayers()[0].setStyle(style_filename)
 
 
     @objc.IBAction

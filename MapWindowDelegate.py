@@ -19,6 +19,8 @@ class MapWindowDelegate(NSObject):
     
     useGPS = objc.ivar()
     
+    mapViewEnabled = objc.ivar()
+    
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -31,14 +33,18 @@ class MapWindowDelegate(NSObject):
     def awakeFromNib(self):
         self.mapView.addObserver_forKeyPath_options_context_(self, u"centerLonLat", 0, None)
         self.mapView.addObserver_forKeyPath_options_context_(self, u"zoom", 0, None)
+        self.mapView.addObserver_forKeyPath_options_context_(self, u"layers", 0, None)
         self.mapWindow.makeFirstResponder_(self.mapView)
+        
+        mapViewEnabled = False
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if keyPath == "centerLonLat":
             self.centerField.setStringValue_("%f, %f" % (object.center.y, object.center.x))
         elif keyPath == "zoom":
             self.zoomField.setIntValue_(object.zoom)
-            #self.mapZoom = object.zoom
+        elif keyPath == "layers":
+            self.mapViewEnabled = bool(object.layers)
     
     @objc.IBAction
     def updateMap_(self, sender):

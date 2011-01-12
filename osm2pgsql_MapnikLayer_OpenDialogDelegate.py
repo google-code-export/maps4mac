@@ -128,7 +128,7 @@ class osm2pgsql_MapnikLayer_OpenDialogDelegate(NSObject):
                 if not os.path.exists(os.path.join(world_boundaries_path,file)):
                     toDownload.append(archive)
                     break
-                print file, "OK"
+                #print file, "OK"
                 
         urls = {
         "world_boundaries-spherical.tgz":"http://tile.openstreetmap.org/world_boundaries-spherical.tgz",

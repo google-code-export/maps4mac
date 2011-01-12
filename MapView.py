@@ -55,11 +55,14 @@ class MapView(NSView):
         
     def frameChanged(self):
         size = self.bounds().size
+        
+    #def mouseMoved_(self, event):
+    #    print "Moved",event
     
-    def scrollWheel_(self, event):
+    def scrollByX_Y_(self, x, y):
         if self.layers:
             # Don't try to scroll if there's nothing there
-            shift = mapnik.Coord(-1 * self.zoom * event.deviceDeltaX(), self.zoom * event.deviceDeltaY())
+            shift = mapnik.Coord(-1 * self.zoom * x, self.zoom * y)
             #shift = self.projection.inverse(shift)
             
             newCenter = self.centerLonLat + shift
@@ -74,6 +77,12 @@ class MapView(NSView):
             self.centerLonLat = self.projection.forward(self.center)
         
         self.setNeedsDisplay_(True)
+    
+    def mouseDragged_(self, event):
+        self.scrollByX_Y_(event.deltaX(), event.deltaY())
+    
+    def scrollWheel_(self, event):
+        self.scrollByX_Y_(event.deviceDeltaX(), event.deviceDeltaY())
                     
     def swipeWithEvent_(self, event):
         if self.layers:
@@ -108,7 +117,8 @@ class MapView(NSView):
             return
         
         prj_center = self.projection.forward(self.center)
-        prj_shift  = mapnik.Coord(rect.origin[0] - (size[0] / 2) * self.zoom, rect.origin[1] - (size[1] / 2) * self.zoom)
+        prj_shift  = mapnik.Coord((rect.origin[0] - (size[0] / 2)) * self.zoom, (rect.origin[1] - (size[1] / 2)) * self.zoom)
+        #prj_shift  = mapnik.Coord(0 - (size[0] / 2) * self.zoom, 0 - (size[1] / 2) * self.zoom)
         prj_origin = prj_center + prj_shift
         
         for layer in self.layers:
@@ -127,9 +137,13 @@ class MapView(NSView):
                 rect.size[1] -= int(offset.y)
                 
                 xform.translateXBy_yBy_(int(-offset.x), int(-offset.y))
+            #FIXME: This translate makes the passed origin line up with the passed origin
+            xform.translateXBy_yBy_(rect.origin[0],rect.origin[1]) ###
+            rr = NSRect((0,0),rect.size) ###
             xform.concat()
             
-            layer.drawRect_WithProjection_Origin_Zoom_(rect, self.projection, clamped_origin, self.zoom)
+            #layer.drawRect_WithProjection_Origin_Zoom_(rect, self.projection, clamped_origin, self.zoom)
+            layer.drawRect_WithProjection_Origin_Zoom_(rr, self.projection, clamped_origin, self.zoom)
             
             xform.invert()
             xform.concat()
@@ -204,6 +218,7 @@ class MapView(NSView):
         """Add a layer to the top of the layer stack"""
         
         self.willChangeValueForKey_("layers")
+        layer.setView_(self)
         self.layers.append(layer)
         self.didChangeValueForKey_("layers")
         self.setNeedsDisplay_(True)
@@ -244,6 +259,7 @@ class MapView(NSView):
         return self.layers
     
     def setCenter_(self, point):
+        point = [point[0], point[1]]
         point[0] = max(point[0], -179.999)
         point[0] = min(point[0], 179.999)
         point[1] = max(point[1], -89.999)

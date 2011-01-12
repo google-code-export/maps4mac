@@ -7,9 +7,21 @@
 #
 
 from Foundation import *
+import os.path, datetime
+import GenericDataLayer
+
+try:
+    # Use the KyngChaos sqlite3 if it's available, otherwise use the standard one
+    import pysqlite3 as sqlite3
+except ImportError:
+    import sqlite3
 
 class Logger(NSObject):
-    currentTract = objc.IBOutlet()
+    currentTract = objc.ivar()
+    currentSegment = objc.ivar()
+    enabled = objc.ivar()
+    appDelegate = objc.ivar()
+    layer = objc.ivar()
 
     def init(self):
         self = super(self.__class__, self).init()
@@ -19,30 +31,148 @@ class Logger(NSObject):
         # Find or create logging directory in application support
         
         loggerPath = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0]
-        loggerPath += "/" + NSBundle.mainBundle().infoDictionary()['CFBundleName'] + "/Logger/"
+        loggerPath += "/" + NSBundle.mainBundle().infoDictionary()['CFBundleName']
+        if not os.path.exists(loggerPath):
+            os.makedirs(loggerPath)
+        loggerPath += "/logger.sqlite"
         
-        # 
-        currentTract = None
+        self.currentTract = None
+        self.currentSegment = None
+        self.layer = None
+        self.enabled = False
+        self.sqlCon = sqlite3.connect(loggerPath)
+        
+        schema = """
+        create table tracks (id integer primary key autoincrement, name text);
+        create table track_segments (id integer primary key autoincrement, track_id integer not null);
+        create table trackpoints (segment_id integer, position integer, latitude real not null, longitude real not null, timestamp real, hdop real, speed real);
+        create table waypoints (id integer primary key autoincrement, latitude real not null, longitude real not null);
+        create table waypoint_tags (waypoint_id integer, tag text, value text);
+        """
+        
+        # Check if there's anything in the DB or initialize it
+        cur = self.sqlCon.cursor()
+        if not 5 == cur.execute("select count(name) from sqlite_master where name in ('tracks', 'track_segments','trackpoints','waypoints','waypoint_tags')").fetchall()[0][0]:
+            cur.executescript(schema)
         
         return self
     
-    # New fix
-    def setGPSFix_(self, fixDict):
-        pass
+    def connect_(self, gps):
+        gps.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
-        # Check how long it's been since the last GPS data to see if we should split the tract
+    def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
+        if keyPath == "fix" and self.enabled:
+            fix = object.fix()
+            if fix is not None and fix["FixType"] != 0:
+                self.addTrackpointWithValues_(fix)
+                
+        # FIXME: Check how long it's been since the last GPS data to see if we should split the tract
+    
+    def addTrackpointWithValues_(self, fix):
+        def orNone(k, d):
+            if k in d:
+                return d[k]
+            else:
+                return None
+        
+        lat = fix["Latitude"]
+        lon = fix["Longitude"]
+        timestamp = orNone("Timestamp", fix)
+        hdop = orNone("HDOP", fix)
+        speed = orNone("Speed", fix)
+        
+        cur = self.sqlCon.cursor()
+        
+        if not self.currentTract:
+            cur.execute("insert into tracks (name) values (?)", [datetime.datetime.now().strftime("%c")])
+            self.currentTract = cur.lastrowid
+        
+        if not self.currentSegment:
+            cur.execute("insert into track_segments (track_id) values (?)", [self.currentTract])
+            self.currentSegment = cur.lastrowid
+            self.currentSegmentPosition = 0
+            
+        #FIXME: Auto segment every 1000 points or so so that the tracks are easier to deal with?
+        
+        values = [self.currentSegment, self.currentSegmentPosition, lat, lon, timestamp, hdop, speed]
+        cur.execute("insert into trackpoints (segment_id, position, latitude, longitude, timestamp, hdop, speed) values (?,?,?,?,?,?,?)",values)
+        self.currentSegmentPosition = self.currentSegmentPosition + 1
+        self.sqlCon.commit()
+    
+    def endSegment(self):
+        """Force the next point added to be part of a new segment in the current track"""
+        self.currentSegment = None
+    
+    def startTrackWithName_(self,name):
+        if not name:
+            name = datetime.datetime.now().strftime("%c")
+        
+        cur = self.sqlCon.cursor()
+        cur.execute("insert into tracks (name) values (?)", [name])
+        self.currentTract = cur.lastrowid
+        self.currentSegment = None
+        self.sqlCon.commit()
+    
+    def endTrack(self):
+        """Force the next point added to be part of a new track, if startTrackWithName is not called
+        the new track will have a default name."""
+        self.currentTract = None
     
     # New waypoint
     def addWaypointAtLon_Lat_(self, lon, lat):
         """Add a waypont at the given lon, lat
         """
-        pass
+        cur = self.sqlCon.cursor()
+        cur.execute("insert into waypoints (latitude,longitude) values (?,?)", [lat,lon])
+        self.sqlCon.commit()
+        
+        if not self.layer:
+            self.layer = GenericDataLayer.GenericDataLayer.alloc().init()
+            self.layer.setName_("Logger")
+        self.layer.addPointWithX_Y_Name_(lon, lat, None)
+
+        if not self.layer.view:
+            self.appDelegate.mapView.addLayer_(self.layer)
     
-    def addWaypointAtLon_Lat_Properties(self, lon, lat):
+    def addWaypointAtLon_Lat_Properties_(self, lon, lat, props):
         """Add a waypont at the given lon, lat with additional properties
-        provided in a dictionary. Supported properties are:
-        Name
-        Elevation
-        Description
+        provided in a dictionary.
         """
-        pass
+        cur = self.sqlCon.cursor()
+        cur.execute("insert into waypoints (latitude,longitude) values (?,?)", [lat,lon])
+        waypoint = cur.lastrowid
+        for key,value in props.items():
+            cur.execute("insert into waypoint_tags (waypoint_id,tag,value) values (?,?,?)", [waypoint,key,value])
+        self.sqlCon.commit()
+        
+        name = None
+        if "name" in props:
+            name = props["name"]
+        
+        if not self.layer:
+            self.layer = GenericDataLayer.GenericDataLayer.alloc().init()
+            self.layer.setName_("Logger")
+        self.layer.addPointWithX_Y_Name_(lon, lat, name)
+        
+        if not self.layer.view:
+            self.appDelegate.mapView.addLayer_(self.layer)
+    
+    def getWaypoints(self):
+        cur = self.sqlCon.cursor()
+        points = cur.execute("select id,latitude,longitude,name.value,time.value from waypoints left join waypoint_tags name on (id=name.waypoint_id and name.tag='name') left join waypoint_tags time on (id=time.waypoint_id and time.tag='time')").fetchall()
+        #for point in points:
+        #    pos = [point[1],point[0]]
+        #    name = point[2]
+        #    time = point[3]
+        return points
+    
+    def getTracks(self):
+        cur = self.sqlCon.cursor()
+        tracks = cur.execute("select id,name from tracks").fetchall()
+        return tracks
+    
+    def getTrackpointsForTrack_(self,id):
+        cur = self.sqlCon.cursor()
+        points = cur.execute("select latitude,longitude,timestamp from track_segments,trackpoints where ?=track_segments.track_id and track_segments.id=trackpoints.segment_id group by tracks.id", int(id)).fetchall()
+        return points
+        

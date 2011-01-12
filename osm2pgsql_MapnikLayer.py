@@ -13,6 +13,8 @@ import osm2pgsql_SearchProvider
 
 import pgdb as DBAPI
 
+import glob, os.path
+
 class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
     mapName = objc.ivar()
     mapExtent = objc.ivar()
@@ -27,21 +29,19 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         
         return self
     
-    def loadMap(self, db_args, mapName, style_filename, path_prefix):
+    def loadMap(self, db_args, mapName, style_filename):
         self.db_args = db_args
         self.mapName = mapName
         
-        self.setMapXML_(self.buildXML(mapName,style_filename,path_prefix))
+        self.setMapXML_(self.buildXML(mapName,style_filename))
         self.setName_("Mapnik: " + mapName)
     
-    def setStyle(self, style_filename, path_prefix):
-        self.setMapXML_(self.buildXML(self.mapName,style_filename,path_prefix))
+    def setStyle(self, style_filename):
+        self.setMapXML_(self.buildXML(self.mapName,style_filename))
         
-        # Empty tilecache`
-        self.cache = dict()
-        self.render_thread.cancelTiles()
+        self.view.redrawMap()
     
-    def buildXML(self, db_prefix, style_filename, path_prefix):
+    def buildXML(self, db_prefix, style_filename):
         symbols_path = NSBundle.mainBundle().resourcePath() + "/symbols/"
 
         defaults = NSUserDefaults.standardUserDefaults()
@@ -68,10 +68,8 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             con.close()
         
         parameters = {
-        #"symbols":path_prefix + "symbols/",
         "symbols":symbols_path,
         "osm2pgsql_projection":proj4,
-        #"world_boundaries":path_prefix + "world_boundaries/",
         "world_boundaries":world_boundaries_path,
         "prefix":db_prefix,
         }
@@ -182,3 +180,25 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
     
     def getSearchProvider(self):
         return osm2pgsql_SearchProvider.osm2pgsql_SearchProvider.alloc().initWithLayer_(self)
+        
+    def getStyles(self):
+        resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/"
+        app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/"
+        
+        path_prefixs = [resources_prefix, app_support_prefix]
+        
+        styles = list()
+        
+        for path_prefix in path_prefixs:
+            #print "Looking for styles:", path_prefix
+            
+            files = glob.glob(path_prefix + "*.template")
+            
+            for file in files:
+                styles.append({"id":file, "name":os.path.basename(file)[:-9]})
+            
+            styles.append(None)
+        if styles:
+            del styles[-1] # Remove trailing separator None
+        
+        return styles
