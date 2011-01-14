@@ -1,7 +1,6 @@
 .*\.osm
 .*\.osm.bz2
 world_boundaries/.*
-symbols/.*
 build/.*
 inc/.*
 .*\.pyc
