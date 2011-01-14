@@ -39,7 +39,6 @@
 		ED86B2991198FFE6007D969F /* target0.png in Resources */ = {isa = PBXBuildFile; fileRef = ED86B2981198FFE6007D969F /* target0.png */; };
 		ED9891FE117F0E78008A597A /* loaddb.py in Resources */ = {isa = PBXBuildFile; fileRef = ED9891FD117F0E78008A597A /* loaddb.py */; };
 		ED98927D117F16F2008A597A /* SourceListDatasource.py in Resources */ = {isa = PBXBuildFile; fileRef = ED98927C117F16F2008A597A /* SourceListDatasource.py */; };
-		EDA58AC111913BE0006DAF4A /* GPSdConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = EDA58AC011913BE0006DAF4A /* GPSdConnection.m */; };
 		EDB2818C1181C8A6007D021A /* TiledMapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */; };
 		EDB281941182943E007D021A /* MapView.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB281931182943E007D021A /* MapView.py */; };
 		EDB2850911832A93007D021A /* MapWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2850811832A93007D021A /* MapWindowDelegate.py */; };
@@ -48,6 +47,7 @@
 		EDCB8F621260145100280C01 /* Logger.py in Resources */ = {isa = PBXBuildFile; fileRef = EDCB8F611260145100280C01 /* Logger.py */; };
 		EDCC2827124DA22200C835C7 /* styles in Copy Additional Resources */ = {isa = PBXBuildFile; fileRef = EDCC2824124DA22200C835C7 /* styles */; };
 		EDCF0341124486570038C74E /* symbols in Resources */ = {isa = PBXBuildFile; fileRef = EDCF0272124486570038C74E /* symbols */; };
+		EDEDD37412DFD6D0002A51AB /* GPSdConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = EDEDD37312DFD6D0002A51AB /* GPSdConnection.m */; };
 		EDF1012812DC14FE00430E49 /* osm2pgsql_SearchProvider.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF1012712DC14FE00430E49 /* osm2pgsql_SearchProvider.py */; };
 		EDF67E06127E533C0054EDCC /* LayersOutlineDataSource.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF67E05127E533C0054EDCC /* LayersOutlineDataSource.py */; };
 		EDF67E82127E619C0054EDCC /* LayersWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF67E81127E619C0054EDCC /* LayersWindowDelegate.py */; };
@@ -113,8 +113,6 @@
 		ED86B2981198FFE6007D969F /* target0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = target0.png; sourceTree = "<group>"; };
 		ED9891FD117F0E78008A597A /* loaddb.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = loaddb.py; sourceTree = "<group>"; };
 		ED98927C117F16F2008A597A /* SourceListDatasource.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SourceListDatasource.py; sourceTree = "<group>"; };
-		EDA58ABF11913BE0006DAF4A /* GPSdConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPSdConnection.h; path = "../GPSd Monitor/GPSdConnection.h"; sourceTree = SOURCE_ROOT; };
-		EDA58AC011913BE0006DAF4A /* GPSdConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPSdConnection.m; path = "../GPSd Monitor/GPSdConnection.m"; sourceTree = SOURCE_ROOT; };
 		EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = TiledMapnikLayer.py; sourceTree = "<group>"; };
 		EDB281931182943E007D021A /* MapView.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapView.py; sourceTree = "<group>"; };
 		EDB2850811832A93007D021A /* MapWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapWindowDelegate.py; sourceTree = "<group>"; };
@@ -123,6 +121,8 @@
 		EDCB8F611260145100280C01 /* Logger.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Logger.py; sourceTree = "<group>"; };
 		EDCC2824124DA22200C835C7 /* styles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = styles; sourceTree = "<group>"; };
 		EDCF0272124486570038C74E /* symbols */ = {isa = PBXFileReference; lastKnownFileType = folder; path = symbols; sourceTree = "<group>"; };
+		EDEDD37212DFD6D0002A51AB /* GPSdConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPSdConnection.h; sourceTree = "<group>"; };
+		EDEDD37312DFD6D0002A51AB /* GPSdConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPSdConnection.m; sourceTree = "<group>"; };
 		EDF1012712DC14FE00430E49 /* osm2pgsql_SearchProvider.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2pgsql_SearchProvider.py; sourceTree = "<group>"; };
 		EDF67E05127E533C0054EDCC /* LayersOutlineDataSource.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = LayersOutlineDataSource.py; sourceTree = "<group>"; };
 		EDF67E81127E619C0054EDCC /* LayersWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = LayersWindowDelegate.py; sourceTree = "<group>"; };
@@ -148,7 +148,6 @@
 				ED1EB58512BB245400EE5C76 /* osm2pgsql_MapnikLayer */,
 				ED03FF181293370100465563 /* MapLayer.py */,
 				ED03FF11129336C000465563 /* Layer.py */,
-				ED14E57911A3126600C8472D /* JSON */,
 				EDCB8F611260145100280C01 /* Logger.py */,
 				ED63664212C25B5F0095535F /* LoggerDelegate.py */,
 				ED86B29111989C48007D969F /* GenericDataLayer.py */,
@@ -214,8 +213,9 @@
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				77631A3E0C0748CF005415CB /* main.py */,
 				ED9891FD117F0E78008A597A /* loaddb.py */,
-				EDA58ABF11913BE0006DAF4A /* GPSdConnection.h */,
-				EDA58AC011913BE0006DAF4A /* GPSdConnection.m */,
+				EDEDD37212DFD6D0002A51AB /* GPSdConnection.h */,
+				EDEDD37312DFD6D0002A51AB /* GPSdConnection.m */,
+				ED14E57911A3126600C8472D /* JSON */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -390,13 +390,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				EDA58AC111913BE0006DAF4A /* GPSdConnection.m in Sources */,
 				ED14E58711A3126600C8472D /* NSObject+SBJSON.m in Sources */,
 				ED14E58811A3126600C8472D /* NSString+SBJSON.m in Sources */,
 				ED14E58911A3126600C8472D /* SBJSON.m in Sources */,
 				ED14E58A11A3126600C8472D /* SBJsonBase.m in Sources */,
 				ED14E58B11A3126600C8472D /* SBJsonParser.m in Sources */,
 				ED14E58C11A3126600C8472D /* SBJsonWriter.m in Sources */,
+				EDEDD37412DFD6D0002A51AB /* GPSdConnection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

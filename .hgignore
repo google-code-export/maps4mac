@@ -1,0 +1,11 @@
+.*\.osm
+.*\.osm.bz2
+world_boundaries/.*
+symbols/.*
+build/.*
+inc/.*
+.*\.pyc
+.*\.pyo
+\.DS_Store
+.*\.xcodeproj/.*\.pbxuser
+.*\.xcodeproj/.*\.mode2v3
