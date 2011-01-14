@@ -55,6 +55,8 @@ class Logger(NSObject):
         if not 5 == cur.execute("select count(name) from sqlite_master where name in ('tracks', 'track_segments','trackpoints','waypoints','waypoint_tags')").fetchall()[0][0]:
             cur.executescript(schema)
         
+        cur.execute("PRAGMA journal_mode=truncate") # To reduce the amount of disk fiddling when recording tracks
+        
         return self
     
     def connect_(self, gps):
