@@ -5,12 +5,12 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>kml</string>
 			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>kml</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>application/vnd.google-earth.kml+xml</string>
@@ -27,6 +27,10 @@
 			<false/>
 		</dict>
 		<dict>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/gpx+xml</string>
+			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleTypeExtensions</key>
@@ -54,11 +58,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>alpha 0.1</string>
+	<string>Beta 0.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>alpha 0.1</string>
+	<string></string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

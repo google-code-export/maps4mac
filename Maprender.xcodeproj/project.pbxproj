@@ -39,6 +39,7 @@
 		ED86B2991198FFE6007D969F /* target0.png in Resources */ = {isa = PBXBuildFile; fileRef = ED86B2981198FFE6007D969F /* target0.png */; };
 		ED9891FE117F0E78008A597A /* loaddb.py in Resources */ = {isa = PBXBuildFile; fileRef = ED9891FD117F0E78008A597A /* loaddb.py */; };
 		ED98927D117F16F2008A597A /* SourceListDatasource.py in Resources */ = {isa = PBXBuildFile; fileRef = ED98927C117F16F2008A597A /* SourceListDatasource.py */; };
+		EDB064A812E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */; };
 		EDB2818C1181C8A6007D021A /* TiledMapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */; };
 		EDB281941182943E007D021A /* MapView.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB281931182943E007D021A /* MapView.py */; };
 		EDB2850911832A93007D021A /* MapWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2850811832A93007D021A /* MapWindowDelegate.py */; };
@@ -46,7 +47,7 @@
 		EDB405CC1194FBFF00E82D01 /* SearchWindowDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB405CB1194FBFF00E82D01 /* SearchWindowDelegate.py */; };
 		EDCB8F621260145100280C01 /* Logger.py in Resources */ = {isa = PBXBuildFile; fileRef = EDCB8F611260145100280C01 /* Logger.py */; };
 		EDCC2827124DA22200C835C7 /* styles in Copy Additional Resources */ = {isa = PBXBuildFile; fileRef = EDCC2824124DA22200C835C7 /* styles */; };
-		EDCF0341124486570038C74E /* symbols in Resources */ = {isa = PBXBuildFile; fileRef = EDCF0272124486570038C74E /* symbols */; };
+		EDCF0341124486570038C74E /* symbols in Copy Additional Resources */ = {isa = PBXBuildFile; fileRef = EDCF0272124486570038C74E /* symbols */; };
 		EDEDD37412DFD6D0002A51AB /* GPSdConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = EDEDD37312DFD6D0002A51AB /* GPSdConnection.m */; };
 		EDF1012812DC14FE00430E49 /* osm2pgsql_SearchProvider.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF1012712DC14FE00430E49 /* osm2pgsql_SearchProvider.py */; };
 		EDF67E06127E533C0054EDCC /* LayersOutlineDataSource.py in Resources */ = {isa = PBXBuildFile; fileRef = EDF67E05127E533C0054EDCC /* LayersOutlineDataSource.py */; };
@@ -60,6 +61,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				EDCF0341124486570038C74E /* symbols in Copy Additional Resources */,
 				EDCC2827124DA22200C835C7 /* styles in Copy Additional Resources */,
 			);
 			name = "Copy Additional Resources";
@@ -113,6 +115,7 @@
 		ED86B2981198FFE6007D969F /* target0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = target0.png; sourceTree = "<group>"; };
 		ED9891FD117F0E78008A597A /* loaddb.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = loaddb.py; sourceTree = "<group>"; };
 		ED98927C117F16F2008A597A /* SourceListDatasource.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SourceListDatasource.py; sourceTree = "<group>"; };
+		EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2spatialite_MapnikLayer.py; sourceTree = "<group>"; };
 		EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = TiledMapnikLayer.py; sourceTree = "<group>"; };
 		EDB281931182943E007D021A /* MapView.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapView.py; sourceTree = "<group>"; };
 		EDB2850811832A93007D021A /* MapWindowDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapWindowDelegate.py; sourceTree = "<group>"; };
@@ -144,6 +147,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				EDB064A612E0F703001EFBB2 /* osm2spatialite_MapnikLayer */,
 				ED648B6112BD607D00E199A5 /* HttpTileLayer */,
 				ED1EB58512BB245400EE5C76 /* osm2pgsql_MapnikLayer */,
 				ED03FF181293370100465563 /* MapLayer.py */,
@@ -226,7 +230,6 @@
 				ED62566812BE593800D92947 /* Mountains.icns */,
 				ED08086B12BDF095007F36CD /* EmptyGlobe.sqlite */,
 				ED08086C12BDF095007F36CD /* EmptyGlobeSQLite.xml */,
-				EDCF0272124486570038C74E /* symbols */,
 				ED86B2981198FFE6007D969F /* target0.png */,
 				77C8C1F70C07829500965286 /* MainMenu.xib */,
 				ED1EB56712BB1ED200EE5C76 /* osm2pgsql_MapnikLayer.xib */,
@@ -287,9 +290,18 @@
 			name = HttpTileLayer;
 			sourceTree = "<group>";
 		};
+		EDB064A612E0F703001EFBB2 /* osm2spatialite_MapnikLayer */ = {
+			isa = PBXGroup;
+			children = (
+				EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */,
+			);
+			name = osm2spatialite_MapnikLayer;
+			sourceTree = "<group>";
+		};
 		EDCC282D124DA27800C835C7 /* Additional Resources */ = {
 			isa = PBXGroup;
 			children = (
+				EDCF0272124486570038C74E /* symbols */,
 				EDCC2824124DA22200C835C7 /* styles */,
 			);
 			name = "Additional Resources";
@@ -322,6 +334,9 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = NO;
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Maprender" */;
 			compatibilityVersion = "Xcode 3.0";
 			developmentRegion = English;
@@ -359,7 +374,6 @@
 				EDB405CC1194FBFF00E82D01 /* SearchWindowDelegate.py in Resources */,
 				ED86B29211989C48007D969F /* GenericDataLayer.py in Resources */,
 				ED86B2991198FFE6007D969F /* target0.png in Resources */,
-				EDCF0341124486570038C74E /* symbols in Resources */,
 				ED4714641248830B00894EBC /* StyleMenuDelegate.py in Resources */,
 				EDCB8F621260145100280C01 /* Logger.py in Resources */,
 				EDF67E06127E533C0054EDCC /* LayersOutlineDataSource.py in Resources */,
@@ -379,6 +393,7 @@
 				ED62566912BE593800D92947 /* Mountains.icns in Resources */,
 				ED63664312C25B5F0095535F /* LoggerDelegate.py in Resources */,
 				EDF1012812DC14FE00430E49 /* osm2pgsql_SearchProvider.py in Resources */,
+				EDB064A812E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

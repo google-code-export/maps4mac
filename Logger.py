@@ -10,11 +10,14 @@ from Foundation import *
 import os.path, datetime
 import GenericDataLayer
 
-try:
-    # Use the KyngChaos sqlite3 if it's available, otherwise use the standard one
-    import pysqlite3 as sqlite3
-except ImportError:
-    import sqlite3
+#try:
+#    # Use the KyngChaos sqlite3 if it's available, otherwise use the standard one
+#    import pysqlite2 as sqlite3
+#except ImportError:
+#    import sqlite3
+
+import sqlite3
+
 
 class Logger(NSObject):
     currentTract = objc.ivar()

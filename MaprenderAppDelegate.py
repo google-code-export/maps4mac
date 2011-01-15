@@ -138,6 +138,27 @@ class MaprenderAppDelegate(NSObject):
             self.mapView.setZoom_(layer.getDefaultZoom())
         self.mapView.setMapLayer_(layer)            
         self.mapName = mapName
+        
+    @objc.IBAction
+    def openSpatiaLite_(self, sender):
+        panel = NSOpenPanel.alloc().init()
+        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["xml"]):
+            filename = panel.filename()
+            
+            from osm2spatialite_MapnikLayer import osm2spatialite_MapnikLayer
+            layer = osm2spatialite_MapnikLayer.alloc().init()
+            layer.loadMap_(filename)
+            layer.setName_("SpatiaLite: " + os.path.splitext(os.path.basename(filename))[0])
+            
+            
+            if self.mapView.center is None:
+                self.mapView.setCenter_(layer.getDefaultCenter())
+                self.mapView.setZoom_(layer.getDefaultZoom())
+                
+            self.mapView.setMapLayer_(layer)
+            self.mapName = "SpatiaLite"
+            
+            self.mapWindow.makeKeyAndOrderFront_(self)
 
     @objc.IBAction
     def openMapnikXML_(self, sender):
