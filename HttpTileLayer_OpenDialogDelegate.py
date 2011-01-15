@@ -1,6 +1,6 @@
 #
 #  HttpTileLayer_OpenDialogDelegate.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 12/18/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.
@@ -37,7 +37,6 @@ class HttpTileLayer_OpenDialogDelegate(NSObject):
         
         mapWindow.makeKeyAndOrderFront_(self)
         
-        #path = "/Users/argon/Prog/Maprender/" + mapName + ".xml"
         from HttpTileLayer import HttpTileLayer
         layer = HttpTileLayer.alloc().init()
         layer.setMapURL_(url)

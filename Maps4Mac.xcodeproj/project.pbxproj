@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		77631A270C06C501005415CB /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77631A260C06C501005415CB /* Python.framework */; };
 		77631A3F0C0748CF005415CB /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = 77631A3E0C0748CF005415CB /* main.py */; };
-		7790198F0C07548A00326F66 /* MaprenderAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = 7790198E0C07548A00326F66 /* MaprenderAppDelegate.py */; };
+		7790198F0C07548A00326F66 /* Maps4MacAppDelegate.py in Resources */ = {isa = PBXBuildFile; fileRef = 7790198E0C07548A00326F66 /* Maps4MacAppDelegate.py */; };
 		77C8C1F90C07829500965286 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 77C8C1F70C07829500965286 /* MainMenu.xib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -76,13 +76,13 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		32CA4F630368D1EE00C91783 /* Maprender_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Maprender_Prefix.pch; sourceTree = "<group>"; };
+		32CA4F630368D1EE00C91783 /* Maps4Mac_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Maps4Mac_Prefix.pch; sourceTree = "<group>"; };
 		77631A260C06C501005415CB /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /System/Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
 		77631A3E0C0748CF005415CB /* main.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
-		7790198E0C07548A00326F66 /* MaprenderAppDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MaprenderAppDelegate.py; sourceTree = "<group>"; };
+		7790198E0C07548A00326F66 /* Maps4MacAppDelegate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Maps4MacAppDelegate.py; sourceTree = "<group>"; };
 		77C8C1F80C07829500965286 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Maprender.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Maprender.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Maps4Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Maps4Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED03FF11129336C000465563 /* Layer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = Layer.py; sourceTree = "<group>"; };
 		ED03FF181293370100465563 /* MapLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapLayer.py; sourceTree = "<group>"; };
 		ED08086B12BDF095007F36CD /* EmptyGlobe.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = EmptyGlobe.sqlite; sourceTree = "<group>"; };
@@ -163,7 +163,7 @@
 				EDF67E05127E533C0054EDCC /* LayersOutlineDataSource.py */,
 				EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */,
 				ED98927C117F16F2008A597A /* SourceListDatasource.py */,
-				7790198E0C07548A00326F66 /* MaprenderAppDelegate.py */,
+				7790198E0C07548A00326F66 /* Maps4MacAppDelegate.py */,
 				ED5E084B1190BDE200E70DA7 /* MapnikRenderThread.py */,
 				EDB3B0E412A0ADDE00DF65CD /* DownloadWindowDelegate.py */,
 			);
@@ -192,12 +192,12 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Maprender.app */,
+				8D1107320486CEB800E47090 /* Maps4Mac.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		29B97314FDCFA39411CA2CEA /* Maprender */ = {
+		29B97314FDCFA39411CA2CEA /* Maps4Mac */ = {
 			isa = PBXGroup;
 			children = (
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -207,13 +207,13 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
-			name = Maprender;
+			name = Maps4Mac;
 			sourceTree = "<group>";
 		};
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				32CA4F630368D1EE00C91783 /* Maprender_Prefix.pch */,
+				32CA4F630368D1EE00C91783 /* Maps4Mac_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				77631A3E0C0748CF005415CB /* main.py */,
 				ED9891FD117F0E78008A597A /* loaddb.py */,
@@ -310,9 +310,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* Maprender */ = {
+		8D1107260486CEB800E47090 /* Maps4Mac */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Maprender" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Maps4Mac" */;
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -323,10 +323,10 @@
 			);
 			dependencies = (
 			);
-			name = Maprender;
+			name = Maps4Mac;
 			productInstallPath = "$(HOME)/Applications";
-			productName = Maprender;
-			productReference = 8D1107320486CEB800E47090 /* Maprender.app */;
+			productName = Maps4Mac;
+			productReference = 8D1107320486CEB800E47090 /* Maps4Mac.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -337,7 +337,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = NO;
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Maprender" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Maps4Mac" */;
 			compatibilityVersion = "Xcode 3.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -347,11 +347,11 @@
 				French,
 				German,
 			);
-			mainGroup = 29B97314FDCFA39411CA2CEA /* Maprender */;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* Maps4Mac */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* Maprender */,
+				8D1107260486CEB800E47090 /* Maps4Mac */,
 			);
 		};
 /* End PBXProject section */
@@ -363,7 +363,7 @@
 			files = (
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				77631A3F0C0748CF005415CB /* main.py in Resources */,
-				7790198F0C07548A00326F66 /* MaprenderAppDelegate.py in Resources */,
+				7790198F0C07548A00326F66 /* Maps4MacAppDelegate.py in Resources */,
 				77C8C1F90C07829500965286 /* MainMenu.xib in Resources */,
 				ED9891FE117F0E78008A597A /* loaddb.py in Resources */,
 				ED98927D117F16F2008A597A /* SourceListDatasource.py in Resources */,
@@ -452,10 +452,10 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Maprender_Prefix.pch;
+				GCC_PREFIX_HEADER = Maps4Mac_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_NAME = Maprender;
+				PRODUCT_NAME = Maps4Mac;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = YES;
@@ -472,10 +472,10 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Maprender_Prefix.pch;
+				GCC_PREFIX_HEADER = Maps4Mac_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_NAME = Maprender;
+				PRODUCT_NAME = Maps4Mac;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -508,7 +508,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Maprender" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Maps4Mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
@@ -517,7 +517,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Maprender" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Maps4Mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,

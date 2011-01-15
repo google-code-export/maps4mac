@@ -1,6 +1,6 @@
 #
 #  Logger.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 10/8/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.

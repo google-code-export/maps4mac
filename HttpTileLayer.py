@@ -1,6 +1,6 @@
 #
 #  HttpTileLayer.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 11/25/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.

@@ -1,6 +1,6 @@
 #
 #  TiledMapnikLayer.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 4/23/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.

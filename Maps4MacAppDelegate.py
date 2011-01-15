@@ -1,6 +1,6 @@
 #
-#  MaprenderAppDelegate.py
-#  Maprender
+#  Maps4MacAppDelegate.py
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 4/21/10.
 #  Copyright __MyCompanyName__ 2010. All rights reserved.
@@ -12,7 +12,7 @@ from AppKit import *
 import os.path, os
 import Logger
 
-class MaprenderAppDelegate(NSObject):
+class Maps4MacAppDelegate(NSObject):
     mapView   = objc.IBOutlet()
     mapWindow = objc.IBOutlet()
     mapWindowDelegate = objc.IBOutlet()

@@ -1,6 +1,6 @@
 #
 #  main.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 4/21/10.
 #  Copyright __MyCompanyName__ 2010. All rights reserved.
@@ -15,7 +15,7 @@ from PyObjCTools import AppHelper
 
 # import modules containing classes required to start application and load MainMenu.nib
 import SourceListDatasource
-import MaprenderAppDelegate
+import Maps4MacAppDelegate
 import MapWindowDelegate
 import MapView
 import MapnikRenderThread

@@ -12,7 +12,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="477"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -39,7 +38,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="NSMenuItem" id="694149608">
 						<reference key="NSMenu" ref="649796088"/>
-						<string key="NSTitle">Maprender</string>
+						<string key="NSTitle">Maps4Mac</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSKeyEquivModMask">1048576</int>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -53,12 +52,12 @@
 						</object>
 						<string key="NSAction">submenuAction:</string>
 						<object class="NSMenu" key="NSSubmenu" id="110575045">
-							<string key="NSTitle">Maprender</string>
+							<string key="NSTitle">Maps4Mac</string>
 							<object class="NSMutableArray" key="NSMenuItems">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="238522557">
 									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">About Maprender</string>
+									<string key="NSTitle">About Maps4Mac</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="505604072"/>
@@ -125,7 +124,7 @@
 								</object>
 								<object class="NSMenuItem" id="755159360">
 									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">Hide Maprender</string>
+									<string key="NSTitle">Hide Maps4Mac</string>
 									<string key="NSKeyEquiv">h</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -163,7 +162,7 @@
 								</object>
 								<object class="NSMenuItem" id="632727374">
 									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">Quit Maprender</string>
+									<string key="NSTitle">Quit Maps4Mac</string>
 									<string key="NSKeyEquiv">q</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -559,7 +558,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="238773614">
 									<reference key="NSMenu" ref="374024848"/>
-									<string key="NSTitle">Maprender Help</string>
+									<string key="NSTitle">Maps4Mac Help</string>
 									<string key="NSKeyEquiv">?</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -583,7 +582,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{450, 450}</string>
 				<object class="NSView" key="NSWindowView" id="52587735">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -779,7 +778,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{612, 580}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMinSize">{450, 472}</string>
@@ -1710,6 +1708,7 @@
 									</object>
 									<string key="NSFrame">{{1, 17}, {595, 238}}</string>
 									<reference key="NSSuperview" ref="91657332"/>
+									<reference key="NSNextKeyView" ref="283698709"/>
 									<reference key="NSDocView" ref="283698709"/>
 									<reference key="NSBGColor" ref="1027412546"/>
 									<int key="NScvFlags">4</int>
@@ -1743,6 +1742,7 @@
 									</object>
 									<string key="NSFrame">{{1, 0}, {595, 17}}</string>
 									<reference key="NSSuperview" ref="91657332"/>
+									<reference key="NSNextKeyView" ref="820039149"/>
 									<reference key="NSDocView" ref="820039149"/>
 									<reference key="NSBGColor" ref="1027412546"/>
 									<int key="NScvFlags">4</int>
@@ -1751,6 +1751,7 @@
 							</object>
 							<string key="NSFrame">{{20, 379}, {597, 256}}</string>
 							<reference key="NSSuperview" ref="477015847"/>
+							<reference key="NSNextKeyView" ref="400460850"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="955487136"/>
 							<reference key="NSHScroller" ref="707938064"/>
@@ -1890,6 +1891,7 @@
 									</object>
 									<string key="NSFrame">{{1, 17}, {166, 266}}</string>
 									<reference key="NSSuperview" ref="736299840"/>
+									<reference key="NSNextKeyView" ref="954824371"/>
 									<reference key="NSDocView" ref="954824371"/>
 									<reference key="NSBGColor" ref="1027412546"/>
 									<int key="NScvFlags">4</int>
@@ -1923,6 +1925,7 @@
 									</object>
 									<string key="NSFrame">{{1, 0}, {166, 17}}</string>
 									<reference key="NSSuperview" ref="736299840"/>
+									<reference key="NSNextKeyView" ref="597583811"/>
 									<reference key="NSDocView" ref="597583811"/>
 									<reference key="NSBGColor" ref="1027412546"/>
 									<int key="NScvFlags">4</int>
@@ -1931,6 +1934,7 @@
 							</object>
 							<string key="NSFrame">{{20, 62}, {168, 284}}</string>
 							<reference key="NSSuperview" ref="477015847"/>
+							<reference key="NSNextKeyView" ref="223317105"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="450181980"/>
 							<reference key="NSHScroller" ref="16670551"/>
@@ -2411,7 +2415,7 @@
 				<string key="NSClassName">StyleMenuDelegate</string>
 			</object>
 			<object class="NSCustomObject" id="610635028">
-				<string key="NSClassName">MaprenderAppDelegate</string>
+				<string key="NSClassName">Maps4MacAppDelegate</string>
 			</object>
 			<object class="NSCustomObject" id="492144479">
 				<string key="NSClassName">MapWindowDelegate</string>
@@ -4384,7 +4388,7 @@
 						<int key="objectID">373</int>
 						<reference key="object" ref="610635028"/>
 						<reference key="parent" ref="0"/>
-						<string key="objectName">MaprenderAppDelegate</string>
+						<string key="objectName">Maps4MacAppDelegate</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">420</int>
@@ -6248,6 +6252,8 @@
 					<string>1000.IBPluginDependency</string>
 					<string>1000.IBWindowTemplateEditedContentRect</string>
 					<string>1000.NSWindowTemplate.visibleAtLaunch</string>
+					<string>1000.windowTemplate.maxSize</string>
+					<string>1000.windowTemplate.minSize</string>
 					<string>1001.IBPluginDependency</string>
 					<string>1002.IBPluginDependency</string>
 					<string>1002.IBViewBoundsToFrameTransform</string>
@@ -6394,6 +6400,7 @@
 					<string>476.IBWindowTemplateEditedContentRect</string>
 					<string>476.NSWindowTemplate.visibleAtLaunch</string>
 					<string>476.windowTemplate.hasMinSize</string>
+					<string>476.windowTemplate.maxSize</string>
 					<string>476.windowTemplate.minSize</string>
 					<string>477.IBPluginDependency</string>
 					<string>482.IBPluginDependency</string>
@@ -6442,6 +6449,8 @@
 					<string>624.IBPluginDependency</string>
 					<string>624.IBWindowTemplateEditedContentRect</string>
 					<string>624.NSWindowTemplate.visibleAtLaunch</string>
+					<string>624.windowTemplate.maxSize</string>
+					<string>624.windowTemplate.minSize</string>
 					<string>625.IBPluginDependency</string>
 					<string>626.IBPluginDependency</string>
 					<string>626.IBViewBoundsToFrameTransform</string>
@@ -6469,6 +6478,8 @@
 					<string>690.IBPluginDependency</string>
 					<string>690.IBWindowTemplateEditedContentRect</string>
 					<string>690.NSWindowTemplate.visibleAtLaunch</string>
+					<string>690.windowTemplate.maxSize</string>
+					<string>690.windowTemplate.minSize</string>
 					<string>691.IBPluginDependency</string>
 					<string>692.IBPluginDependency</string>
 					<string>693.IBPluginDependency</string>
@@ -6502,6 +6513,8 @@
 					<string>770.IBPluginDependency</string>
 					<string>770.IBWindowTemplateEditedContentRect</string>
 					<string>770.NSWindowTemplate.visibleAtLaunch</string>
+					<string>770.windowTemplate.maxSize</string>
+					<string>770.windowTemplate.minSize</string>
 					<string>771.IBPluginDependency</string>
 					<string>781.IBPluginDependency</string>
 					<string>782.IBPluginDependency</string>
@@ -6518,6 +6531,8 @@
 					<string>806.IBPluginDependency</string>
 					<string>806.IBWindowTemplateEditedContentRect</string>
 					<string>806.NSWindowTemplate.visibleAtLaunch</string>
+					<string>806.windowTemplate.maxSize</string>
+					<string>806.windowTemplate.minSize</string>
 					<string>807.IBPluginDependency</string>
 					<string>808.IBPluginDependency</string>
 					<string>81.IBEditorWindowLastContentRect</string>
@@ -6551,6 +6566,8 @@
 					<string>861.IBPluginDependency</string>
 					<string>861.IBWindowTemplateEditedContentRect</string>
 					<string>861.NSWindowTemplate.visibleAtLaunch</string>
+					<string>861.windowTemplate.maxSize</string>
+					<string>861.windowTemplate.minSize</string>
 					<string>862.IBPluginDependency</string>
 					<string>863.IBPluginDependency</string>
 					<string>863.IBViewBoundsToFrameTransform</string>
@@ -6598,6 +6615,8 @@
 					<string>944.IBPluginDependency</string>
 					<string>944.IBWindowTemplateEditedContentRect</string>
 					<string>944.NSWindowTemplate.visibleAtLaunch</string>
+					<string>944.windowTemplate.maxSize</string>
+					<string>944.windowTemplate.minSize</string>
 					<string>945.IBPluginDependency</string>
 					<string>946.IBPluginDependency</string>
 					<string>946.IBViewBoundsToFrameTransform</string>
@@ -6629,6 +6648,8 @@
 					<string>985.IBPluginDependency</string>
 					<string>985.IBWindowTemplateEditedContentRect</string>
 					<string>985.NSWindowTemplate.visibleAtLaunch</string>
+					<string>985.windowTemplate.maxSize</string>
+					<string>985.windowTemplate.minSize</string>
 					<string>986.IBPluginDependency</string>
 					<string>987.IBPluginDependency</string>
 					<string>987.IBViewBoundsToFrameTransform</string>
@@ -6651,6 +6672,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{573, 401}, {409, 237}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -6813,6 +6836,7 @@
 					<string>{{338, 47}, {612, 580}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
 					<string>{450, 450}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6890,6 +6914,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{334, 298}, {473, 305}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -6930,6 +6956,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{405, 163}, {480, 409}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6977,6 +7005,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{472, 364}, {480, 270}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6993,6 +7023,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{759, 271}, {232, 372}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{467, 631}, {229, 83}}</string>
@@ -7041,6 +7073,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{377, 411}, {426, 121}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -7109,6 +7143,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{399, 400}, {409, 269}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -7156,6 +7192,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{327, 73}, {637, 680}}</string>
 					<boolean value="NO"/>
+					<string>{1.79769e+308, 1.79769e+308}</string>
+					<string>{0, 0}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -7562,7 +7600,7 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">MaprenderAppDelegate</string>
+					<string key="className">Maps4MacAppDelegate</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7573,11 +7611,13 @@
 							<string>loadLayerFromFile:</string>
 							<string>openHTTPTiles:</string>
 							<string>openMapnikXML:</string>
+							<string>openSpatiaLite:</string>
 							<string>openosm2pgsql:</string>
 							<string>setMapStyle:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -7596,6 +7636,7 @@
 							<string>loadLayerFromFile:</string>
 							<string>openHTTPTiles:</string>
 							<string>openMapnikXML:</string>
+							<string>openSpatiaLite:</string>
 							<string>openosm2pgsql:</string>
 							<string>setMapStyle:</string>
 						</object>
@@ -7619,6 +7660,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">openMapnikXML:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">openSpatiaLite:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -7707,7 +7752,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">MaprenderAppDelegate.py</string>
+						<string key="minorKey">Maps4MacAppDelegate.py</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

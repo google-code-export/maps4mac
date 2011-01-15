@@ -1,6 +1,6 @@
 #
 #  osm2pgsql_MapnikLayer.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 12/14/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.

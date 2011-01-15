@@ -1,6 +1,6 @@
 #
 #  osm2spatialite_MapnikLayer.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 1/14/11.
 #  Copyright (c) 2011 Daniel Sabo. All rights reserved.

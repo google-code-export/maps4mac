@@ -1,6 +1,6 @@
 #
 #  osm2pgsql_SearchProvider.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 12/17/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.

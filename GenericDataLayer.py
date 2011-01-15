@@ -1,6 +1,6 @@
 #
 #  GenericDataLayer.py
-#  Maprender
+#  Maps4Mac
 #
 #  Created by Daniel Sabo on 5/10/10.
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.
@@ -104,8 +104,6 @@ class GenericDataLayer(Layer.Layer):
         self.outline = None
         
         icon_path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
-        if not icon_path:
-            icon_path = "/Users/argon/Prog/Maprender/target0.png"
         self.default_icon = GenericDataLayerIcon.initWithFile_(icon_path)
         self.default_text_format = { 
             NSFontAttributeName : NSFont.fontWithName_size_("Andale Mono", 10.0),
