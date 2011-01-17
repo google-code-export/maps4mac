@@ -182,8 +182,8 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         return osm2pgsql_SearchProvider.osm2pgsql_SearchProvider.alloc().initWithLayer_(self)
         
     def getStyles(self):
-        resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/"
-        app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/"
+        resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/osm2pgsql/"
+        app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/osm2pgsql/"
         
         path_prefixs = [resources_prefix, app_support_prefix]
         

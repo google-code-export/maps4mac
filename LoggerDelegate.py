@@ -109,6 +109,7 @@ class LoggerDelegate(NSObject):
     @objc.IBAction
     def saveSelectionAsGPX_(self, sender):
         panel = NSSavePanel.alloc().init()
+        panel.setTitle_("Save Data to GPX")
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx"]):
             filename = panel.filename()
             gpx = """<?xml version="1.0" encoding="UTF-8" ?><gpx>\n"""

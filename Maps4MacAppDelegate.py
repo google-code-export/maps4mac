@@ -125,7 +125,7 @@ class Maps4MacAppDelegate(NSObject):
     def loadosm2pgsqlWithName_dbArgs_(self, mapName, db_args):
         path_prefix = NSBundle.mainBundle().resourcePath() + "/"
         
-        style_filename = path_prefix + "styles/osm_style.xml.template"
+        style_filename = path_prefix + "styles/osm2pgsql/Maps4Mac Default.template"
         
         self.mapWindow.makeKeyAndOrderFront_(self)
         
@@ -141,28 +141,37 @@ class Maps4MacAppDelegate(NSObject):
         
     @objc.IBAction
     def openSpatiaLite_(self, sender):
+        path_prefix = NSBundle.mainBundle().resourcePath() + "/"
+        style_filename = path_prefix + "styles/osm2spatialite/Maps4Mac Default.template"
+        
         panel = NSOpenPanel.alloc().init()
-        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["xml"]):
+        panel.setTitle_("Open osm2spatialite Database")
+        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, None):
             filename = panel.filename()
             
-            from osm2spatialite_MapnikLayer import osm2spatialite_MapnikLayer
-            layer = osm2spatialite_MapnikLayer.alloc().init()
-            layer.loadMap_(filename)
-            layer.setName_("SpatiaLite: " + os.path.splitext(os.path.basename(filename))[0])
-            
-            
-            if self.mapView.center is None:
-                self.mapView.setCenter_(layer.getDefaultCenter())
-                self.mapView.setZoom_(layer.getDefaultZoom())
+            try:
+                from osm2spatialite_MapnikLayer import osm2spatialite_MapnikLayer
+                layer = osm2spatialite_MapnikLayer.alloc().init()
+                layer.loadMap(filename, style_filename)
                 
-            self.mapView.setMapLayer_(layer)
-            self.mapName = "SpatiaLite"
-            
-            self.mapWindow.makeKeyAndOrderFront_(self)
+                if self.mapView.center is None:
+                    self.mapView.setCenter_(layer.getDefaultCenter())
+                    self.mapView.setZoom_(layer.getDefaultZoom())
+                    
+                self.mapView.setMapLayer_(layer)
+                self.mapName = "SpatiaLite"
+                
+                self.mapWindow.makeKeyAndOrderFront_(self)
+            except Exception as ex:
+                import traceback
+                print ex
+                traceback.print_exc()
+                raise
 
     @objc.IBAction
     def openMapnikXML_(self, sender):
         panel = NSOpenPanel.alloc().init()
+        panel.setTitle_("Open Mapnik XML")
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["xml"]):
             filename = panel.filename()
             
@@ -255,5 +264,6 @@ class Maps4MacAppDelegate(NSObject):
             return
         
         panel = NSOpenPanel.alloc().init()
+        panel.setTitle_("Open File Layer")
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx", "kml"]):
             self.loadFile_(panel.filename())

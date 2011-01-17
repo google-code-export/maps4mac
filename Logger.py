@@ -73,6 +73,16 @@ class Logger(NSObject):
                 
         # FIXME: Check how long it's been since the last GPS data to see if we should split the tract
     
+    def getLoggerLayer(self):
+        if not self.layer:
+            self.layer = GenericDataLayer.GenericDataLayer.alloc().init()
+            self.layer.setName_("Logger")
+            
+        if not self.layer.view and self.appDelegate.mapView:
+            self.appDelegate.mapView.addLayer_(self.layer)
+        
+        return self.layer
+    
     def addTrackpointWithValues_(self, fix):
         def orNone(k, d):
             if k in d:
@@ -131,13 +141,7 @@ class Logger(NSObject):
         cur.execute("insert into waypoints (latitude,longitude) values (?,?)", [lat,lon])
         self.sqlCon.commit()
         
-        if not self.layer:
-            self.layer = GenericDataLayer.GenericDataLayer.alloc().init()
-            self.layer.setName_("Logger")
-        self.layer.addPointWithX_Y_Name_(lon, lat, None)
-
-        if not self.layer.view:
-            self.appDelegate.mapView.addLayer_(self.layer)
+        self.getLoggerLayer().addPointWithX_Y_Name_(lon, lat, None)
     
     def addWaypointAtLon_Lat_Properties_(self, lon, lat, props):
         """Add a waypont at the given lon, lat with additional properties
@@ -154,13 +158,7 @@ class Logger(NSObject):
         if "name" in props:
             name = props["name"]
         
-        if not self.layer:
-            self.layer = GenericDataLayer.GenericDataLayer.alloc().init()
-            self.layer.setName_("Logger")
-        self.layer.addPointWithX_Y_Name_(lon, lat, name)
-        
-        if not self.layer.view:
-            self.appDelegate.mapView.addLayer_(self.layer)
+        self.getLoggerLayer().addPointWithX_Y_Name_(lon, lat, name)
     
     def getWaypoints(self):
         cur = self.sqlCon.cursor()
