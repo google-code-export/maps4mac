@@ -31,7 +31,6 @@ class LoggerDelegate(NSObject):
     tracking = objc.ivar()
     alwaysLog = objc.ivar()
     
-    waypointsList = objc.ivar()
     trackList = objc.ivar()
     
     def init(self):
@@ -44,11 +43,28 @@ class LoggerDelegate(NSObject):
         defaults = NSUserDefaults.standardUserDefaults()
         self.alwaysLog = bool(defaults.boolForKey_("always_log"))
         self.tracking  = False
-        #self.appDelegate.logger.enabled = self.tracking
         
         self.trackMenuTitle = self.trackMenuTitles[self.tracking]
         
+        self.waypointLocationCache = dict()
+        
         return self
+    
+    def awakeFromNib(self):
+        self.appDelegate.addObserver_forKeyPath_options_context_(self, u"logger", 0, None)
+    
+    def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
+        if keyPath == "logger":
+            self.logger = self.appDelegate.logger
+            self.logger.addObserver_forKeyPath_options_context_(self, u"waypoints", 0, None)
+            self.logger.addObserver_forKeyPath_options_context_(self, u"tracks", 0, None)
+        elif object == self.logger:
+            if keyPath == "waypoints":
+                print "Waypoints updated"
+                self.waypointsTableView.reloadData()
+            if keyPath == "tracks":
+                print "Tracks updated"
+                self.tracksTableView.reloadData()
     
     @objc.IBAction
     def showAddWaypointWindow_(self, sender):
@@ -71,7 +87,7 @@ class LoggerDelegate(NSObject):
         except:
             return
         
-        self.appDelegate.logger.addWaypointAtLon_Lat_Properties_(lon, lat, props)
+        self.logger.addWaypointAtLon_Lat_Properties_(lon, lat, props)
         self.addWaypointWindow.orderOut_(self)
     
     @objc.IBAction
@@ -79,30 +95,30 @@ class LoggerDelegate(NSObject):
         if not self.tracking:
             self.addTrackWindow.makeKeyAndOrderFront_(self)
         else:
-            self.appDelegate.logger.endTrack()
+            self.logger.endTrack()
             self.tracking = False
             
-            self.appDelegate.logger.enabled = self.tracking
+            self.logger.enabled = self.tracking
             self.trackMenuTitle = self.trackMenuTitles[self.tracking]
     
     @objc.IBAction
     def doAddTrack_(self, sender):
-        self.appDelegate.logger.startTrackWithName_(str(self.addTrackName))
+        self.logger.startTrackWithName_(str(self.addTrackName))
         self.addTrackWindow.orderOut_(self)
         
         self.tracking = True
-        self.appDelegate.logger.enabled = self.tracking
+        self.logger.enabled = self.tracking
         self.trackMenuTitle = self.trackMenuTitles[self.tracking]
     
     @objc.IBAction
     def addSelectionToLoggingLayer_(self, sender):
         #FIXME: Enable this
         print "Waypoints:"
-        for row,waypoint in enumerate(self.waypointsList):
+        for row,waypoint in enumerate(self.logger.waypoints):
             if self.waypointsTableView.isRowSelected_(row):
                 print "\t",waypoint[0],waypoint[3]
         print "Tracks:"
-        for row,track in enumerate(self.trackList):
+        for row,track in enumerate(self.logger.tracks):
             if self.tracksTableView.isRowSelected_(row):
                 print "\t",track[0],track[1]
     
@@ -110,13 +126,29 @@ class LoggerDelegate(NSObject):
     def saveSelectionAsGPX_(self, sender):
         panel = NSSavePanel.alloc().init()
         panel.setTitle_("Save Data to GPX")
+        panel.setAllowsOtherFileTypes_(True)
+        panel.setCanSelectHiddenExtension_(True)
         if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx"]):
             filename = panel.filename()
             gpx = """<?xml version="1.0" encoding="UTF-8" ?><gpx>\n"""
-            for row,waypoint in enumerate(self.waypointsList):
+            for row,waypoint in enumerate(self.logger.waypoints):
                 if self.waypointsTableView.isRowSelected_(row):
                     wpt = """<wpt lat="%f" lon="%f"><name>%s</name></wpt>\n"""
-                    gpx += wpt % (waypoint[1],waypoint[2],waypoint[3])
+                    gpx += wpt % (waypoint["latitude"],waypoint["longitude"],waypoint["name"])
+                    
+            for row,track in enumerate(self.logger.tracks):
+                if self.tracksTableView.isRowSelected_(row):
+                    gpx += "<trk>\n"
+                    for segment in self.logger.getTrackpointsForTrack_(track["id"]):
+                        gpx += "<trkseg>\n"
+                        for i in range(len(segment["position"])):
+                            gpx += """<trkpt lat="%f" lon="%f">\n""" % (segment["position"][i][1], segment["position"][i][0])
+                            for tag in ["timestamp","hdop","speed"]:
+                                if segment[tag][i]:
+                                    gpx += "<%s>%s</%s>\n" % (tag,str(segment[tag][i]),tag)
+                            gpx += "</trkpt>\n"
+                        gpx += "</trkseg>\n"
+                    gpx += "</trk>\n"
             gpx += "</gpx>"
             f = open(filename,"w")
             f.write(gpx)
@@ -128,57 +160,33 @@ class LoggerDelegate(NSObject):
     
     def numberOfRowsInTableView_(self, tableView):
         if tableView == self.tracksTableView:
-            #return self.appDelegate.logger.getTracksLen()
-            if not self.trackList:
-                self.trackList = self.appDelegate.logger.getTracks()
-            return len(self.trackList)
-        if tableView == self.trackpointsTableView:
-            return 0
+            #return len(self.logger.tracks)
+            return len(self.logger.tracks)
         elif tableView == self.waypointsTableView:
-            #return self.appDelegate.logger.getWaypointsLen()
-            if not self.waypointsList:
-                self.waypointsList = []
-                for waypoint in self.appDelegate.logger.getWaypoints():
-                    loc = None
-                    try:
-                        loc = "%.4f, %.4f" % (waypoint[2],waypoint[1])
-                    except:
-                        pass
-                    self.waypointsList.append([waypoint[0],waypoint[1],waypoint[2],waypoint[3],waypoint[4],loc])
-                #self.waypointsList = self.appDelegate.logger.getWaypoints()
-            return len(self.waypointsList)
+            return len(self.logger.waypoints)
         return 0
         
     def tableView_objectValueForTableColumn_row_(self, tableView, tableColumn, row):
         if tableView == self.tracksTableView:
-            track = self.trackList[row]
-            #track = self.appDelegate.logger.getTrack_(row)
-            if not track:
-                return None
+            track = self.logger.tracks[row]
             if "Name" == tableColumn.identifier():
-                return track[1]
+                return track["name"]
+            if "Segments" == tableColumn.identifier():
+                return track["segments"]
+            if "Points" == tableColumn.identifier():
+                return track["points"]
             else:
                 print self.__class__,"Unknown table view identifier:",tableColumn.identifier()
                 return None
         elif tableView == self.waypointsTableView:
-            waypoint = self.waypointsList[row]
-            #waypoint = self.appDelegate.logger.getWaypoint_(row)
-            # Stuff the location somewhere so it doesn't get garbage collected
-            #self.waypointCache[row] = [waypoint[3],waypoint[4],None]
-            if not waypoint:
-                return None
+            waypoint = self.logger.waypoints[row]
             if "Name" == tableColumn.identifier():
-                return waypoint[3]
+                return waypoint["name"]
             elif "Location" == tableColumn.identifier():
-                return waypoint[5]
-                #try:
-                #    loc = "%.4f, %.4f" % (waypoint[2],waypoint[1])
-                #    self.waypointCache[row][5] = loc
-                #except:
-                #    return None
-                #return loc
+                self.waypointLocationCache[row] = "%f, %f" % (waypoint["latitude"],waypoint["longitude"])
+                return self.waypointLocationCache[row]
             elif "Time" == tableColumn.identifier():
-                return waypoint[4]
+                return waypoint["time"]
             else:
                 print self.__class__,"Unknown table view identifier:",tableColumn.identifier()
                 return None

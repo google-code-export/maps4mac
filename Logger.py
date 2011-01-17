@@ -12,11 +12,11 @@ import GenericDataLayer
 
 #try:
 #    # Use the KyngChaos sqlite3 if it's available, otherwise use the standard one
-#    import pysqlite2 as sqlite3
+#    import pysqlite2 as sqlite
 #except ImportError:
-#    import sqlite3
+#    import sqlite3 as sqlite
 
-import sqlite3
+import sqlite3 as sqlite
 
 
 class Logger(NSObject):
@@ -24,7 +24,12 @@ class Logger(NSObject):
     currentSegment = objc.ivar()
     enabled = objc.ivar()
     appDelegate = objc.ivar()
+    
     layer = objc.ivar()
+    layerTrack = objc.ivar()
+    
+    waypoints = objc.ivar()
+    tracks    = objc.ivar()
 
     def init(self):
         self = super(self.__class__, self).init()
@@ -42,8 +47,9 @@ class Logger(NSObject):
         self.currentTract = None
         self.currentSegment = None
         self.layer = None
+        self.layerTrack = None
         self.enabled = False
-        self.sqlCon = sqlite3.connect(loggerPath)
+        self.sqlCon = sqlite.connect(loggerPath)
         
         schema = """
         create table tracks (id integer primary key autoincrement, name text);
@@ -60,7 +66,57 @@ class Logger(NSObject):
         
         cur.execute("PRAGMA journal_mode=truncate") # To reduce the amount of disk fiddling when recording tracks
         
+        self.waypoints = []
+        self.tracks    = []
+        
+        self.loadWaypoints()
+        self.loadTracks()
+        
         return self
+    
+    def loadWaypoints(self):
+        waypointsSQL = """select id,latitude,longitude,name.value,desc.value,time.value from waypoints
+                          left join waypoint_tags name on (id=name.waypoint_id and name.tag='name')
+                          left join waypoint_tags desc on (id=desc.waypoint_id and desc.tag='desc')
+                          left join waypoint_tags time on (id=time.waypoint_id and time.tag='time')"""
+        
+        waypoints = list()
+        for row in self.sqlCon.execute(waypointsSQL).fetchall():
+            waypoints.append({
+                "id":int(row[0]),
+                "latitude":float(row[1]),
+                "longitude":float(row[2]),
+                "name":row[3],
+                "description":row[4],
+                "time":row[5],
+            })
+        
+        self.willChangeValueForKey_("waypoints")
+        self.waypoints = waypoints
+        self.didChangeValueForKey_("waypoints")
+    
+    def loadTracks(self):
+        tracksSQL = """select tracks.id,tracks.name,count(distinct(track_segments.id)),count(track_segments.id) from tracks
+                   left join track_segments on (tracks.id = track_segments.track_id)
+                   left join trackpoints on (track_segments.id = trackpoints.segment_id) group by tracks.id;"""
+
+        tracks = list()
+        tracksByID = dict()
+        for row in self.sqlCon.execute(tracksSQL).fetchall():
+            track = {
+                "id":int(row[0]),
+                "name":row[1],
+                "segments":int(row[2]),
+                "points":int(row[3]),
+            }
+            
+            tracks.append(track)
+            tracksByID[track["id"]] = track
+        
+        self.willChangeValueForKey_("tracks")
+        self.tracks = tracks
+        self.didChangeValueForKey_("tracks")
+
     
     def connect_(self, gps):
         gps.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
@@ -99,13 +155,16 @@ class Logger(NSObject):
         cur = self.sqlCon.cursor()
         
         if not self.currentTract:
-            cur.execute("insert into tracks (name) values (?)", [datetime.datetime.now().strftime("%c")])
-            self.currentTract = cur.lastrowid
+            self.startTrackWithName_(None)
         
         if not self.currentSegment:
             cur.execute("insert into track_segments (track_id) values (?)", [self.currentTract])
             self.currentSegment = cur.lastrowid
             self.currentSegmentPosition = 0
+            
+            self.willChangeValueForKey_("tracks")
+            tracksByID[self.currentTract]["segments"] += 1
+            self.didChangeValueForKey_("tracks")
             
         #FIXME: Auto segment every 1000 points or so so that the tracks are easier to deal with?
         
@@ -113,6 +172,10 @@ class Logger(NSObject):
         cur.execute("insert into trackpoints (segment_id, position, latitude, longitude, timestamp, hdop, speed) values (?,?,?,?,?,?,?)",values)
         self.currentSegmentPosition = self.currentSegmentPosition + 1
         self.sqlCon.commit()
+        
+        self.willChangeValueForKey_("tracks")
+        tracksByID[self.currentTract]["points"] += 1
+        self.didChangeValueForKey_("tracks")
     
     def endSegment(self):
         """Force the next point added to be part of a new segment in the current track"""
@@ -127,6 +190,19 @@ class Logger(NSObject):
         self.currentTract = cur.lastrowid
         self.currentSegment = None
         self.sqlCon.commit()
+        
+        track = {
+            "id":self.currentTract,
+            "name":name,
+            "segments":0,
+            "points":0,
+        }
+        
+        
+        self.willChangeValueForKey_("tracks")
+        tracks.append(track)
+        tracksByID[track["id"]] = track
+        self.didChangeValueForKey_("tracks")
     
     def endTrack(self):
         """Force the next point added to be part of a new track, if startTrackWithName is not called
@@ -139,7 +215,19 @@ class Logger(NSObject):
         """
         cur = self.sqlCon.cursor()
         cur.execute("insert into waypoints (latitude,longitude) values (?,?)", [lat,lon])
+        waypoint = cur.lastrowid
         self.sqlCon.commit()
+        
+        self.willChangeValueForKey_("waypoints")
+        self.waypoints.append({
+                "id":int(waypoint),
+                "latitude":lat,
+                "longitude":lon,
+                "name":None,
+                "description":None,
+                "time":None,
+            })
+        self.didChangeValueForKey_("waypoints")
         
         self.getLoggerLayer().addPointWithX_Y_Name_(lon, lat, None)
     
@@ -157,47 +245,43 @@ class Logger(NSObject):
         name = None
         if "name" in props:
             name = props["name"]
+            
+        description = None
+        if "description" in props:
+            description = props["description"]
+            
+        time = None
+        if "time" in props:
+            time = props["time"]
+        
+        self.willChangeValueForKey_("waypoints")
+        self.waypoints.append({
+                "id":int(waypoint),
+                "latitude":lat,
+                "longitude":lon,
+                "name":name,
+                "description":description,
+                "time":time,
+            })
+        self.didChangeValueForKey_("waypoints")
         
         self.getLoggerLayer().addPointWithX_Y_Name_(lon, lat, name)
     
-    def getWaypoints(self):
-        cur = self.sqlCon.cursor()
-        points = cur.execute("select id,latitude,longitude,name.value,time.value from waypoints left join waypoint_tags name on (id=name.waypoint_id and name.tag='name') left join waypoint_tags time on (id=time.waypoint_id and time.tag='time')").fetchall()
-        #for point in points:
-        #    pos = [point[1],point[0]]
-        #    name = point[2]
-        #    time = point[3]
-        return points
-    
-    def getWaypointsLen(self):
-        cur = self.sqlCon.cursor()
-        return cur.execute("select count(*) from waypoints").fetchall()[0][0]
-    
-    def getWaypoint_(self,num):
-        cur = self.sqlCon.cursor()
-        wpt = cur.execute("select id,latitude,longitude,name.value,time.value from waypoints left join waypoint_tags name on (id=name.waypoint_id and name.tag='name') left join waypoint_tags time on (id=time.waypoint_id and time.tag='time') limit 1 offset (?);", [num]).fetchall()[0]
-        if not wpt:
-            return None
-        return wpt
-    
-    def getTracksLen(self):
-        cur = self.sqlCon.cursor()
-        return cur.execute("select count(*) from tracks").fetchall()[0][0]
-    
-    def getTrack_(self,num):
-        cur = self.sqlCon.cursor()
-        track = cur.execute("select * from tracks limit 1 offset (?);", [num]).fetchall()[0]
-        if not track:
-            return None
-        return track
-    
-    def getTracks(self):
-        cur = self.sqlCon.cursor()
-        tracks = cur.execute("select id,name from tracks").fetchall()
-        return tracks
-    
     def getTrackpointsForTrack_(self,id):
         cur = self.sqlCon.cursor()
-        points = cur.execute("select latitude,longitude,timestamp from track_segments,trackpoints where ?=track_segments.track_id and track_segments.id=trackpoints.segment_id group by tracks.id", int(id)).fetchall()
-        return points
+        track = list()
+        for segment_row in cur.execute("select id from track_segments where track_id = ?", [id]).fetchall():
+            segment = {
+                "position":list(),
+                "timestamp":list(),
+                "hdop":list(),
+                "speed":list(),
+            }
+            for row in cur.execute("select longitude,latitude,timestamp,hdop,speed from trackpoints where segment_id = ? order by position", [segment_row[0]]).fetchall():
+                segment["position"].append([float(row[0]), float(row[1])])
+                segment["timestamp"].append(row[2] and float(row[2]))
+                segment["hdop"].append(row[3] and float(row[3]))
+                segment["speed"].append(row[4] and float(row[4]))
+            track.append(segment)
+        return track
         
