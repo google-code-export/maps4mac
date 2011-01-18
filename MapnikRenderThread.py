@@ -59,6 +59,8 @@ class MapnikRenderThread(NSObject):
         pool = NSAutoreleasePool.alloc().init()
         willStop = False
         
+        NSThread.currentThread().setName_("MapnikRenderThread")
+        
         while not willStop:
             self.work_condition_lock.lock()
             if not self.queue:

@@ -39,6 +39,7 @@
 		ED86B2991198FFE6007D969F /* target0.png in Resources */ = {isa = PBXBuildFile; fileRef = ED86B2981198FFE6007D969F /* target0.png */; };
 		ED9891FE117F0E78008A597A /* loaddb.py in Resources */ = {isa = PBXBuildFile; fileRef = ED9891FD117F0E78008A597A /* loaddb.py */; };
 		ED98927D117F16F2008A597A /* SourceListDatasource.py in Resources */ = {isa = PBXBuildFile; fileRef = ED98927C117F16F2008A597A /* SourceListDatasource.py */; };
+		EDA8FA3312E521C70057F52F /* osm2spatialite_SearchProvider.py in Resources */ = {isa = PBXBuildFile; fileRef = EDA8FA3212E521C60057F52F /* osm2spatialite_SearchProvider.py */; };
 		EDB064A812E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */; };
 		EDB2818C1181C8A6007D021A /* TiledMapnikLayer.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */; };
 		EDB281941182943E007D021A /* MapView.py in Resources */ = {isa = PBXBuildFile; fileRef = EDB281931182943E007D021A /* MapView.py */; };
@@ -115,6 +116,7 @@
 		ED86B2981198FFE6007D969F /* target0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = target0.png; sourceTree = "<group>"; };
 		ED9891FD117F0E78008A597A /* loaddb.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = loaddb.py; sourceTree = "<group>"; };
 		ED98927C117F16F2008A597A /* SourceListDatasource.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = SourceListDatasource.py; sourceTree = "<group>"; };
+		EDA8FA3212E521C60057F52F /* osm2spatialite_SearchProvider.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2spatialite_SearchProvider.py; sourceTree = "<group>"; };
 		EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = osm2spatialite_MapnikLayer.py; sourceTree = "<group>"; };
 		EDB2818B1181C8A6007D021A /* TiledMapnikLayer.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = TiledMapnikLayer.py; sourceTree = "<group>"; };
 		EDB281931182943E007D021A /* MapView.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = MapView.py; sourceTree = "<group>"; };
@@ -294,6 +296,7 @@
 			isa = PBXGroup;
 			children = (
 				EDB064A712E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py */,
+				EDA8FA3212E521C60057F52F /* osm2spatialite_SearchProvider.py */,
 			);
 			name = osm2spatialite_MapnikLayer;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				ED63664312C25B5F0095535F /* LoggerDelegate.py in Resources */,
 				EDF1012812DC14FE00430E49 /* osm2pgsql_SearchProvider.py in Resources */,
 				EDB064A812E0F728001EFBB2 /* osm2spatialite_MapnikLayer.py in Resources */,
+				EDA8FA3312E521C70057F52F /* osm2spatialite_SearchProvider.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

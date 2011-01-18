@@ -68,10 +68,10 @@ union
 union
 (select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
 ), results as (
-select name, point, ST_Distance_Sphere(ST_Transform(way, 4269), ST_GeomFromText('%(center)s', 4269)) as distance, type from unsorted_results
+select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from unsorted_results
 )
 
-select name, ST_AsText(ST_Transform(point, 4269)), type from results order by distance
+select name, ST_AsText(ST_Transform(point, 4326)), type from results order by distance
 """ % {"mapName":self.layer.mapName, "query":commands, "center":"POINT(%f %f)" % (center.x, center.y)}
             cur.execute(sql)
             #print sql

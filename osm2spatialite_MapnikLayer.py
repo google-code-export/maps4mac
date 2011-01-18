@@ -13,9 +13,9 @@ import TiledMapnikLayer
 import os.path
 
 from pysqlite2 import dbapi2 as sqlite
+import osm2spatialite_SearchProvider
 
 class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
-    dbapi = objc.ivar()
     filename = objc.ivar()
     
 
@@ -86,11 +86,15 @@ class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         <Parameter name="wkb_format">spatialite</Parameter>
         <Parameter name="estimate_extent">%(estimate_extent)s</Parameter>
         <Parameter name="extent">%(extent)s</Parameter>
+        <Parameter name="use_spatial_index">true</Parameter>
         """ % datasource_parameters
                 
         xml = xml % parameters
         
         return str(xml)
+    
+    def getSearchProvider(self):
+        return osm2spatialite_SearchProvider.osm2spatialite_SearchProvider.alloc().initWithLayer_(self)
     
     def getDefaultCenter(self):
         """Return a default center point as [lat,lon]"""
