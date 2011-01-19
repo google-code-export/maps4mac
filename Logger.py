@@ -284,4 +284,31 @@ class Logger(NSObject):
                 segment["speed"].append(row[4] and float(row[4]))
             track.append(segment)
         return track
+    
+    def deleteWaypoint_(self, id):
+        self.willChangeValueForKey_("waypoints")
+        for i,waypoint in enumerate(self.waypoints):
+            if waypoint["id"] == id:
+                del self.waypoints[i]
+                break
+        self.didChangeValueForKey_("waypoints")
+        
+        cur = self.sqlCon.cursor()
+        cur.execute("delete from waypoints where id = ?", [id])
+        cur.execute("delete from waypoint_tags where waypoint_id = ?", [id])
+        self.sqlCon.commit()
+    
+    def deleteTrack_(self, id):
+        self.willChangeValueForKey_("tracks")
+        for i,track in enumerate(self.tracks):
+            if track["id"] == id:
+                del self.tracks[i]
+                break
+        self.didChangeValueForKey_("tracks")
+        
+        #FIXME: track, track_segments, trackpoints
+        #cur = self.sqlCon.cursor()
+        #cur.execute("delete from waypoints where id = ?", [id])
+        #cur.execute("delete from waypoint_tags where waypoint_id = ?", [id])
+        #self.sqlCon.commit()
         

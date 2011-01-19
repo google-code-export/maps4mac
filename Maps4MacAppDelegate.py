@@ -46,7 +46,7 @@ class Maps4MacAppDelegate(NSObject):
         #self.mapWindow.makeFirstResponder_(self.mapView)
         self.mapWindow.setAcceptsMouseMovedEvents_(True)
 
-    def applicationDidFinishLaunching_(self, sender):    
+    def applicationDidFinishLaunching_(self, sender):
         defaults = NSUserDefaults.standardUserDefaults()
             
         self.gpsdConnection = GPSdConnection.alloc().init()

@@ -9,7 +9,7 @@
 from Foundation import *
 from AppKit import *
 
-class LoggerDelegate(NSObject):
+class LoggerDelegate(NSController):
     addWaypointWindow = objc.IBOutlet()
     addTrackWindow = objc.IBOutlet()
     appDelegate = objc.IBOutlet()
@@ -80,12 +80,18 @@ class LoggerDelegate(NSObject):
     
     @objc.IBAction
     def doAddWaypoint_(self, sender):
+        self.commitEditing()
+        
         props = {
-        "name":str(self.addWaypointName), "desc":str(self.addWaypointDesc)}
+        "name":str(self.addWaypointName),
+        "desc":str(self.addWaypointDesc)
+        }
         try:
             lat, lon = map(float,self.addWaypointPoint.split(","))
         except:
             return
+        
+        
         
         self.logger.addWaypointAtLon_Lat_Properties_(lon, lat, props)
         self.addWaypointWindow.orderOut_(self)
@@ -103,6 +109,8 @@ class LoggerDelegate(NSObject):
     
     @objc.IBAction
     def doAddTrack_(self, sender):
+        self.commitEditing()
+        
         self.logger.startTrackWithName_(str(self.addTrackName))
         self.addTrackWindow.orderOut_(self)
         
@@ -156,7 +164,28 @@ class LoggerDelegate(NSObject):
     
     @objc.IBAction
     def deleteSelection_(self,sender):
-        pass
+        title = "Confirm Delete"
+        msg = "Permanently delete the selected objects from the log?"
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "Delete", "Cancel", None, msg)
+        result = alert.runModal()
+        
+        if result == NSAlertAlternateReturn:
+            return
+        else:
+            waypointsToDelete = list()
+            tracksToDelete = list()
+            for row,waypoint in enumerate(self.logger.waypoints):
+                if self.waypointsTableView.isRowSelected_(row):
+                    waypointsToDelete.append(waypoint["id"])
+                        
+            for row,track in enumerate(self.logger.tracks):
+                if self.tracksTableView.isRowSelected_(row):
+                    tracksToDelete.append(track["id"])
+            
+            for id in waypointsToDelete:
+                self.logger.deleteWaypoint_(id)
+            for id in tracksToDelete:
+                self.logger.deleteTrack_(id)
     
     def numberOfRowsInTableView_(self, tableView):
         if tableView == self.tracksTableView:
