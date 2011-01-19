@@ -32,6 +32,10 @@ class Maps4MacAppDelegate(NSObject):
     
     downloadWindowDelegate = objc.IBOutlet()
     
+    openOSM2PGSQLMenuItem = objc.IBOutlet()
+    openOSM2SpatialLiteMenuItem = objc.IBOutlet()
+    openMapnikXMLMenuItem = objc.IBOutlet()
+    
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -59,16 +63,45 @@ class Maps4MacAppDelegate(NSObject):
         
         if self.mapName is None:
             # There may already be a map loaded if we were asked to launch a file
-            defaultWindow = defaults.stringForKey_("defaultWindow")
+            defaultWindow = defaults.integerForKey_("defaultWindow")
             #print defaultWindow
-            if not defaultWindow or defaultWindow == "Empty Globe":
+            if not defaultWindow or defaultWindow == 0:
                 self.loadEmptyGlobe_(self)
-            elif defaultWindow == "Open osm2pgsql Database":
+            elif defaultWindow == 1:
+                self.openSpatiaLite_(self)
+            elif defaultWindow == 2:
                 self.openosm2pgsql_(self)
-            elif defaultWindow == "Open http tile layer":
-                self.openHTTPTiles_(self)
+            elif defaultWindow == 3:
+                self.openMapnikXML_(self)
             else:
                 print "Warning: Unknown default window:", defaultWindow
+        
+        
+        if not defaults.integerForKey_("defaultOpenCommand"):
+            defaults.setInteger_forKey_(0, "defaultOpenCommand")
+        #defaults.addObserver_forKeyPath_options_context_(self, u"defaultOpenCommand", 0, None)
+        NSUserDefaultsController.sharedUserDefaultsController().addObserver_forKeyPath_options_context_(self, u"values.defaultOpenCommand", 0, None)
+        self.setCommandOAction_(defaults.integerForKey_("defaultOpenCommand"))
+    
+    def setCommandOAction_(self, menuTag):
+        if not menuTag or menuTag == 1:
+            self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("o")
+            self.openOSM2SpatialLiteMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
+            
+            self.openOSM2PGSQLMenuItem.setKeyEquivalent_("")
+            self.openMapnikXMLMenuItem.setKeyEquivalent_("")
+        elif menuTag == 2:
+            self.openOSM2PGSQLMenuItem.setKeyEquivalent_("o")
+            self.openOSM2PGSQLMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
+            
+            self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("")
+            self.openMapnikXMLMenuItem.setKeyEquivalent_("")
+        elif menuTag == 3:
+            self.openMapnikXMLMenuItem.setKeyEquivalent_("o")
+            self.openMapnikXMLMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
+            
+            self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("")
+            self.openOSM2PGSQLMenuItem.setKeyEquivalent_("")
         
     def fetchMapnikFiles(self):
         urls = [
@@ -101,6 +134,10 @@ class Maps4MacAppDelegate(NSObject):
                 self.mapView.setFixLat_Lon_CenterOnGPS_(fix["Latitude"], fix["Longitude"],self.mapWindowDelegate.useGPS)
             #else:
             #    self.mapView.clearFix()
+        elif keyPath == "values.defaultOpenCommand":
+            newKey = NSUserDefaults.standardUserDefaults().integerForKey_("defaultOpenCommand")
+            print newKey
+            self.setCommandOAction_(newKey)
     
     @objc.IBAction
     def openosm2pgsql_(self, sender):
