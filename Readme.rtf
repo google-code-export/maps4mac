@@ -1,0 +1,87 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf320
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\margl1440\margr1440\vieww9640\viewh10700\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\qc\pardirnatural
+
+\f0\b\fs48 \cf0 Maps4Mac
+\fs24 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 Maps4Mac is an offline map browser for for MacOS built with PyObjC and Mapnik. The primary purpose is to render and search OpenStreetMap data in a SpatiaLite or PostGIS database, but any Mapnik XML file can be rendered.\
+\
+The most up to date setup instructions can be found on the {\field{\*\fldinst{HYPERLINK "http://code.google.com/p/maps4mac/wiki/Maps4MacSetup"}}{\fldrslt Wiki}}.
+\b \
+\
+
+\fs28 Basic Dependencies:
+\b0\fs24 \
+First you need to install these two packages:\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	\'95	}{\field{\*\fldinst{HYPERLINK "http://dbsgeo.com/downloads/mapnik/snow/intel/0.7.1.dmg"}}{\fldrslt Mapnik 7.1 for Snow Leopard}} from {\field{\*\fldinst{HYPERLINK "http://dbsgeo.com/downloads/"}}{\fldrslt dbsgeo.com}}, install the Mapnik_Framework.pkg version that uses the system python install.\
+{\listtext	\'95	}{\field{\*\fldinst{HYPERLINK "http://www.kyngchaos.com/files/software/frameworks/GDAL_Complete-1.7.dmg"}}{\fldrslt GDAL_Complete-1.7}} by {\field{\*\fldinst{HYPERLINK "http://www.kyngchaos.com/software:frameworks"}}{\fldrslt KyngChaos}}.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+
+\b\fs28 Additional files needed to display for OSM Data:
+\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\b0 \cf0 In order to render OSM data you'll need to download the following files:\
+\pard\pardeftab720\ql\qnatural
+{\field{\*\fldinst{HYPERLINK "http://tile.openstreetmap.org/world_boundaries-spherical.tgz"}}{\fldrslt \cf0 http://tile.openstreetmap.org/world_boundaries-spherical.tgz}}\uc0\u8232 {\field{\*\fldinst{HYPERLINK "http://tile.openstreetmap.org/processed_p.tar.bz2"}}{\fldrslt http://tile.openstreetmap.org/processed_p.tar.bz2}}\uc0\u8232 {\field{\*\fldinst{HYPERLINK "http://tile.openstreetmap.org/shoreline_300.tar.bz2"}}{\fldrslt http://tile.openstreetmap.org/shoreline_300.tar.bz2}}\
+\
+Extract all the files and move their contents into the same directory, so you have the following files in one directory:
+\f1 \
+\pard\pardeftab720\ql\qnatural
+
+\f2 \cf0 builtup_area.dbf\
+builtup_area.index\
+builtup_area.prj\
+builtup_area.shp\
+builtup_area.shx\
+places.dbf\
+places.prj\
+places.shp\
+places.shx\
+processed_p.dbf\
+processed_p.index\
+processed_p.shp\
+processed_p.shx\
+shoreline_300.dbf\
+shoreline_300.index\
+shoreline_300.shp\
+shoreline_300.shx\
+world_bnd_m.dbf\
+world_bnd_m.index\
+world_bnd_m.prj\
+world_bnd_m.shp\
+world_bnd_m.shx\
+world_boundaries_m.dbf\
+world_boundaries_m.index\
+world_boundaries_m.prj\
+world_boundaries_m.shp\
+world_boundaries_m.shx\
+\pard\pardeftab720\ql\qnatural
+
+\f0 \cf0 \
+Open the Maps4Mac Preferences window and set "Shapefiles path" to the directory you put the files in.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 \
+
+\fs28 For GPS Tracking:
+\fs24 \
+
+\b0 For GPS tracking you need to install GPSd ({\field{\*\fldinst{HYPERLINK "http://gpsd.berlios.de/"}}{\fldrslt http://gpsd.berlios.de/}}). It's is available through {\field{\*\fldinst{HYPERLINK "http://www.macports.org"}}{\fldrslt MacPorts}}, but it has no outside dependancies if you want to compile it yourself.
+\b \
+\
+
+\fs28 Additional Requirements for OSM2PGSQL layers:
+\b0\fs24 \
+postgresql + postgis ({\field{\*\fldinst{HYPERLINK "http://www.kyngchaos.com/software:frameworks"}}{\fldrslt http://www.kyngchaos.com/software:frameworks}})\
+PyGreSQL ({\field{\*\fldinst{HYPERLINK "http://www.pygresql.org"}}{\fldrslt www.pygresql.org}} or easy_install)\
+}
