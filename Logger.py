@@ -101,7 +101,7 @@ class Logger(NSObject):
                    left join trackpoints on (track_segments.id = trackpoints.segment_id) group by tracks.id;"""
 
         tracks = list()
-        tracksByID = dict()
+        self.tracksByID = dict()
         for row in self.sqlCon.execute(tracksSQL).fetchall():
             track = {
                 "id":int(row[0]),
@@ -111,7 +111,7 @@ class Logger(NSObject):
             }
             
             tracks.append(track)
-            tracksByID[track["id"]] = track
+            self.tracksByID[track["id"]] = track
         
         self.willChangeValueForKey_("tracks")
         self.tracks = tracks
@@ -163,7 +163,7 @@ class Logger(NSObject):
             self.currentSegmentPosition = 0
             
             self.willChangeValueForKey_("tracks")
-            tracksByID[self.currentTract]["segments"] += 1
+            self.tracksByID[self.currentTract]["segments"] += 1
             self.didChangeValueForKey_("tracks")
             
         #FIXME: Auto segment every 1000 points or so so that the tracks are easier to deal with?
@@ -174,7 +174,7 @@ class Logger(NSObject):
         self.sqlCon.commit()
         
         self.willChangeValueForKey_("tracks")
-        tracksByID[self.currentTract]["points"] += 1
+        self.tracksByID[self.currentTract]["points"] += 1
         self.didChangeValueForKey_("tracks")
     
     def endSegment(self):
@@ -200,8 +200,8 @@ class Logger(NSObject):
         
         
         self.willChangeValueForKey_("tracks")
-        tracks.append(track)
-        tracksByID[track["id"]] = track
+        self.tracks.append(track)
+        self.tracksByID[track["id"]] = track
         self.didChangeValueForKey_("tracks")
     
     def endTrack(self):

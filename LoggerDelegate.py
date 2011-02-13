@@ -60,10 +60,8 @@ class LoggerDelegate(NSController):
             self.logger.addObserver_forKeyPath_options_context_(self, u"tracks", 0, None)
         elif object == self.logger:
             if keyPath == "waypoints":
-                print "Waypoints updated"
                 self.waypointsTableView.reloadData()
             if keyPath == "tracks":
-                print "Tracks updated"
                 self.tracksTableView.reloadData()
     
     @objc.IBAction
