@@ -9,6 +9,8 @@
 from Foundation import *
 from AppKit import *
 
+import datetime
+
 class LoggerDelegate(NSController):
     addWaypointWindow = objc.IBOutlet()
     addTrackWindow = objc.IBOutlet()
@@ -149,9 +151,11 @@ class LoggerDelegate(NSController):
                         gpx += "<trkseg>\n"
                         for i in range(len(segment["position"])):
                             gpx += """<trkpt lat="%f" lon="%f">\n""" % (segment["position"][i][1], segment["position"][i][0])
-                            for tag in ["timestamp","hdop","speed"]:
+                            for tag in ["hdop","speed"]:
                                 if segment[tag][i]:
                                     gpx += "<%s>%s</%s>\n" % (tag,str(segment[tag][i]),tag)
+                            if segment["timestamp"][i]:
+                                gpx += "<time>%s</time>\n" % (datetime.datetime.fromtimestamp(float(segment["timestamp"][i])).isoformat() + 'Z')
                             gpx += "</trkpt>\n"
                         gpx += "</trkseg>\n"
                     gpx += "</trk>\n"
