@@ -109,7 +109,7 @@ class osm2spatialite_SearchProvider(NSObject):
         
         #TODO: Keep lines instead of centroid
         #FIXME: In SpatiaLite 2.4.4 we can this for distance: PtDistWithin(Transform(point, 4326), ST_GeomFromText('%(center)s', 4326))
-                sql = \
+        sql = \
 """select name, ST_AsText(Transform(point, 4326)), type, distance from (
 select name, point, GeoDistanceSphere(X(Transform(point, 4326)), Y(Transform(point, 4326)), X(ST_GeomFromText('%(center)s', 4326)), Y(ST_GeomFromText('%(center)s', 4326))) as distance, type from (
 select name, way as point, way, 'point' as type from %(mapName)s_point as osm, idx_%(mapName)s_point_way as spatial_idx where %(query)s
