@@ -60,16 +60,27 @@ class SearchWindowDelegate(NSObject):
     def search_(self, sender):
         if not  self.search_providers:
             return
-        commands = self.searchField.stringValue()
-        center   = NSPoint(self.mapView.center.x, self.mapView.center.y)
+        commands   = self.searchField.stringValue()
+        center     = self.mapView.getWGS84Center()
+        viewBounds = self.mapView.getWGS84Envelope()
+        
     
         results = None
         self.resultsView.setToolTip_(None)
         #FIXME: For now there's only one possible provider, but there needs to be a list to pick from in the search window
         try:
-            results = self.search_providers.values()[0].doSearch(["?",commands,center])
+            results = self.search_providers.values()[0].doSearch(commands,center=center,viewBounds=viewBounds)
         except Exception as error:
             self.resultsView.setToolTip_(str(error))
+            
+            import traceback
+            print error
+            traceback.print_exc()
+            
+            title = "Search Error"
+            msg =  "Couldn't parse the search:\n" + str(error)
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", None, None, msg)
+            alert.runModal()
         
         if results is not None:
             self.results = list()
@@ -87,7 +98,6 @@ class SearchWindowDelegate(NSObject):
             self.mapView.addLayer_(layer)
         else:
             self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
-        
         
         if self.resultsView is not None:
             self.resultsView.reloadData()

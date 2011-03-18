@@ -11,6 +11,28 @@ from Foundation import *
 import pgdb as DBAPI
 import pg
 
+import SearchParse
+
+def parsedToPGSQL(parsed, center = None, viewBounds = None):
+    sqlString = ""
+    for rule in parsed:
+        if type(rule) == list:
+            sqlString += "(" + parsedToPGSQL(rule) + ") "
+        elif rule[0] == "tagEquals":
+            sqlString += "\"%s\" = '%s' " % rule[1]
+        elif rule[0] == "tagContains":
+            sqlString += "(to_tsvector('simple',\"%s\") @@ to_tsquery('simple','%s')) " % rule[1]
+        elif rule[0] == "tagNotNull":
+            sqlString += "\"%s\" is not null " % rule[1]
+        elif rule == "or":
+            sqlString += "or "
+        elif rule == "and":
+            sqlString += "and "
+        else:
+            raise SearchParse.SearchStringParseException("Rule type not supported by PGSQL", rule)
+    
+    return sqlString
+
 class osm2pgsql_SearchProvider(NSObject):
     searchRules = objc.ivar()
     layer = objc.ivar()
@@ -21,30 +43,14 @@ class osm2pgsql_SearchProvider(NSObject):
             return None
         
         self.layer = layer
-        self.searchRules = [
-            {"displayValue":"Name","type":"label","children":
-                [
-                    {"displayValue":"","type":"text"}
-                ]
-            },
-            {"displayValue":"SQL","type":"label","children":
-                [
-                    {"displayValue":"","type":"text"}
-                ]
-            },
-        ]
         
         return self
     
     def getRules(self):
-        return self.searchRules
+        return None
     
-    def doSearch(self, rules):
-        commands = rules[1]
-        center   = rules[2]
-        
+    def doSearch(self, commands, center, viewBounds = None):
         results = None
-        
         
         host = self.layer.db_args["host"]
         if "port" in self.layer.db_args:
@@ -53,32 +59,43 @@ class osm2pgsql_SearchProvider(NSObject):
                             password=self.layer.db_args["password"],
                             host=host,
                             database=self.layer.db_args["database"])
-    
-        def doQuery(commands):
+        
+        try:
+            cursor = con.cursor()
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = %s", [str(self.layer.mapName) + "_point"])
+            print 
+            knownTags = [x[0] for x in cursor.fetchall()]
+            del knownTags[knownTags.index("way")]
+            
+            print "Search Query:", commands
+            
+            parser = SearchParse.SearchParser(knownTags)
+            tokens = parser.parse(commands)
+            
+            print "Parsed search:", str(tokens)
+            
+            query = parsedToPGSQL(tokens, center, viewBounds)
+            
+            print "SQL:", query
+            
             results = list()
             
-            cur = con.cursor()
-            #TODO: Keep lines instead of centroid
-            #sql = "select name, ST_AsText(ST_Transform(%s, 4269)) from %s where %s" % (transform[tableSuffix], table, commands)
             sql = \
-"""with unsorted_results as (
-(select name, way as point, way, 'point' as type from %(mapName)s_point where %(query)s)
-union
-(select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line where %(query)s)
-union
-(select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
-), results as (
-select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from unsorted_results
-)
+    """with unsorted_results as (
+    (select name, way as point, way, 'point' as type from %(mapName)s_point where %(query)s)
+    union
+    (select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line where %(query)s)
+    union
+    (select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
+    ), results as (
+    select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from unsorted_results
+    )
 
-select name, ST_AsText(ST_Transform(point, 4326)), type from results order by distance
-""" % {"mapName":self.layer.mapName, "query":commands, "center":"POINT(%f %f)" % (center.x, center.y)}
-            cur.execute(sql)
-            #print sql
-        
-            rows = cur.fetchall()
+    select name, ST_AsText(ST_Transform(point, 4326)), type from results order by distance
+    """ % {"mapName":self.layer.mapName, "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
+            cursor.execute(sql)
             
-            for row in rows:
+            for row in cursor.fetchall():
                 loc = row[1]
                 try:
                     loc = loc.split("(")[1].split(")")[0].split(" ")
@@ -87,21 +104,7 @@ select name, ST_AsText(ST_Transform(point, 4326)), type from results order by di
                     break
                 loc = map(float, loc)
                 results.append({"type":row[2], "name":row[0], "loc":loc})
+            
             return results
-        
-        try:
-            results = doQuery(commands)
-        except pg.DatabaseError:
-            try:
-                con.rollback()
-                # This version takes advantage of vector indexes if available
-                results = doQuery("to_tsvector('simple',name) @@ to_tsquery('simple','''%s''')" % commands.replace("'","\\'"))
-            except pg.DatabaseError as error:
-                print error
-                raise error
-                #self.results = [{"type":"DB Error", "name":"DB Error", "loc":(0,0)}]
         finally:
             con.close()
-        
-        return results
-

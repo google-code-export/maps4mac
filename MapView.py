@@ -17,9 +17,8 @@ defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
 class MapView(NSView):
     layers = objc.ivar()
-    #FIXME: The meanings of center and centerLonLat are inverted!!!
     center = objc.ivar()
-    centerLonLat = objc.ivar()
+    projectedCenter = objc.ivar()
     zoom = objc.ivar()
     projection = objc.ivar()
     
@@ -65,7 +64,7 @@ class MapView(NSView):
             shift = mapnik.Coord(-1 * self.zoom * x, self.zoom * y)
             #shift = self.projection.inverse(shift)
             
-            newCenter = self.centerLonLat + shift
+            newCenter = self.projectedCenter + shift
             newCenter = self.projection.inverse(newCenter)
             
             newCenter.x = max(newCenter.x, -179.999)
@@ -74,7 +73,7 @@ class MapView(NSView):
             newCenter.y = min(newCenter.y, 89.999)
             
             self.center = newCenter
-            self.centerLonLat = self.projection.forward(self.center)
+            self.projectedCenter = self.projection.forward(self.center)
         
         self.setNeedsDisplay_(True)
     
@@ -267,7 +266,7 @@ class MapView(NSView):
         changed = (self.center != mapnik.Coord(point[0],point[1]))
     
         self.center = mapnik.Coord(point[0],point[1])
-        self.centerLonLat = self.projection.forward(self.center)
+        self.projectedCenter = self.projection.forward(self.center)
         
         
         #for layer in self.layers:
@@ -275,6 +274,31 @@ class MapView(NSView):
         
         if changed:
             self.setNeedsDisplay_(True)
+    
+    def getProjectedEnvelope(self):
+        size = self.bounds().size
+        zoom = self.zoom
+        prj  = self.projection
+        prj_origin = mapnik.Coord(-(size[0] / 2) * zoom, -(size[1] / 2) * zoom)
+        prj_size   = mapnik.Coord(size[0], size[1]) * zoom
+        c0 = self.projectedCenter + prj_origin
+        c1 = c0 + prj_size
+        
+        return mapnik.Envelope(c0.x,c0.y,c1.x,c1.y)
+    
+    def getWGS84Envelope(self):
+        env = self.getProjectedEnvelope()
+        prj = self.projection
+    
+        c0 = mapnik.Coord(env.minx, env.miny)
+        c1 = mapnik.Coord(env.maxx, env.maxy)
+        c0 = prj.inverse(c0)
+        c1 = prj.inverse(c1)
+
+        return mapnik.Envelope(c0.x,c0.y,c1.x,c1.y)
+    
+    def getWGS84Center(self):
+        return self.center
     
     def setZoom_(self, zoom):
         self.zoom = int(zoom)

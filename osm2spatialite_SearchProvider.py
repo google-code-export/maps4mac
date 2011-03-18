@@ -10,6 +10,41 @@ from Foundation import *
 
 from pysqlite2 import dbapi2 as sqlite
 
+import SearchParse
+
+def parsedToSQLite(parsed, center = None, viewBounds = None):
+    sqlString = ""
+    spatialIndexQuery = None
+    for rule in parsed:
+        if type(rule) == list:
+            sqlString += "(" + parsedToSQLite(rule, center, viewBounds) + ") "
+        elif rule[0] == "tagEquals":
+            sqlString += "\"%s\" = '%s' " % rule[1]
+        elif rule[0] == "tagContains":
+            sqlString += "\"%s\" like '%%%s%%' " % rule[1]
+        elif rule[0] == "tagNotNull":
+            sqlString += "\"%s\" is not null " % rule[1]
+        elif rule[0] == "withinView" and viewBounds:
+            if spatialIndexQuery:
+                raise SearchParse.SearchStringParseException("Can't have multiple spatial queries", rule)
+            spatialIndexQuery = "(spatial_idx.xmin >= %f and spatial_idx.ymin >= %f and spatial_idx.xmax <= %f and spatial_idx.ymax <= %f and osm.rowid = spatial_idx.pkid)" % \
+                         (viewBounds.minx, viewBounds.miny, viewBounds.maxx, viewBounds.maxy)
+            if sqlString.endswith(" and "):
+                sqlString = sqlString[:-5]
+            elif sqlString.endswith(" or "):
+                raise SearchParse.SearchStringParseException("Can't join spatial queries with an \"or\"")
+        elif rule == "or":
+            sqlString += "or "
+        elif rule == "and":
+            sqlString += "and "
+        else:
+            raise SearchParse.SearchStringParseException("Rule type not supported by SQLite Search", rule)
+    
+    if spatialIndexQuery:
+        sqlString = "(%s) and (%s)" % (spatialIndexQuery, sqlString)
+    
+    return sqlString
+
 class osm2spatialite_SearchProvider(NSObject):
     layer = objc.ivar()
 
@@ -25,57 +60,57 @@ class osm2spatialite_SearchProvider(NSObject):
     def getRules(self):
         return None
 
-    def doSearch(self, rules):
-        commands = rules[1]
-        center   = rules[2]
-        
+    def doSearch(self, commands, center, viewBounds = None):        
         results = None
         
-        con = sqlite.connect(self.layer.filename)
+        db = sqlite.connect(self.layer.filename)
+        cursor = db.cursor()
         
-        def doQuery(commands):
-            results = list()
-            
-            cur = con.cursor()
-            #TODO: Keep lines instead of centroid
-            #FIXME: Distance unitless, so we need to sort the results ourselves
-            sql = \
+        print "Search Query:", commands
+        
+        # We assume that all the tables have the same tag set
+        knownTags = [x[1] for x in cursor.execute("pragma table_info(world_point)").fetchall()]
+        del knownTags[knownTags.index("way")]
+        #del knownTags[knownTags.index("way_area")]
+        #del knownTags[knownTags.index("z_order")]
+        
+        parser = SearchParse.SearchParser(knownTags)
+        tokens = parser.parse(commands)
+        
+        print "Parsed search:", str(tokens)
+        
+        query = parsedToSQLite(tokens, center, viewBounds)
+        
+        print "SQL:", query
+        
+        results = list()
+        
+        #TODO: Keep lines instead of centroid
+        #FIXME: Distance unitless, so we need to sort the results ourselves
+        sql = \
 """select name, ST_AsText(Transform(point, 4326)), type from (
 select name, point, Distance(Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from (
-select name, way as point, way, 'point' as type from %(mapName)s_point where %(query)s
+select name, way as point, way, 'point' as type from %(mapName)s_point as osm, idx_%(mapName)s_point_way as spatial_idx where %(query)s
 union
-select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line where %(query)s
+select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line as osm, idx_%(mapName)s_point_way as spatial_idx where %(query)s
 union
-select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s
+select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon as osm, idx_%(mapName)s_point_way as spatial_idx where %(query)s
 )
 ) order by distance
-""" % {"mapName":"world", "query":commands, "center":"POINT(%f %f)" % (center.x, center.y)}
-            cur.execute(sql)
-            #print sql
+""" % {"mapName":"world", "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
+        cursor.execute(sql)
+    
+        rows = cursor.fetchall()
         
-            rows = cur.fetchall()
-            
-            for row in rows:
-                loc = row[1]
-                try:
-                    loc = loc.split("(")[1].split(")")[0].split(" ")
-                except IndexError as e:
-                    print "Bad geometry for \"%s\": %s" % (row[0], loc)
-                    break
-                loc = map(float, loc)
-                results.append({"type":row[2], "name":row[0], "loc":loc})
-            return results
-        
-        try:
-            results = doQuery(commands)
-        except Exception as error: #FIXME: Wrong exception type
+        for row in rows:
+            loc = row[1]
             try:
-                con.rollback()
-                results = doQuery("name like '%%%s%%'" % commands)
-            except Exception as error:
-                print error
-                raise error
-        finally:
-            con.close()
+                loc = loc.split("(")[1].split(")")[0].split(" ")
+            except IndexError as e:
+                print "Bad geometry for \"%s\": %s" % (row[0], loc)
+                break
+            loc = map(float, loc)
+            results.append({"type":row[2], "name":row[0], "loc":loc})
+        db.close()
         
         return results
