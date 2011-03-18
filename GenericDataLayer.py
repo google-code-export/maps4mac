@@ -73,6 +73,7 @@ class GenericDataLayerIcon(NSObject):
         
         return self
 
+#FIXME: The dataset concept didn't work out, this object needs to be refactored out
 class GenericDataset(NSObject):
     points = objc.ivar()
     tracks = objc.ivar()
@@ -101,7 +102,7 @@ class GenericDataLayer(Layer.Layer):
         self.datasets = [GenericDataset.alloc().init()]
         self.name = "Untitled"
         self.cache = None
-        self.outline = None
+        self.outline = list()
         
         icon_path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
         self.default_icon = GenericDataLayerIcon.initWithFile_(icon_path)
@@ -128,8 +129,6 @@ class GenericDataLayer(Layer.Layer):
         else:
             point = GenericDataPoint.GenericDataPointWithX_Y_(x,y)
         self.datasets[0].points.append(point)
-        if not self.outline:
-            self.outline = list()
         self.outline.append(point)
         
         
@@ -144,8 +143,11 @@ class GenericDataLayer(Layer.Layer):
         pass
     
     def addTrack_(self, t):
+        self.addTrack_Name_(self, t, "<Track>")
+    
+    def addTrack_Name_(self, t, name):
         self.datasets[0].tracks.append(t)
-        self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(t[0].x,t[0].y,"<Track>"))
+        self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(t[0].x,t[0].y,name))
         
         if self.view:
             self.cache = dict()
@@ -161,6 +163,7 @@ class GenericDataLayer(Layer.Layer):
             for point in ds.points:
                 self.outline.append(point)
             for track in ds.tracks:
+                #FIXME: Need to store the track name at spart of the track
                 self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(track[0].x,track[0].y,"<Track>"))
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
@@ -203,8 +206,7 @@ class GenericDataLayer(Layer.Layer):
                         path.moveToPoint_(loc)
                         path.lineToPoint_(loc)
                         lastloc = loc
-                
-                    total = 0
+                    
                     for point in track[1:]:
                         loc = proj.forward(mapnik.Coord(point.x, point.y))
                         loc = NSPoint(loc.x,loc.y)
@@ -218,7 +220,7 @@ class GenericDataLayer(Layer.Layer):
         for ds in self.datasets:
             icon = self.default_icon.icon
             icon_hotspot = self.default_icon.icon_hotspot
-            font_height  = self.default_text_format[NSFontAttributeName]
+            #font_height  = self.default_text_format[NSFontAttributeName]
             
             for point,loc in zip(ds.points, self.cache["points"]):
                 #loc = proj.forward(mapnik.Coord(point.x, point.y))
@@ -310,36 +312,59 @@ def fromKMLFile(filename):
         # Handle etree namespace
         prefix = kml_data.getroot().tag[:-3]
         kml_doc = kml_data.find(prefix + "Document")
-        document_name = kml_doc.find(prefix + "name")
+        #document_name = kml_doc.find(prefix + "name")
         
-        ds = GenericDataset.alloc().init()
+        layer = GenericDataLayer.alloc().init()
+
         # Find all placemarks
+        def parse_linestring(placemark):
+            """Parse geometry or multigeometry, just linestrings for now"""
+            multi_geom = placemark.find(prefix + "MultiGeometry")
+            
+            if multi_geom:
+                geoms = multi_geom.findall(prefix + "LineString")
+            else:
+                ls = placemark.find(prefix + "LineString")
+                if ls:
+                    geoms = [ls]
+                else:
+                    return None
+            
+            result = list()
+            
+            for geom in geoms:
+                coords = geom.find(prefix + "coordinates")
+                if coords is not None:
+                    coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
+                    coords = [mapnik.Coord(c[0],c[1]) for c in coords]
+                result.append(coords)
+            
+            return result
+        
         def do_placemarks(node):
-            #print kml_doc
             for placemark in node.findall(prefix + "Placemark"):
-                #print placemark
+                name = placemark.find(prefix + "name")
+                if name is not None:
+                    name = name.text
+                
                 placemark_point = placemark.find(prefix + "Point")
                 if placemark_point:
                     cord = placemark_point.find(prefix + "coordinates")
-                    #print cord
                     if cord is not None:
-                        #print cord.text
                         cord = cord.text.split(",")
-                        #print cord
-                        point = GenericDataPoint.GenericDataPointWithX_Y_(float(cord[0]), float(cord[1]))
+                        layer.addPointWithX_Y_Name_(float(cord[0]), float(cord[1]), name)
+                else:
+                    if name is None:
+                        name = "<Track>"
                     
-                        name = placemark.find(prefix + "name")
-                        if name is not None:
-                            point.name = name.text
-                
-                        ds.points.append(point)
+                    lines = parse_linestring(placemark)
+
+                    for line in lines:
+                        layer.addTrack_Name_(line, name)
             
             for folder in node.findall(prefix + "Folder"):
                 do_placemarks(folder)
         do_placemarks(kml_doc)
-        
-        layer = GenericDataLayer.alloc().init()
-        layer.datasets.append(ds)
         
         layer.updateOutline()
         
