@@ -97,7 +97,7 @@ class SearchWindowDelegate(NSObject):
             layer.setName_("Search Results")
             self.mapView.addLayer_(layer)
         else:
-            self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error"}]
+            self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error", "distance":"DB Error"}]
         
         if self.resultsView is not None:
             self.resultsView.reloadData()

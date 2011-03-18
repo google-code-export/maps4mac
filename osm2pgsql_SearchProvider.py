@@ -13,7 +13,7 @@ import pg
 
 import SearchParse
 
-def parsedToPGSQL(parsed, center = None, viewBounds = None):
+def parsedToPGSQL(parsed, center, viewBounds, mapSRID):
     sqlString = ""
     for rule in parsed:
         if type(rule) == list:
@@ -28,6 +28,8 @@ def parsedToPGSQL(parsed, center = None, viewBounds = None):
             sqlString += "or "
         elif rule == "and":
             sqlString += "and "
+        elif rule[0] == "withinView" and viewBounds:
+            sqlString += "way && ST_Transform(ST_SetSRID('BOX3D(%f %f, %f %f)'::box3d, 4326), %d)" % (viewBounds.minx, viewBounds.miny, viewBounds.maxx, viewBounds.maxy, mapSRID)
         else:
             raise SearchParse.SearchStringParseException("Rule type not supported by PGSQL", rule)
     
@@ -67,6 +69,9 @@ class osm2pgsql_SearchProvider(NSObject):
             knownTags = [x[0] for x in cursor.fetchall()]
             del knownTags[knownTags.index("way")]
             
+            cursor.execute("select Find_SRID('public', '%s','way')" % (self.layer.mapName + "_point"))
+            srid = cursor.fetchone()[0]
+            
             print "Search Query:", commands
             
             parser = SearchParse.SearchParser(knownTags)
@@ -74,7 +79,7 @@ class osm2pgsql_SearchProvider(NSObject):
             
             print "Parsed search:", str(tokens)
             
-            query = parsedToPGSQL(tokens, center, viewBounds)
+            query = parsedToPGSQL(tokens, center, viewBounds, srid)
             
             print "SQL:", query
             
@@ -91,7 +96,7 @@ class osm2pgsql_SearchProvider(NSObject):
     select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from unsorted_results
     )
 
-    select name, ST_AsText(ST_Transform(point, 4326)), type from results order by distance
+    select name, ST_AsText(ST_Transform(point, 4326)), type, distance from results order by distance
     """ % {"mapName":self.layer.mapName, "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
             cursor.execute(sql)
             
@@ -103,7 +108,7 @@ class osm2pgsql_SearchProvider(NSObject):
                     print "Bad geometry for \"%s\": %s" % (row[0], loc)
                     break
                 loc = map(float, loc)
-                results.append({"type":row[2], "name":row[0], "loc":loc})
+                results.append({"type":row[2], "name":row[0], "loc":loc, "distance":row[3]})
             
             return results
         finally:

@@ -211,7 +211,7 @@ class SearchParser():
             try:
                 inView = self.parseWithinView(tokens[-2:])
                 if inView and not containsCommands(tokens[:-2]):
-                    return [("tagContains", ("name", " ".join(tokens[:-2]))), inView[1:]] 
+                    return [("tagContains", ("name", " ".join(tokens[:-2]))), "and", inView[1:]] 
             except:
                 pass
             
