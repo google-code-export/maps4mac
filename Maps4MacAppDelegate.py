@@ -256,12 +256,6 @@ class Maps4MacAppDelegate(NSObject):
         
         self.mapView.setMapLayer_(layer)
         self.mapName = mapName
-    
-    @objc.IBAction
-    def setMapStyle_(self, style_filename):
-        #FIXME: This assumes that the maplayer will always be a osm2pgsql_mapnik layer
-        self.mapView.getLayers()[0].setStyle(style_filename)
-
 
     @objc.IBAction
     def clearLayers_(self, sender):
@@ -276,7 +270,7 @@ class Maps4MacAppDelegate(NSObject):
                 layer = fromGPXFile(path)
                 layer.setName_("GPX: " + os.path.splitext(os.path.basename(path))[0])
                 self.mapView.addLayer_(layer)
-            elif ext == ".kml":
+            elif ext == ".kml" or ext == ".kmz":
                 from GenericDataLayer import fromKMLFile
                 layer = fromKMLFile(path)
                 layer.setName_("KML: " + os.path.splitext(os.path.basename(path))[0])
@@ -284,6 +278,10 @@ class Maps4MacAppDelegate(NSObject):
             else:
                 raise ValueError("Unknown file type: " + ext)
         except Exception as error:
+            print error
+            import traceback
+            traceback.print_exc()
+        
             title = "Couldn't open file"
             msg = "Maps4Mac couldn't open: \n%s\n\nReason:\n%s" % (path,str(error))
             alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
@@ -303,5 +301,5 @@ class Maps4MacAppDelegate(NSObject):
         
         panel = NSOpenPanel.alloc().init()
         panel.setTitle_("Open File Layer")
-        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx", "kml"]):
+        if NSOKButton == panel.runModalForDirectory_file_types_(NSHomeDirectory(), None, ["gpx", "kml", "kmz"]):
             self.loadFile_(panel.filename())

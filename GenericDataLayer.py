@@ -12,14 +12,13 @@ from AppKit import *
 import mapnik
 import Layer
 
-class GenericDataPoint(NSObject):
+class GenericPoint(NSObject):
     x = objc.ivar()
     y = objc.ivar()
     name = objc.ivar()
+    description = objc.ivar()
     icon = objc.ivar()
     font = objc.ivar()
-    #FIXME: This doesn't belong on the point
-    outline = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -33,24 +32,74 @@ class GenericDataPoint(NSObject):
         font = None
         
         return self
+        
+    @classmethod
+    def GenericPointWithX_Y_(cls, x, y):
+        return cls.GenericPointWithX_Y_Name_(x, y, None)
     
     @classmethod
-    def GenericDataPointWithX_Y_Name_(cls, x, y, name):
+    def GenericPointWithX_Y_Name_(cls, x, y, name):
         p = cls.alloc().init()
         p.x = x
         p.y = y
         p.name = name
         
         return p
+
+class GenericTrack(NSObject):
+    points = objc.ivar()
+    name = objc.ivar()
+    description = objc.ivar()
+    color = objc.ivar()
+    
+    def init(self):
+        self = super(self.__class__, self).init()
+        if self is None:
+            return None
         
+        self.points = list()
+        
+        return self
+    
     @classmethod
-    def GenericDataPointWithX_Y_(cls, x, y):
+    def GenericTrackWithPoints_(cls, points):
         p = cls.alloc().init()
         p.x = x
         p.y = y
         p.name = None
         
         return p
+        
+    @classmethod
+    def GenericTrackWithPoints_Name_(cls, points, name):
+        t = cls.alloc().init()
+        t.points = list(points)
+        if name is None:
+            name = "<Track>"
+        t.name = name
+        
+        return t
+    
+    def __getitem__(self, index):
+        return self.points[index]
+    
+    def __len__(self):
+        return len(self.points)
+
+class GenericPolygon(NSObject):
+    name = objc.ivar()
+    description = objc.ivar()
+    
+    rings = objc.ivar()
+    
+    def init(self):
+        self = super(self.__class__, self).init()
+        if self is None:
+            return None
+        
+        self.rings = list()
+        
+        return self
 
 class GenericDataLayerIcon(NSObject):
     icon = objc.ivar() # NSImage used to represent the point
@@ -72,6 +121,37 @@ class GenericDataLayerIcon(NSObject):
         self.icon_hotspot = hotspot
         
         return self
+
+class OutlineEntry(NSObject):
+    x = objc.ivar()
+    y = objc.ivar()
+    name = objc.ivar()
+    description = objc.ivar()
+    target_object = objc.ivar()
+    
+    outline = objc.ivar()
+    
+    def initWithObject_X_Y_Name_(self, target, x, y, name):
+        self = super(self.__class__, self).init()
+        if self is None:
+            return None
+        
+        self.x = x
+        self.y = y
+        if name:
+            self.name = name
+        else:
+            self.name = "<unnamed>"
+        
+        outline = None
+        
+        return self
+    
+    def addChild_(self, child):
+        if not self.outline:
+            self.outline = list()
+        
+        self.outline.append(child)
 
 class GenericDataLayer(Layer.Layer):
     cache    = objc.ivar()
@@ -102,24 +182,13 @@ class GenericDataLayer(Layer.Layer):
         
         return self
     
-    def addPoint_(self, p):
-        self.points.append(p)
-        
-        if self.cache and "proj" in self.cache:
-            point = self.cache["proj"].forward(mapnik.Coord(p.x, p.y))
-            self.cache["points"].append(point)
-        
-        if self.view:
-            self.view.setNeedsDisplay_(True)
-    
     def addPointWithX_Y_Name_(self, x, y, name):
         if name is not None:
-            point = GenericDataPoint.GenericDataPointWithX_Y_Name_(x,y,name)
+            point = GenericPoint.GenericPointWithX_Y_Name_(x,y,name)
         else:
-            point = GenericDataPoint.GenericDataPointWithX_Y_(x,y)
+            point = GenericPoint.GenericPointWithX_Y_(x,y)
         self.points.append(point)
-        self.outline.append(point)
-        
+        self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(point, point.x, point.y, point.name))
         
         if self.cache and "proj" in self.cache:
             point = self.cache["proj"].forward(mapnik.Coord(x, y))
@@ -127,37 +196,77 @@ class GenericDataLayer(Layer.Layer):
         
         if self.view:
             self.view.setNeedsDisplay_(True)
+        
+        return point
     
     def appendToTrack_PointWithX_Y_(self, t, x, y):
-        pass
+        self.tracks[t].points.append(mapnik.Coord(x, y))
+        
+        #FIXME: It would be better to just re-cache this track, but we can't determine if this track is in the cache yet
+        if self.cache and self.cache["proj"] and self.cache["zoom"]:
+            del self.cache["tracks"][t]
+            self.cacheTrack_(self.tracks[t])
     
     def addTrack_(self, t):
-        self.addTrack_Name_(self, t, "<Track>")
+        return self.addTrack_Name_(t, "<Track>")
     
     def addTrack_Name_(self, t, name):
-        self.tracks.append(t)
-        self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(t[0].x,t[0].y,name))
+        track = GenericTrack.GenericTrackWithPoints_Name_(t, name)
+        self.tracks.append(track)
+        result = len(self.tracks) - 1
         
-        self.cache = None
+        self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
+        
+        if self.cache and self.cache["proj"] and self.cache["zoom"]:
+            self.cacheTrack_(track)
         
         if self.view:
             self.view.setNeedsDisplay_(True)
+        
+        return result
     
-    #FIXME: Call this automaticaly
     def updateOutline(self):
+        """Rebuild the outline for this layer"""
         self.outline = list()
         for point in self.points:
-            self.outline.append(point)
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(point, point.x, point.y, point.name))
         for track in self.tracks:
-            #FIXME: Need to store the track name at spart of the track
-            self.outline.append(GenericDataPoint.GenericDataPointWithX_Y_Name_(track[0].x,track[0].y,"<Track>"))
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
+    
+    def cacheTrack_(self, track):
+        proj = self.cache["proj"]
+        zoom = self.cache["zoom"]
+        
+        path = NSBezierPath.alloc().init()
+        #path.setLineWidth_(5.0)
+        path.setLineCapStyle_(NSRoundLineCapStyle)
+        path.setLineJoinStyle_(NSRoundLineJoinStyle)
+        path.setFlatness_(1.0)
+        
+        lastloc = None
+        if track:
+            point = track[0]
+            loc = proj.forward(mapnik.Coord(point.x, point.y))
+            loc = NSPoint(loc.x,loc.y)
+            
+            path.moveToPoint_(loc)
+            path.lineToPoint_(loc)
+            lastloc = loc
+        
+        for point in track[1:]:
+            loc = proj.forward(mapnik.Coord(point.x, point.y))
+            loc = NSPoint(loc.x,loc.y)
+            if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
+                # only include the point if it will move the line at least 1 zoomed pixel
+                path.lineToPoint_(loc)
+                lastloc = loc
+
+        self.cache["tracks"].append(path)
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
         
-        # FIXME: Test rect
-        
-        # FIXME: Need to monitor changes 
+        # FIXME: Test if things are in the rect before drawing them
         
         if not self.cache:
             self.cache = dict()
@@ -169,7 +278,6 @@ class GenericDataLayer(Layer.Layer):
             self.cache["proj"] = proj
             self.cache["zoom"] = zoom
             
-            
             self.cache["points"] = []
             for point in self.points:
                 point = proj.forward(mapnik.Coord(point.x, point.y))
@@ -177,39 +285,12 @@ class GenericDataLayer(Layer.Layer):
         
             self.cache["tracks"] = []
             for track in self.tracks:
-                path = NSBezierPath.alloc().init()
-                #path.setLineWidth_(5.0)
-                path.setLineCapStyle_(NSRoundLineCapStyle)
-                path.setLineJoinStyle_(NSRoundLineJoinStyle)
-                
-                lastloc = None
-                if track:
-                    point = track[0]
-                    loc = proj.forward(mapnik.Coord(point.x, point.y))
-                    loc = NSPoint(loc.x,loc.y)
-                    
-                    path.moveToPoint_(loc)
-                    path.lineToPoint_(loc)
-                    lastloc = loc
-                
-                for point in track[1:]:
-                    loc = proj.forward(mapnik.Coord(point.x, point.y))
-                    loc = NSPoint(loc.x,loc.y)
-                    if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
-                        # only include the point if it will move the line at least 1 zoomed pixel
-                        path.lineToPoint_(loc)
-                        lastloc = loc
-        
-                self.cache["tracks"].append(path)
+                self.cacheTrack_(track)
         
         icon = self.default_icon.icon
         icon_hotspot = self.default_icon.icon_hotspot
-        #font_height  = self.default_text_format[NSFontAttributeName]
         
         for point,loc in zip(self.points, self.cache["points"]):
-            #loc = proj.forward(mapnik.Coord(point.x, point.y))
-            # The cache only contains the location
-            
             loc = loc - origin
             loc = loc / zoom
             
@@ -254,15 +335,14 @@ def fromGPXFile(filename):
         layer = GenericDataLayer.alloc().init()
         # Find all waypoints
         for wpt in gpx_data.findall(prefix + "wpt"):
-            #point = NSPoint(float(wpt.get("lon")), float(wpt.get("lat")))
-            point = GenericDataPoint.GenericDataPointWithX_Y_(float(wpt.get("lon")), float(wpt.get("lat")))
             name = wpt.find(prefix + "name")
             cmt  = wpt.find(prefix + "cmt")
             if name is not None:
-                point.name = name.text
+                name = name.text
             elif cmt is not None:
-                point.name = cmt.text
-            layer.points.append(point)
+                name = cmt.text
+            
+            layer.addPointWithX_Y_Name_(float(wpt.get("lon")), float(wpt.get("lat")), name)
             
         for trk in gpx_data.findall(prefix + "trk"):
             for seg in trk.findall(prefix + "trkseg"):
@@ -274,20 +354,40 @@ def fromGPXFile(filename):
                     # If there's a comment consider it the same as a waypoint
                     #if trkpt.find(prefix + "cmt") is not None:
                     #    layer.points.append(point)
-                layer.tracks.append(segment)
-        
-        layer.updateOutline()
+                layer.addTrack_(segment)
         
         return layer
         
     except Exception as e:
         print e
-        raise e
+        import traceback
+        traceback.print_exc()
+        raise
         
 def fromKMLFile(filename):
     try:
         import xml.etree
-        kml_data = xml.etree.ElementTree.parse(filename)
+        
+        if filename.endswith(".kmz"):
+            import zipfile
+            z = zipfile.ZipFile(filename)
+            if "doc.kml" in z.namelist():
+                datafile = "doc.kml"
+            else:
+                datafile = None
+                for fn in z.namelist():
+                    if fn.endswith(".kml"):
+                        datafile = fn
+                        break
+            if not datafile:
+                raise FileParseException("Couldn't find a kml file in the kmz archive")
+            
+            data = z.open(datafile)
+            kml_data = xml.etree.ElementTree.parse(data)
+            data.close()
+            z.close()
+        else:
+            kml_data = xml.etree.ElementTree.parse(filename)
         
         if kml_data.getroot().tag[-3:] != "kml":
             raise FileParseException("KML Load: No root element")
@@ -353,12 +453,10 @@ def fromKMLFile(filename):
         
         do_placemarks(kml_doc)
         
-        layer.updateOutline()
-        
         return layer
         
     except Exception as e:
         print e
         import traceback
         traceback.print_exc()
-        raise e
+        raise

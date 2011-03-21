@@ -27,6 +27,28 @@
 			<false/>
 		</dict>
 		<dict>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>kmz</string>
+			</array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/vnd.google-earth.kmz</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Google Earth KMZ Document</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>GKmz</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>application/gpx+xml</string>

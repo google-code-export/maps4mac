@@ -26,7 +26,6 @@ class LayersOutlineDataSource(NSObject):
     
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if object == self.mapView and keyPath == "layers":
-            #print str(self), "Reload Layers"
             self.outlineView.reloadData()
 
     def outlineView_child_ofItem_(self, outlineView, index, item):
@@ -48,28 +47,7 @@ class LayersOutlineDataSource(NSObject):
         return 0
     
     def outlineView_objectValueForTableColumn_byItem_(self, outlineView, tableColumn, item):
-        #if item is None:
-        #    item = self.root
-        
-        #if tableColumn.identifier() == "Title" and "Title" in item:
-        #    return item["Title"]
-        #elif tableColumn.identifier() == "Description":
-        #    if "A" in item:
-        #        actionObj = self.pdf.resolvePath(item, "A")
-        #        return "A: " + str(actionObj["S"])
-        #    elif "Dest" in item:
-        #        return str(item["Dest"])
-        
-        #return ""
         
         if item.name is not None:
             return str(item.name)
         return str(item)
-    
-#    def outlineView_setObjectValue_forTableColumn_byItem_(self, outlineView, object, tableColumn, item):
-#        if item is None:
-#            return
-#            
-#        if tableColumn.identifier() == "Title":
-#            item["Title"] = str(object)
-#        return

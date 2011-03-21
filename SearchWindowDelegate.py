@@ -7,7 +7,7 @@
 #
 
 from Foundation import *
-from GenericDataLayer import GenericDataLayer, GenericDataPoint
+from GenericDataLayer import GenericDataLayer
 
 class SearchWindowDelegate(NSObject):
     searchField = objc.IBOutlet()
