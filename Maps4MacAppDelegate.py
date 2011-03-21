@@ -270,22 +270,24 @@ class Maps4MacAppDelegate(NSObject):
     def loadFile_(self,path):
         ext = os.path.splitext(path)[1].lower()
         
-        if ext == ".gpx" or ext == "":
-            from GenericDataLayer import fromGPXFile
-            try:
+        try:
+            if ext == ".gpx" or ext == "":
+                from GenericDataLayer import fromGPXFile
                 layer = fromGPXFile(path)
                 layer.setName_("GPX: " + os.path.splitext(os.path.basename(path))[0])
                 self.mapView.addLayer_(layer)
-            except Exception as error:
-                print error
-        elif ext == ".kml":
-            from GenericDataLayer import fromKMLFile
-            try:
+            elif ext == ".kml":
+                from GenericDataLayer import fromKMLFile
                 layer = fromKMLFile(path)
                 layer.setName_("KML: " + os.path.splitext(os.path.basename(path))[0])
                 self.mapView.addLayer_(layer)
-            except Exception as error:
-                print error
+            else:
+                raise ValueError("Unknown file type: " + ext)
+        except Exception as error:
+            title = "Couldn't open file"
+            msg = "Maps4Mac couldn't open: \n%s\n\nReason:\n%s" % (path,str(error))
+            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+            alert.runModal()
     
     def application_openFile_(self, app, filename):
         if self.mapName is None:
@@ -295,7 +297,6 @@ class Maps4MacAppDelegate(NSObject):
     
     @objc.IBAction
     def loadLayerFromFile_(self, sender):
-        #FIXME: Disable the menu too
         if (not self.mapView.getLayers()):
             # No map layer, datalayer won't work
             return
