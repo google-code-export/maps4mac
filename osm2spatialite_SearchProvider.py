@@ -33,6 +33,9 @@ def parsedToSQLite(parsed, center = None, viewBounds = None):
                 sqlString = sqlString[:-5]
             elif sqlString.endswith(" or "):
                 raise SearchParse.SearchStringParseException("Can't join spatial queries with an \"or\"")
+        #elif rule[0] == "WithinMeters" and center:
+        # BBOX: http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
+        # PtDistWithin ?
         elif rule == "or":
             sqlString += "or "
         elif rule == "and":
@@ -48,16 +51,15 @@ def parsedToSQLite(parsed, center = None, viewBounds = None):
 import math
 
 def GeoDistanceSphere(x1, y1, x2, y2):
-
-    long_1 = math.radians(float(x1))
+    lon_1 = math.radians(float(x1))
     lat_1  = math.radians(float(y1))
 
-    long_2 = math.radians(float(x2))
+    lon_2 = math.radians(float(x2))
     lat_2  = math.radians(float(y2))
 
-    dlong = long_2 - long_1
+    dlon = lon_2 - lon_1
     dlat = lat_2 - lat_1
-    a = (math.sin(dlat / 2))**2 + math.cos(lat_1) * math.cos(lat_2) * (math.sin(dlong / 2) ** 2)
+    a = (math.sin(dlat / 2))**2 + math.cos(lat_1) * math.cos(lat_2) * (math.sin(dlon / 2) ** 2)
     #c = 2 * math.asin(min(1, math.sqrt(a)))
     c = 2 * math.asin(math.sqrt(abs(a)))
     
@@ -108,7 +110,6 @@ class osm2spatialite_SearchProvider(NSObject):
         results = list()
         
         #TODO: Keep lines instead of centroid
-        #FIXME: In SpatiaLite 2.4.4 we can this for distance: PtDistWithin(Transform(point, 4326), ST_GeomFromText('%(center)s', 4326))
         sql = \
 """select name, ST_AsText(Transform(point, 4326)), type, distance from (
 select name, point, GeoDistanceSphere(X(Transform(point, 4326)), Y(Transform(point, 4326)), X(ST_GeomFromText('%(center)s', 4326)), Y(ST_GeomFromText('%(center)s', 4326))) as distance, type from (

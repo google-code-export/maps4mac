@@ -59,7 +59,7 @@ class SearchParser():
         return [x for x in tokens if x != '']
         #return tokens
 
-    def parseWithinUnits(self, tokens):
+    def parseWithinMeters(self, tokens):
         try:
             if tokens[0].lower() != "within":
                 return None
@@ -76,7 +76,7 @@ class SearchParser():
                 pass
             else:
                 return None
-            return (3, "withinUnits", distance)
+            return (3, "WithinMeters", distance)
         except:
             return None
 
@@ -138,7 +138,7 @@ class SearchParser():
 
     def tokenparse(self, raw_tokens, recursed = False):
         rules = [
-            #parseWithinUnits,
+            #parseWithinMeters,
             self.parseWithinView,
             self.parseNotNull,
             self.parseTagEquals,
