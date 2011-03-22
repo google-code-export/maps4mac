@@ -9,6 +9,9 @@
 from Foundation import *
 from AppKit import *
 
+import GenericDataLayer
+
+import mapnik
 import datetime
 
 class LoggerDelegate(NSController):
@@ -120,15 +123,22 @@ class LoggerDelegate(NSController):
     
     @objc.IBAction
     def addSelectionToLoggingLayer_(self, sender):
-        #FIXME: Enable this
+        layer = GenericDataLayer.GenericDataLayer.alloc().init()
+        layer.setName_("Saved Data")
         print "Waypoints:"
         for row,waypoint in enumerate(self.logger.waypoints):
             if self.waypointsTableView.isRowSelected_(row):
-                print "\t",waypoint[0],waypoint[3]
+                print "\t",waypoint["latitude"],waypoint["longitude"],waypoint["name"]
+                layer.addPointWithX_Y_Name_(waypoint["longitude"],waypoint["latitude"],waypoint["name"])
         print "Tracks:"
         for row,track in enumerate(self.logger.tracks):
             if self.tracksTableView.isRowSelected_(row):
-                print "\t",track[0],track[1]
+                print "\t",track["name"]
+                for segment in self.logger.getTrackpointsForTrack_(track["id"]):
+                    layer.addTrack_Name_([mapnik.Coord(p[0], p[1]) for p in segment["position"]], track["name"])
+                    
+        if self.appDelegate.mapView:
+            self.appDelegate.mapView.addLayer_(layer)
     
     @objc.IBAction
     def saveSelectionAsGPX_(self, sender):
@@ -166,32 +176,44 @@ class LoggerDelegate(NSController):
     
     @objc.IBAction
     def deleteSelection_(self,sender):
+        #FIXME: Only delete from the table that had focus
+        
+        waypointsToDelete = list()
+        tracksToDelete = list()
+        for row,waypoint in enumerate(self.logger.waypoints):
+            if self.waypointsTableView.isRowSelected_(row):
+                waypointsToDelete.append(waypoint["id"])
+                    
+        for row,track in enumerate(self.logger.tracks):
+            if self.tracksTableView.isRowSelected_(row):
+                tracksToDelete.append(track["id"])
+        
+        if waypointsToDelete and tracksToDelete:
+            msg = "Permanently delete the selected %d waypoints and %d tracks from the log?" % (len(waypointsToDelete), len(tracksToDelete))
+        elif waypointsToDelete:
+            msg = "Permanently delete the selected %d waypoints from the log?" % (len(waypointsToDelete))
+        elif tracksToDelete:
+            msg = "Permanently delete the selected %d tracks from the log?" % (len(tracksToDelete))
+        else:
+            return
+        
         title = "Confirm Delete"
-        msg = "Permanently delete the selected objects from the log?"
         alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "Delete", "Cancel", None, msg)
         result = alert.runModal()
         
         if result == NSAlertAlternateReturn:
             return
         else:
-            waypointsToDelete = list()
-            tracksToDelete = list()
-            for row,waypoint in enumerate(self.logger.waypoints):
-                if self.waypointsTableView.isRowSelected_(row):
-                    waypointsToDelete.append(waypoint["id"])
-                        
-            for row,track in enumerate(self.logger.tracks):
-                if self.tracksTableView.isRowSelected_(row):
-                    tracksToDelete.append(track["id"])
-            
             for id in waypointsToDelete:
                 self.logger.deleteWaypoint_(id)
             for id in tracksToDelete:
                 self.logger.deleteTrack_(id)
+        
+        self.waypointsTableView.deselectAll_(self)
+        self.tracksTableView.deselectAll_(self)
     
     def numberOfRowsInTableView_(self, tableView):
         if tableView == self.tracksTableView:
-            #return len(self.logger.tracks)
             return len(self.logger.tracks)
         elif tableView == self.waypointsTableView:
             return len(self.logger.waypoints)
