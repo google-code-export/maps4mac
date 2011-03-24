@@ -9,7 +9,6 @@
 from Foundation import *
 
 import pgdb as DBAPI
-import pg
 
 import SearchParse
 
@@ -30,6 +29,8 @@ def parsedToPGSQL(parsed, center, viewBounds, mapSRID):
             sqlString += "and "
         elif rule[0] == "withinView" and viewBounds:
             sqlString += "way && ST_Transform(ST_SetSRID('BOX3D(%f %f, %f %f)'::box3d, 4326), %d)" % (viewBounds.minx, viewBounds.miny, viewBounds.maxx, viewBounds.maxy, mapSRID)
+        elif rule[0] == "sql":
+            sqlString += rule[1]
         else:
             raise SearchParse.SearchStringParseException("Rule type not supported by PGSQL", rule)
     
@@ -104,7 +105,7 @@ class osm2pgsql_SearchProvider(NSObject):
                 loc = row[1]
                 try:
                     loc = loc.split("(")[1].split(")")[0].split(" ")
-                except IndexError as e:
+                except IndexError:
                     print "Bad geometry for \"%s\": %s" % (row[0], loc)
                     break
                 loc = map(float, loc)

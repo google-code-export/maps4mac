@@ -40,6 +40,8 @@ def parsedToSQLite(parsed, center = None, viewBounds = None):
             sqlString += "or "
         elif rule == "and":
             sqlString += "and "
+        elif rule[0] == "sql":
+            sqlString += rule[1]
         else:
             raise SearchParse.SearchStringParseException("Rule type not supported by SQLite Search", rule)
     
@@ -129,7 +131,7 @@ select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_
             loc = row[1]
             try:
                 loc = loc.split("(")[1].split(")")[0].split(" ")
-            except IndexError as e:
+            except IndexError:
                 print "Bad geometry for \"%s\": %s" % (row[0], loc)
                 break
             loc = map(float, loc)

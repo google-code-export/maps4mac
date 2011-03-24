@@ -194,9 +194,9 @@ class SearchParser():
         return parsed
 
     def parse(self, search_string):
-        if search_string[:4] == "sql ":
+        if search_string[:4].lower() == "sql ":
             print "No Parse"
-            return search_string[4:]
+            return [("sql", search_string[4:])]
         else:
             tokens = self.tokenize(search_string)
             
