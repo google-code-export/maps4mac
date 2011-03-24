@@ -25,11 +25,11 @@ class GenericPoint(NSObject):
         if self is None:
             return None
         
-        x = 0.0
-        y = 0.0
-        name = None
-        icon = None
-        font = None
+        self.x = 0.0
+        self.y = 0.0
+        self.name = None
+        self.icon = None
+        self.font = None
         
         return self
         
@@ -143,7 +143,7 @@ class OutlineEntry(NSObject):
         else:
             self.name = "<unnamed>"
         
-        outline = None
+        self.outline = None
         
         return self
     
@@ -200,11 +200,25 @@ class GenericDataLayer(Layer.Layer):
         return point
     
     def appendToTrack_PointWithX_Y_(self, t, x, y):
+        # If the track was empty before, we need to set it's outline point to it's start
+        needsOutline = False
+        if not self.tracks[t].points:
+            needsOutline = True
+        
         self.tracks[t].points.append(mapnik.Coord(x, y))
         
-        #FIXME: It would be better to just re-cache this track, but we can't determine if this track is in the cache yet
-        if self.cache and self.cache["proj"] and self.cache["zoom"]:
-            del self.cache["tracks"][t]
+        if needsOutline:
+            self.updateOutline()
+            #for o in self.outline:
+            #    if o.target_object == self.tracks[t]:
+            #        print "Found track object"
+            #        o.x = x
+            #        o.y = y
+            #        break;
+        
+        #FIXME: Should just re-cache the new point insdead of recaluating the track
+        if self.cache and self.cache["proj"] and self.cache["zoom"] and id(self.tracks[t]) in self.cache["tracks"]:
+            del self.cache["tracks"][id(self.tracks[t])]
             self.cacheTrack_(self.tracks[t])
     
     def addTrack_(self, t):
@@ -215,7 +229,10 @@ class GenericDataLayer(Layer.Layer):
         self.tracks.append(track)
         result = len(self.tracks) - 1
         
-        self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
+        if not track:
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, 0.0, 0.0, track.name))
+        else:
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
         
         if self.cache and self.cache["proj"] and self.cache["zoom"]:
             self.cacheTrack_(track)
@@ -231,7 +248,10 @@ class GenericDataLayer(Layer.Layer):
         for point in self.points:
             self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(point, point.x, point.y, point.name))
         for track in self.tracks:
-            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
+            if len(track) > 0:
+                self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, track[0].x, track[0].y, track.name))
+            else:
+                self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(track, 0.0, 0., track.name))
     
     def cacheTrack_(self, track):
         proj = self.cache["proj"]
@@ -261,7 +281,7 @@ class GenericDataLayer(Layer.Layer):
                 path.lineToPoint_(loc)
                 lastloc = loc
 
-        self.cache["tracks"].append(path)
+        self.cache["tracks"][id(track)] = path
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
@@ -283,7 +303,7 @@ class GenericDataLayer(Layer.Layer):
                 point = proj.forward(mapnik.Coord(point.x, point.y))
                 self.cache["points"].append(point)
         
-            self.cache["tracks"] = []
+            self.cache["tracks"] = dict()
             for track in self.tracks:
                 self.cacheTrack_(track)
         
@@ -307,7 +327,7 @@ class GenericDataLayer(Layer.Layer):
         trans.scaleBy_(1.0 / zoom)
         trans.translateXBy_yBy_(-origin.x, -origin.y)
         trans.concat()
-        for path in self.cache["tracks"]:
+        for path in self.cache["tracks"].values():
             color = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.6)
             color.setStroke()
             path.setLineWidth_(5.0 * zoom)

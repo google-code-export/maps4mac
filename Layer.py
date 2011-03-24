@@ -19,9 +19,9 @@ class Layer(NSObject):
         if self is None:
             return None
         
-        outline  = None
-        name     = None
-        description = None
+        self.outline  = None
+        self.name     = None
+        self.description = None
         
         return self
         

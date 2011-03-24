@@ -176,10 +176,17 @@ class Logger(NSObject):
         self.willChangeValueForKey_("tracks")
         self.tracksByID[self.currentTract]["points"] += 1
         self.didChangeValueForKey_("tracks")
+        
+        logLayer = self.getLoggerLayer()
+        if self.layerTrack is None:
+            self.layerTrack = logLayer.addTrack_Name_([], None)
+        
+        logLayer.appendToTrack_PointWithX_Y_(self.layerTrack, lon, lat)
     
     def endSegment(self):
         """Force the next point added to be part of a new segment in the current track"""
         self.currentSegment = None
+        self.layerTrack     = None
     
     def startTrackWithName_(self,name):
         if not name:
@@ -203,11 +210,14 @@ class Logger(NSObject):
         self.tracks.append(track)
         self.tracksByID[track["id"]] = track
         self.didChangeValueForKey_("tracks")
+        
+        self.layerTrack = self.getLoggerLayer().addTrack_Name_([], name)
     
     def endTrack(self):
         """Force the next point added to be part of a new track, if startTrackWithName is not called
         the new track will have a default name."""
         self.currentTract = None
+        self.layerTrack   = None
     
     # New waypoint
     def addWaypointAtLon_Lat_(self, lon, lat):
