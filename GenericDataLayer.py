@@ -63,12 +63,7 @@ class GenericTrack(NSObject):
     
     @classmethod
     def GenericTrackWithPoints_(cls, points):
-        p = cls.alloc().init()
-        p.x = x
-        p.y = y
-        p.name = None
-        
-        return p
+        return cls.GenericTrackWithPoints_Name_(cls, points, None)
         
     @classmethod
     def GenericTrackWithPoints_Name_(cls, points, name):
@@ -100,6 +95,26 @@ class GenericPolygon(NSObject):
         self.rings = list()
         
         return self
+
+    @classmethod
+    def GenericPolygonWithRings_(cls, rings):
+        return cls.GenericPolygonWithRings_Name_(cls, rings, None)
+        
+    @classmethod
+    def GenericPolygonWithRings_Name_(cls, rings, name):
+        t = cls.alloc().init()
+        t.rings = list(rings)
+        if name is None:
+            name = "<Polygon>"
+        t.name = name
+        
+        return t
+    
+    def __getitem__(self, index):
+        return self.rings[index]
+    
+    def __len__(self):
+        return len(self.rings)
 
 class GenericDataLayerIcon(NSObject):
     icon = objc.ivar() # NSImage used to represent the point
@@ -160,6 +175,7 @@ class GenericDataLayer(Layer.Layer):
     
     points = objc.ivar()
     tracks = objc.ivar()
+    polygons = objc.ivar()
     
     def init(self):
         self = super(self.__class__, self).init()
@@ -172,6 +188,7 @@ class GenericDataLayer(Layer.Layer):
         
         self.points = list()
         self.tracks = list()
+        self.polygons = list()
         
         icon_path = NSBundle.mainBundle().pathForResource_ofType_("target0", "png")
         self.default_icon = GenericDataLayerIcon.initWithFile_(icon_path)
@@ -242,6 +259,28 @@ class GenericDataLayer(Layer.Layer):
         
         return result
     
+    def addPolygon_(self, rings):
+        return self.addPolygon_WithName_(self, rings, None)
+        
+    def addPolygon_WithName_(self, rings, name):
+        poly = GenericPolygon.GenericPolygonWithRings_Name_(rings, name)
+        self.polygons.append(poly)
+        result = len(self.polygons) - 1
+        
+        if self.cache and self.cache["proj"] and self.cache["zoom"]:
+            self.cachePolygon_(poly)
+        
+        #FIXME: Find center
+        if rings and rings[0]:
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(poly, rings[0][0].x, rings[0][0].y, poly.name))
+        else:
+            self.outline.append(OutlineEntry.alloc().initWithObject_X_Y_Name_(poly, 0.0, 0.0, poly.name))
+        
+        if self.view:
+            self.view.setNeedsDisplay_(True)
+        
+        return result
+    
     def updateOutline(self):
         """Rebuild the outline for this layer"""
         self.outline = list()
@@ -263,7 +302,6 @@ class GenericDataLayer(Layer.Layer):
         path.setLineJoinStyle_(NSRoundLineJoinStyle)
         path.setFlatness_(1.0)
         
-        lastloc = None
         if track:
             point = track[0]
             loc = proj.forward(mapnik.Coord(point.x, point.y))
@@ -273,15 +311,44 @@ class GenericDataLayer(Layer.Layer):
             path.lineToPoint_(loc)
             lastloc = loc
         
-        for point in track[1:]:
-            loc = proj.forward(mapnik.Coord(point.x, point.y))
-            loc = NSPoint(loc.x,loc.y)
-            if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
-                # only include the point if it will move the line at least 1 zoomed pixel
-                path.lineToPoint_(loc)
-                lastloc = loc
+            for point in track[1:]:
+                loc = proj.forward(mapnik.Coord(point.x, point.y))
+                loc = NSPoint(loc.x,loc.y)
+                if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
+                    # only include the point if it will move the line at least 1 zoomed pixel
+                    path.lineToPoint_(loc)
+                    lastloc = loc
 
         self.cache["tracks"][id(track)] = path
+    
+    def cachePolygon_(self, polygon):
+        proj = self.cache["proj"]
+        zoom = self.cache["zoom"]
+        
+        path = NSBezierPath.alloc().init()
+        path.setFlatness_(1.0)
+        path.setWindingRule_(NSEvenOddWindingRule)
+        
+        for ring in polygon.rings:
+            point = ring[0]
+            loc = proj.forward(mapnik.Coord(point.x, point.y))
+            loc = NSPoint(loc.x,loc.y)
+            
+            path.moveToPoint_(loc)
+            path.lineToPoint_(loc)
+            lastloc = loc
+        
+            for point in ring[1:]:
+                loc = proj.forward(mapnik.Coord(point.x, point.y))
+                loc = NSPoint(loc.x,loc.y)
+                if abs(loc.x - lastloc.x) > zoom or abs(loc.y - lastloc.y) > zoom:
+                    # only include the point if it will move the line at least 1 zoomed pixel
+                    path.lineToPoint_(loc)
+                    lastloc = loc
+            
+            path.closePath()
+
+        self.cache["polygons"][id(polygon)] = path
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         """Takes a projection and a rect in that projection, draws the layers contents for the rect with a transparent background"""
@@ -306,6 +373,10 @@ class GenericDataLayer(Layer.Layer):
             self.cache["tracks"] = dict()
             for track in self.tracks:
                 self.cacheTrack_(track)
+                
+            self.cache["polygons"] = dict()
+            for polygon in self.polygons:
+                self.cachePolygon_(polygon)
         
         icon = self.default_icon.icon
         icon_hotspot = self.default_icon.icon_hotspot
@@ -331,6 +402,15 @@ class GenericDataLayer(Layer.Layer):
             color = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.6)
             color.setStroke()
             path.setLineWidth_(5.0 * zoom)
+            path.stroke()
+            
+        for path in self.cache["polygons"].values():
+            lineColor = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 1.0)
+            lineColor.setStroke()
+            fillColor = NSColor.colorWithDeviceRed_green_blue_alpha_(1.0, 0.0, 0.0, 0.2)
+            fillColor.setFill()
+            path.setLineWidth_(1.0 * zoom)
+            path.fill()
             path.stroke()
         trans.invert()
         trans.concat()
@@ -446,6 +526,7 @@ def fromKMLFile(filename):
                 result.append(coords)
             
             return result
+            
         
         def do_placemarks(node):
             for placemark in node.findall(prefix + "Placemark"):
@@ -453,20 +534,51 @@ def fromKMLFile(filename):
                 if name is not None:
                     name = name.text
                 
-                placemark_point = placemark.find(prefix + "Point")
-                if placemark_point:
-                    cord = placemark_point.find(prefix + "coordinates")
+                geom_parent = placemark.find(prefix + "MultiGeometry")
+                
+                if not geom_parent:
+                    geom_parent = placemark
+                    
+                for point in geom_parent.findall(prefix + "Point"):
+                    cord = point.find(prefix + "coordinates")
                     if cord is not None:
                         cord = cord.text.split(",")
                         layer.addPointWithX_Y_Name_(float(cord[0]), float(cord[1]), name)
-                else:
-                    if name is None:
-                        name = "<Track>"
                     
-                    lines = parse_linestring(placemark)
-
-                    for line in lines:
-                        layer.addTrack_WithName_(line, name)
+                for ls in geom_parent.findall(prefix + "LineString"):
+                    coords = ls.find(prefix + "coordinates")
+                    if coords is not None:
+                        # [:2] is to strip off altitude
+                        coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
+                        coords = [mapnik.Coord(c[0],c[1]) for c in coords]
+                    layer.addTrack_WithName_(coords, name)
+                    
+                for poly in geom_parent.findall(prefix + "Polygon"):
+                    def find_rings(node):
+                        result = list()
+                        for ring in node.findall(prefix + "LinearRing"):
+                            coords = ring.find(prefix + "coordinates")
+                            if coords is not None:
+                                # [:2] is to strip off altitude
+                                coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
+                                coords = [mapnik.Coord(c[0],c[1]) for c in coords]
+                                result.append(coords)
+                        return result
+                    
+                    rings = list()
+                    
+                    for outer in poly.findall(prefix + "outerBoundaryIs"):
+                        outer_rings = find_rings(outer)
+                        if outer_rings:
+                            rings.extend(outer_rings)
+                    
+                    for inner in poly.findall(prefix + "innerBoundaryIs"):
+                        inner_rings = find_rings(inner)
+                        if inner_rings:
+                            rings.extend(inner_rings)
+                    
+                    layer.addPolygon_WithName_(rings, name)
+                    
             
             for folder in node.findall(prefix + "Folder"):
                 do_placemarks(folder)
