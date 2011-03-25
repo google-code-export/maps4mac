@@ -7,7 +7,8 @@
 #
 
 from Foundation import *
-from AppKit import NSCalibratedRGBColorSpace, NSDeviceRGBColorSpace, NSZeroRect, NSCompositeCopy, NSAlphaFirstBitmapFormat
+#from AppKit import NSCalibratedRGBColorSpace, NSDeviceRGBColorSpace, NSAlphaFirstBitmapFormat
+from AppKit import NSZeroRect, NSCompositeCopy
 from Quartz import *
 
 from MapnikRenderThread import *

@@ -37,7 +37,6 @@ def parsedToPGSQL(parsed, center, viewBounds, mapSRID):
     return sqlString
 
 class osm2pgsql_SearchProvider(NSObject):
-    searchRules = objc.ivar()
     layer = objc.ivar()
 
     def initWithLayer_(self, layer):
@@ -48,9 +47,6 @@ class osm2pgsql_SearchProvider(NSObject):
         self.layer = layer
         
         return self
-    
-    def getRules(self):
-        return None
     
     def doSearch(self, commands, center, viewBounds = None):
         results = None

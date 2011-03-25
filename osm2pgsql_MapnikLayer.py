@@ -25,7 +25,7 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         if self is None:
             return None
         
-        db_args = None
+        self.db_args = None
         
         return self
     

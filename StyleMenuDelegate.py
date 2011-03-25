@@ -62,16 +62,6 @@ class StyleMenuDelegate(NSObject):
         
     def oldmenuNeedsUpdate_(self, menu):
         if not self.items:
-            kLocalDomain = -32765
-            kUserDomain = -32763
-            kApplicationSupportFolderType = 'asup'
-            
-            # NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0]
-            
-            #path_prefix = NSBundle.mainBundle().bundlePath() + "/Contents/Resources/styles/"
-            
-            #path_prefix = NSBundle.mainBundle().resourcePath() + "/styles/"
-            
             resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/"
             app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/"
             

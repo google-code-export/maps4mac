@@ -8,7 +8,6 @@
 
 from Foundation import *
 from AppKit import NSStringPboardType
-import mapnik
 
 class MapWindowDelegate(NSObject):
     mapView   = objc.IBOutlet()
@@ -27,6 +26,7 @@ class MapWindowDelegate(NSObject):
             return None
         
         self.useGPS = False
+        self.mapViewEnabled = False
         
         return self
     
@@ -35,8 +35,6 @@ class MapWindowDelegate(NSObject):
         self.mapView.addObserver_forKeyPath_options_context_(self, u"zoom", 0, None)
         self.mapView.addObserver_forKeyPath_options_context_(self, u"layers", 0, None)
         self.mapWindow.makeFirstResponder_(self.mapView)
-        
-        mapViewEnabled = False
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if keyPath == "center":

@@ -10,26 +10,12 @@ from Foundation import *
 import urllib
 
 class NominatimSearchProvider(NSObject):
-    searchRules = objc.ivar()
-    
     def init(self):
         self = super(self.NominatimSearchProvider, self).init()
         if self is None:
             return None
         
-        self.layer = layer
-        self.searchRules = [
-            {"displayValue":"Nominatim","type":"label","children":
-                [
-                    {"displayValue":"","type":"text"}
-                ]
-            },
-        ]
-        
         return self
-    
-    def getRules(self):
-        return self.searchRules
     
     def doSearch(self, commands, center, viewBounds = None):
         url = "http://nominatim.openstreetmap.org/search?format=xml&q=%s" % urllib.quote_plus(commands)

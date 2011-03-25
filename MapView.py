@@ -6,12 +6,10 @@
 #  Copyright (c) 2010 __MyCompanyName__. All rights reserved.
 #
 
-from objc import YES, NO, IBAction, IBOutlet
 from Foundation import *
 from AppKit import *
 
 import mapnik
-import math
 
 defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
@@ -53,7 +51,8 @@ class MapView(NSView):
         return True
         
     def frameChanged(self):
-        size = self.bounds().size
+        pass
+        #size = self.bounds().size
         
     #def mouseMoved_(self, event):
     #    print "Moved",event
@@ -278,7 +277,6 @@ class MapView(NSView):
     def getProjectedEnvelope(self):
         size = self.bounds().size
         zoom = self.zoom
-        prj  = self.projection
         prj_origin = mapnik.Coord(-(size[0] / 2) * zoom, -(size[1] / 2) * zoom)
         prj_size   = mapnik.Coord(size[0], size[1]) * zoom
         c0 = self.projectedCenter + prj_origin

@@ -79,9 +79,6 @@ class osm2spatialite_SearchProvider(NSObject):
         self.layer = layer
         
         return self
-    
-    def getRules(self):
-        return None
 
     def doSearch(self, commands, center, viewBounds = None):        
         results = None

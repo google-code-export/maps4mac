@@ -7,12 +7,12 @@
 #
 
 from Foundation import *
-from AppKit import NSCalibratedRGBColorSpace, NSDeviceRGBColorSpace, NSZeroRect, NSCompositeCopy, NSAlphaFirstBitmapFormat
+#from AppKit import NSCalibratedRGBColorSpace, NSDeviceRGBColorSpace, NSZeroRect, NSCompositeCopy, NSAlphaFirstBitmapFormat
+from AppKit import NSDeviceRGBColorSpace
 from Quartz import *
 
 import mapnik
 import cairo
-import time
 
 class RenderThreadTileRequest(NSObject):
     cord = objc.ivar()
