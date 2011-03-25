@@ -194,11 +194,15 @@ class Maps4MacAppDelegate(NSObject):
                 self.mapName = "SpatiaLite"
                 
                 self.mapWindow.makeKeyAndOrderFront_(self)
-            except Exception as ex:
+            except Exception as error:
+                print error
                 import traceback
-                print ex
                 traceback.print_exc()
-                raise
+            
+                title = "Couldn't open file"
+                msg = "Maps4Mac couldn't open: \n%s\n\nReason:\n%s" % (filename,str(error))
+                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+                alert.runModal()
 
     @objc.IBAction
     def openMapnikXML_(self, sender):
