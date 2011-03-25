@@ -9,11 +9,12 @@
 from Foundation import *
 from GenericDataLayer import GenericDataLayer
 
+import mapnik
+
 class SearchWindowDelegate(NSObject):
     searchField = objc.IBOutlet()
     resultsView = objc.IBOutlet()
     mapView     = objc.IBOutlet()
-    ruleEditor  = objc.IBOutlet()
     
     results = objc.ivar()
     
@@ -71,33 +72,47 @@ class SearchWindowDelegate(NSObject):
         try:
             results = self.search_providers.values()[0].doSearch(commands,center=center,viewBounds=viewBounds)
         except Exception as error:
-            self.resultsView.setToolTip_(str(error))
-            
             import traceback
             print error
             traceback.print_exc()
             
-            title = "Search Error"
-            msg =  "Couldn't parse the search:\n" + str(error)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", None, None, msg)
-            alert.runModal()
-        
-        if results is not None:
-            self.results = list()
-            layer = GenericDataLayer.alloc().init()
-            for result in results:
-                name = result["name"]
-                if name == "":
-                    name = None
-                layer.addPointWithX_Y_Name_(result["loc"][0],result["loc"][1],name)
-                
-                result["loc"] = "%f, %f" % (result["loc"][1],result["loc"][0])
-                self.results.append(result)
-            
-            layer.setName_("Search Results")
-            self.mapView.addLayer_(layer)
+            self.returnSearchError_(str(error))
         else:
-            self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error", "distance":"DB Error"}]
+            self.returnSearchResults_(results)
+    
+    def returnSearchResults_(self, results):
+        self.results = list()
+        layer = GenericDataLayer.alloc().init()
+        for result in results:
+            name = result["name"]
+            if name == "":
+                name = None
+            if "line" in result:
+                track = [mapnik.Coord(p[0], p[1]) for p in result["line"]]
+                layer.addTrack_WithName_(track,name)
+                result["loc"] = "%f, %f" % (result["line"][0][1],result["line"][0][0])
+                
+                del result["line"] #FIXME: Use another object so we don't have to worry about cleanup here
+            else:
+                layer.addPointWithX_Y_Name_(result["loc"][0],result["loc"][1],name)
+                result["loc"] = "%f, %f" % (result["loc"][1],result["loc"][0])
+            
+            self.results.append(result)
+        
+        layer.setName_("Search Results")
+        self.mapView.addLayer_(layer)
+        
+        if self.resultsView is not None:
+            self.resultsView.reloadData()
+    
+    def returnSearchError_(self, error):
+        self.resultsView.setToolTip_(str(error))
+        self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error", "distance":"DB Error"}]
+        
+        title = "Search Error"
+        msg =  "Couldn't parse the search:\n" + str(error)
+        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", None, None, msg)
+        alert.runModal()
         
         if self.resultsView is not None:
             self.resultsView.reloadData()

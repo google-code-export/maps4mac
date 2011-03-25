@@ -179,7 +179,7 @@ class Logger(NSObject):
         
         logLayer = self.getLoggerLayer()
         if self.layerTrack is None:
-            self.layerTrack = logLayer.addTrack_Name_([], None)
+            self.layerTrack = logLayer.addTrack_WithName_([], None)
         
         logLayer.appendToTrack_PointWithX_Y_(self.layerTrack, lon, lat)
     
@@ -211,7 +211,7 @@ class Logger(NSObject):
         self.tracksByID[track["id"]] = track
         self.didChangeValueForKey_("tracks")
         
-        self.layerTrack = self.getLoggerLayer().addTrack_Name_([], name)
+        self.layerTrack = self.getLoggerLayer().addTrack_WithName_([], name)
     
     def endTrack(self):
         """Force the next point added to be part of a new track, if startTrackWithName is not called

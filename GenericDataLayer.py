@@ -222,9 +222,9 @@ class GenericDataLayer(Layer.Layer):
             self.cacheTrack_(self.tracks[t])
     
     def addTrack_(self, t):
-        return self.addTrack_Name_(t, "<Track>")
+        return self.addTrack_WithName_(t, "<Track>")
     
-    def addTrack_Name_(self, t, name):
+    def addTrack_WithName_(self, t, name):
         track = GenericTrack.GenericTrackWithPoints_Name_(t, name)
         self.tracks.append(track)
         result = len(self.tracks) - 1
@@ -466,7 +466,7 @@ def fromKMLFile(filename):
                     lines = parse_linestring(placemark)
 
                     for line in lines:
-                        layer.addTrack_Name_(line, name)
+                        layer.addTrack_WithName_(line, name)
             
             for folder in node.findall(prefix + "Folder"):
                 do_placemarks(folder)

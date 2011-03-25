@@ -20,7 +20,7 @@ def parsedToPGSQL(parsed, center, viewBounds, mapSRID):
         elif rule[0] == "tagEquals":
             sqlString += "\"%s\" = '%s' " % rule[1]
         elif rule[0] == "tagContains":
-            sqlString += "(to_tsvector('simple',\"%s\") @@ to_tsquery('simple','%s')) " % rule[1]
+            sqlString += "(to_tsvector('simple',\"%s\") @@ to_tsquery('simple','''%s''')) " % rule[1]
         elif rule[0] == "tagNotNull":
             sqlString += "\"%s\" is not null " % rule[1]
         elif rule == "or":
@@ -90,14 +90,16 @@ class osm2pgsql_SearchProvider(NSObject):
     union
     (select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
     ), results as (
-    select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type from unsorted_results
+    select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type, way as geom from unsorted_results
     )
 
-    select name, ST_AsText(ST_Transform(point, 4326)), type, distance from results order by distance
+    select name, ST_AsText(ST_Transform(point, 4326)), type, distance, ST_AsText(ST_Transform(geom, 4326)) from results order by distance
     """ % {"mapName":self.layer.mapName, "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
             cursor.execute(sql)
             
-            for row in cursor.fetchall():
+            rows = cursor.fetchall()
+            
+            for row in rows:
                 loc = row[1]
                 try:
                     loc = loc.split("(")[1].split(")")[0].split(" ")
@@ -105,7 +107,22 @@ class osm2pgsql_SearchProvider(NSObject):
                     print "Bad geometry for \"%s\": %s" % (row[0], loc)
                     break
                 loc = map(float, loc)
-                results.append({"type":row[2], "name":row[0], "loc":loc, "distance":row[3]})
+                
+                result = {"type":row[2], "name":row[0], "loc":loc, "distance":row[3]}
+                
+                if row[2] == "line":
+                    try:
+                        print row[4]
+                        points = row[4].split("(")[1].split(")")[0].split(",")
+                        points = [map(float, p.strip().split(" ")) for p in points]
+                    except IndexError:
+                        print "Bad geometry for \"%s\": %s" % (row[0], loc)
+                    except ValueError:
+                        print row[4]
+                        raise
+                    result["line"] = points
+                
+                results.append(result)
             
             return results
         finally:

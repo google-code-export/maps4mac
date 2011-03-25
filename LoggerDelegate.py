@@ -135,7 +135,7 @@ class LoggerDelegate(NSController):
             if self.tracksTableView.isRowSelected_(row):
                 print "\t",track["name"]
                 for segment in self.logger.getTrackpointsForTrack_(track["id"]):
-                    layer.addTrack_Name_([mapnik.Coord(p[0], p[1]) for p in segment["position"]], track["name"])
+                    layer.addTrack_WithName_([mapnik.Coord(p[0], p[1]) for p in segment["position"]], track["name"])
                     
         if self.appDelegate.mapView:
             self.appDelegate.mapView.addLayer_(layer)
