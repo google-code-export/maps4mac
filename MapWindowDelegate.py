@@ -35,6 +35,9 @@ class MapWindowDelegate(NSObject):
         self.mapView.addObserver_forKeyPath_options_context_(self, u"zoom", 0, None)
         self.mapView.addObserver_forKeyPath_options_context_(self, u"layers", 0, None)
         self.mapWindow.makeFirstResponder_(self.mapView)
+    
+    def connectToGPS_(self, gps):
+        gps.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
         if keyPath == "center":
@@ -43,6 +46,10 @@ class MapWindowDelegate(NSObject):
             self.zoomField.setIntValue_(object.zoom)
         elif keyPath == "layers":
             self.mapViewEnabled = bool(object.layers)
+        elif keyPath == "fix":
+            fix = object.fix()
+            if fix is not None and fix["FixType"] != 0:
+                self.mapView.setFix_CenterOnGPS_(fix, self.useGPS)
     
     @objc.IBAction
     def updateMap_(self, sender):

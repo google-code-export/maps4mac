@@ -55,10 +55,11 @@ class Maps4MacAppDelegate(NSObject):
             
         self.gpsdConnection = GPSdConnection.alloc().init()
         self.gpsdConnection.connect()
-        self.gpsdConnection.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
         self.logger = Logger.Logger.alloc().init()
-        self.logger.connect_(self.gpsdConnection)
+        self.logger.connectToGPS_(self.gpsdConnection)
+        self.mapWindowDelegate.connectToGPS_(self.gpsdConnection)
+        
         self.logger.appDelegate = self
         
         if self.mapName is None:
@@ -128,13 +129,7 @@ class Maps4MacAppDelegate(NSObject):
                 self.downloadWindowDelegate.queueURL_toPath_(url, path)
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
-        if keyPath == "fix":
-            fix = object.fix()
-            if fix is not None and fix["FixType"] != 0:
-                self.mapView.setFixLat_Lon_CenterOnGPS_(fix["Latitude"], fix["Longitude"],self.mapWindowDelegate.useGPS)
-            #else:
-            #    self.mapView.clearFix()
-        elif keyPath == "values.defaultOpenCommand":
+        if keyPath == "values.defaultOpenCommand":
             newKey = NSUserDefaults.standardUserDefaults().integerForKey_("defaultOpenCommand")
             print newKey
             self.setCommandOAction_(newKey)

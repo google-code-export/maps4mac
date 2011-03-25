@@ -118,7 +118,7 @@ class Logger(NSObject):
         self.didChangeValueForKey_("tracks")
 
     
-    def connect_(self, gps):
+    def connectToGPS_(self, gps):
         gps.addObserver_forKeyPath_options_context_(self, u"fix", 0, None)
         
     def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):

@@ -10,6 +10,7 @@ from Foundation import *
 from AppKit import *
 
 import mapnik
+import math
 
 defaultZooms = [1,5,25,50,125,250,500,1000,2000,4000,7500]
 
@@ -22,6 +23,7 @@ class MapView(NSView):
     
     centerDot = objc.ivar()
     gpsFix = objc.ivar()
+    hdop  = objc.ivar()
 
     def initWithFrame_(self, frame):
         self = super(MapView, self).initWithFrame_(frame)
@@ -114,10 +116,9 @@ class MapView(NSView):
         if not self.projection or not self.center:
             return
         
-        prj_center = self.projection.forward(self.center)
         prj_shift  = mapnik.Coord((rect.origin[0] - (size[0] / 2)) * self.zoom, (rect.origin[1] - (size[1] / 2)) * self.zoom)
         #prj_shift  = mapnik.Coord(0 - (size[0] / 2) * self.zoom, 0 - (size[1] / 2) * self.zoom)
-        prj_origin = prj_center + prj_shift
+        prj_origin = self.projectedCenter + prj_shift
         
         for layer in self.layers:
             #FIXME: Don't ask layers to draw things outside of the world
@@ -166,8 +167,28 @@ class MapView(NSView):
         if self.gpsFix is not None:
             prj_gps = self.projection.forward(self.gpsFix)
             rect = self.bounds()
-            prj_center = self.projection.forward(self.center)
-            shift = (prj_gps - prj_center) / self.zoom
+            
+            gps_dot_width = 0
+            center_dot_width = 10
+            
+            if self.hdop:
+                # Degree offset for HDOP = (360 * HDOP * 4 meters) / (earth circumference in meters)
+                hdop_deg = 360 * (self.hdop * 4) / (2 * 6370986 *  math.pi)
+                
+                hdop_bound = mapnik.Coord(self.center.x + hdop_deg, self.center.y)
+                if hdop_bound.x > 180:
+                    hdop_bound = mapnik.Coord(self.center.x - hdop_deg, self.center.y)
+                    
+                prj_hdop = self.projection.forward(hdop_bound)
+                gps_dot_width = abs(self.projectedCenter.x - prj_hdop.x) * 2
+                
+                gps_dot_width = gps_dot_width / self.zoom
+            
+            # Give extra preference to the HDOP circle when it's big enough to replace the default dot
+            if gps_dot_width > 10:
+                center_dot_width = 5
+            
+            shift = (prj_gps - self.projectedCenter) / self.zoom
 
             center = [0,0]
             center[0] = self.bounds().origin.x + (self.bounds().size.width / 2)
@@ -176,17 +197,44 @@ class MapView(NSView):
             center[0] += shift.x
             center[1] += shift.y
             
+            
+            # If the HDOP circle would be smaller than our center dot, don't bother drawing it
+            if self.hdop and center_dot_width < gps_dot_width:
+                
+                strokeColor = NSColor.colorWithDeviceRed_green_blue_alpha_(0.5, 0.0, 0.0, 0.8)
+                strokeColor.setStroke()
+                fillColor = NSColor.colorWithDeviceRed_green_blue_alpha_(0.5, 0.0, 0.0, 0.3)
+                fillColor.setFill()
+                
+                rect = NSRect((0,0), (gps_dot_width, gps_dot_width))
+                
+                xform = NSAffineTransform.transform()
+                xform.translateXBy_yBy_(center[0] - rect.size[0] / 2.0, center[1] - rect.size[1] / 2.0)
+                xform.concat()
+                
+                path = NSBezierPath.bezierPathWithOvalInRect_(rect)
+                path.setLineWidth_(2.0)
+                path.fill()
+                path.stroke()
+                
+                xform.invert()
+                xform.concat()
+            
             color = NSColor.colorWithDeviceRed_green_blue_alpha_(0.5, 0.0, 0.0, 0.8)
             color.setFill()
-            rect = NSRect((0,0), (10,10))
-            path = NSBezierPath.bezierPathWithOvalInRect_(rect)
+            
+            rect = NSRect((0,0), (center_dot_width, center_dot_width))
             
             xform = NSAffineTransform.transform()
             xform.translateXBy_yBy_(center[0] - rect.size[0] / 2.0, center[1] - rect.size[1] / 2.0)
             xform.concat()
+                
+            path = NSBezierPath.bezierPathWithOvalInRect_(rect)
             path.fill()
+            
             xform.invert()
             xform.concat()
+            
     
     def setMapLayer_(self, layer):
         """Set the base map layer for this view, which will define the projection"""
@@ -303,7 +351,13 @@ class MapView(NSView):
         #for layer in self.layers:
         #    layer.setZoom_(zoom)
     
-    def setFixLat_Lon_CenterOnGPS_(self, lat, lon, center_map_on_gps):
+    def setFix_CenterOnGPS_(self, fix, center_map_on_gps):
+        lon, lat = fix["Longitude"], fix["Latitude"]
+        if "HDOP" in fix:
+            self.hdop = fix["HDOP"]
+        else:
+            self.hdop = None
+        
         self.gpsFix = mapnik.Coord(lon, lat)
         
         if center_map_on_gps:
