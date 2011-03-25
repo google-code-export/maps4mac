@@ -206,11 +206,12 @@ class osm2pgsql_MapnikLayer_OpenDialogDelegate(NSObject):
                 #msg = "Some files need to be downloaded to display an osm2pgsql layer, click ok to download them."
                 msg =  "You need to download the world_boundaries files to render an osm2pgsql layer.\nThe contents of the these files are missing:\n\n"
                 msg += "\n".join(toDownload)
-                #alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", "Cancel", None, msg)
                 alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", None, None, msg)
-                result = alert.runModal()
+                alert.runModal()
                 self.window.orderOut_(self)
                 return
+                #alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", "Cancel", None, msg)
+                #result = alert.runModal()
                 #if result == 0:
                 #    self.window.orderOut_(self)
                 #    return

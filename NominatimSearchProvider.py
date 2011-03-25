@@ -18,7 +18,7 @@ class NominatimSearchProvider(NSObject):
         return self
     
     def doSearch(self, commands, center, viewBounds = None):
-        url = "http://nominatim.openstreetmap.org/search?format=xml&q=%s" % urllib.quote_plus(commands)
+        #url = "http://nominatim.openstreetmap.org/search?format=xml&q=%s" % urllib.quote_plus(commands)
         #xml_result = urllib.urlopen(url)
         # parse here
         return []

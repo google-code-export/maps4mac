@@ -43,8 +43,7 @@ def loadExtract(osmFile,extractName,**kwargs):
     args = ["./osm2pgsql", "-G", "-d", db_args['database'], "-U", db_args['user'],"-S","default.style","--prefix",extractName,osmFile]
     print args
     
-    output = subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
-    #print output
+    subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
 
 def dropExtract(extractName,**kwargs):
     db_args = dict()
