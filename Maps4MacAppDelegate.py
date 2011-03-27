@@ -36,6 +36,9 @@ class Maps4MacAppDelegate(NSObject):
     openOSM2SpatialLiteMenuItem = objc.IBOutlet()
     openMapnikXMLMenuItem = objc.IBOutlet()
     
+    gpsDataController = objc.IBOutlet()
+    satelliteTableController = objc.IBOutlet()
+    
     def init(self):
         self = super(self.__class__, self).init()
         if self is None:
@@ -59,6 +62,8 @@ class Maps4MacAppDelegate(NSObject):
         self.logger = Logger.Logger.alloc().init()
         self.logger.connectToGPS_(self.gpsdConnection)
         self.mapWindowDelegate.connectToGPS_(self.gpsdConnection)
+        self.gpsDataController.observeGPSdConnection_(self.gpsdConnection)
+        self.satelliteTableController.observeGPSdConnection_(self.gpsdConnection)
         
         self.logger.appDelegate = self
         
