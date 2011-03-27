@@ -3,7 +3,7 @@
 //  GPSd Monitor
 //
 //  Created by Daniel Sabo on 12/14/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
+//  Copyright 2009 Daniel Sabo. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

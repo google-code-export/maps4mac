@@ -3,7 +3,7 @@
 #  Maps4Mac
 #
 #  Created by Daniel Sabo on 5/7/10.
-#  Copyright (c) 2010 __MyCompanyName__. All rights reserved.
+#  Copyright (c) 2010 Daniel Sabo. All rights reserved.
 #
 
 from Foundation import *
