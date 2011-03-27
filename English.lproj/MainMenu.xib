@@ -13,7 +13,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="791"/>
-			<integer value="624"/>
+			<integer value="829"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3355,12 +3355,14 @@ U1VDSCBEQU1BR0UuCg</bytes>
 											<int key="NSvFlags">256</int>
 											<string key="NSFrameSize">{566, 257}</string>
 											<reference key="NSSuperview" ref="344439485"/>
+											<reference key="NSWindow"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTableHeaderView" key="NSHeaderView" id="224386879">
 												<reference key="NSNextResponder" ref="111412531"/>
 												<int key="NSvFlags">256</int>
 												<string key="NSFrameSize">{566, 17}</string>
 												<reference key="NSSuperview" ref="111412531"/>
+												<reference key="NSWindow"/>
 												<reference key="NSTableView" ref="334736664"/>
 											</object>
 											<object class="_NSCornerView" key="NSCornerView" id="875293014">
@@ -3368,6 +3370,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 												<int key="NSvFlags">-2147483392</int>
 												<string key="NSFrame">{{459, 0}, {16, 17}}</string>
 												<reference key="NSSuperview" ref="1056537542"/>
+												<reference key="NSWindow"/>
 											</object>
 											<object class="NSMutableArray" key="NSTableColumns">
 												<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3476,7 +3479,6 @@ U1VDSCBEQU1BR0UuCg</bytes>
 													</object>
 													<int key="NSResizingMask">3</int>
 													<bool key="NSIsResizeable">YES</bool>
-													<bool key="NSIsEditable">YES</bool>
 													<reference key="NSTableView" ref="334736664"/>
 												</object>
 											</object>
@@ -3497,6 +3499,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 									</object>
 									<string key="NSFrame">{{1, 17}, {566, 257}}</string>
 									<reference key="NSSuperview" ref="1056537542"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="334736664"/>
 									<reference key="NSDocView" ref="334736664"/>
 									<reference key="NSBGColor" ref="1027412546"/>
@@ -3507,6 +3510,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{459, 17}, {15, 237}}</string>
 									<reference key="NSSuperview" ref="1056537542"/>
+									<reference key="NSWindow"/>
 									<reference key="NSTarget" ref="1056537542"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSPercent">0.99212598425196852</double>
@@ -3516,6 +3520,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{1, 254}, {473, 15}}</string>
 									<reference key="NSSuperview" ref="1056537542"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="1056537542"/>
 									<string key="NSAction">_doScroller:</string>
@@ -3530,6 +3535,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 									</object>
 									<string key="NSFrame">{{1, 0}, {566, 17}}</string>
 									<reference key="NSSuperview" ref="1056537542"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="224386879"/>
 									<reference key="NSDocView" ref="224386879"/>
 									<reference key="NSBGColor" ref="1027412546"/>
@@ -3539,6 +3545,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							</object>
 							<string key="NSFrame">{{-1, -1}, {568, 275}}</string>
 							<reference key="NSSuperview" ref="651920824"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="344439485"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="364106216"/>
@@ -3553,6 +3560,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<int key="NSvFlags">266</int>
 							<string key="NSFrame">{{5, 282}, {463, 22}}</string>
 							<reference key="NSSuperview" ref="651920824"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="144839261">
 								<int key="NSCellFlags">-1804468671</int>
@@ -3570,6 +3578,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<int key="NSvFlags">265</int>
 							<string key="NSFrame">{{470, 274}, {82, 32}}</string>
 							<reference key="NSSuperview" ref="651920824"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="297874700">
 								<int key="NSCellFlags">67239424</int>
@@ -3588,6 +3597,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 					</object>
 					<string key="NSFrameSize">{566, 310}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
@@ -3602,7 +3612,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<object class="NSView" key="NSWindowView" id="823437702">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3645,7 +3655,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 														<reference key="NSTextColor" ref="553785497"/>
 													</object>
 													<object class="NSTextFieldCell" key="NSDataCell" id="344387853">
-														<int key="NSCellFlags">337772096</int>
+														<int key="NSCellFlags">69336641</int>
 														<int key="NSCellFlags2">2048</int>
 														<string key="NSContents">Text Cell</string>
 														<reference key="NSSupport" ref="57861261"/>
@@ -3771,6 +3781,7 @@ U1VDSCBEQU1BR0UuCg</bytes>
 						</object>
 					</object>
 					<string key="NSFrameSize">{232, 372}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
@@ -8846,9 +8857,9 @@ U1VDSCBEQU1BR0UuCg</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{759, 271}, {232, 372}}</string>
+					<string>{{732, 271}, {232, 372}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{759, 271}, {232, 372}}</string>
+					<string>{{732, 271}, {232, 372}}</string>
 					<boolean value="NO"/>
 					<string>{1.79769e+308, 1.79769e+308}</string>
 					<string>{0, 0}</string>
@@ -9414,11 +9425,9 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<string>openMapnikXML:</string>
 							<string>openSpatiaLite:</string>
 							<string>openosm2pgsql:</string>
-							<string>setMapStyle:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -9439,7 +9448,6 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<string>openMapnikXML:</string>
 							<string>openSpatiaLite:</string>
 							<string>openosm2pgsql:</string>
-							<string>setMapStyle:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -9469,10 +9477,6 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">openosm2pgsql:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">setMapStyle:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>
@@ -9611,12 +9615,10 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>mapView</string>
 							<string>resultsView</string>
-							<string>ruleEditor</string>
 							<string>searchField</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -9628,7 +9630,6 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>mapView</string>
 							<string>resultsView</string>
-							<string>ruleEditor</string>
 							<string>searchField</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -9639,10 +9640,6 @@ U1VDSCBEQU1BR0UuCg</bytes>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">resultsView</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">ruleEditor</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
