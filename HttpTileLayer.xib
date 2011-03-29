@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10F569</string>
+		<string key="IBDocument.SystemVersion">10J567</string>
 		<string key="IBDocument.InterfaceBuilderVersion">804</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">461.00</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string key="NS.object.0">804</string>
@@ -61,7 +61,7 @@
 							<object class="NSComboBoxCell" key="NSCell" id="265178640">
 								<int key="NSCellFlags">343014976</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">http://tile.openstreetmap.org/%(z)d/%(x)d/%(y)d.png</string>
+								<string key="NSContents">http://tile.openstreetmap.org/%z/%x/%y.png</string>
 								<object class="NSFont" key="NSSupport" id="253564290">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">13</double>
@@ -91,22 +91,23 @@
 								<bool key="NSHasVerticalScroller">YES</bool>
 								<object class="NSMutableArray" key="NSPopUpListData">
 									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>http://tile.openstreetmap.org/%(z)d/%(x)d/%(y)d.png</string>
+									<string>http://tile.openstreetmap.org/%z/%x/%y.png</string>
+									<string>http://otile1.mqcdn.com/tiles/1.0.0/osm/%z/%x/%y.jpg</string>
+									<string>http://oatile1.mqcdn.com/naip/%z/%x/%y.jpg</string>
 								</object>
 								<reference key="NSDelegate" ref="800265887"/>
 								<object class="NSComboTableView" key="NSTableView" id="1015972594">
 									<reference key="NSNextResponder"/>
 									<int key="NSvFlags">274</int>
-									<string key="NSFrameSize">{523, 21}</string>
+									<string key="NSFrameSize">{13, 21}</string>
 									<reference key="NSSuperview"/>
 									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSMutableArray" key="NSTableColumns">
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSTableColumn">
 											<integer value="0" key="NSIdentifier"/>
-											<double key="NSWidth">520</double>
+											<double key="NSWidth">10</double>
 											<double key="NSMinWidth">10</double>
 											<double key="NSMaxWidth">1000</double>
 											<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -160,7 +161,7 @@
 									</object>
 									<double key="NSRowHeight">19</double>
 									<string key="NSAction">tableViewAction:</string>
-									<int key="NSTvFlags">-767524864</int>
+									<int key="NSTvFlags">-765427712</int>
 									<reference key="NSDelegate" ref="265178640"/>
 									<reference key="NSDataSource" ref="265178640"/>
 									<reference key="NSTarget" ref="265178640"/>
@@ -202,7 +203,7 @@
 							<object class="NSTextFieldCell" key="NSCell" id="35971923">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">272629760</int>
-								<string key="NSContents">URL format: http://www.theserver.com/%(z)d/%(x)d/%(y)d where: %(z)d will be the zoom parameter %(x)d will be  the x value for the tile %(y)d will be the y value for the tile</string>
+								<string key="NSContents">URL format: http://www.theserver.com/%z/%x/%y where: %z will be the zoom parameter %x will be  the x value for the tile %y will be the y value for the tile</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">13</double>
@@ -1009,7 +1010,7 @@
 			<integer value="3000" key="NS.object.0"/>
 		</object>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
-		<string key="IBDocument.LastKnownRelativeProjectPath">Maprender.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">Maps4Mac.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>
 </archive>

@@ -24,12 +24,6 @@ class HttpTileLayer_OpenDialogDelegate(NSObject):
         url = self.urlCombobox.stringValue()
         if not url.startswith("http://"):
             url = "http://" + url
-        print url
-        # FIXME: Do some real validation
-        try:
-            print url % {'z':0,'x':0,'y':0}
-        except KeyError:
-            return
         self.window.performClose_(self)
         
         mapWindow = self.appDelegate.mapWindow
