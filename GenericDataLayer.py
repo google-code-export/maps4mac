@@ -153,6 +153,8 @@ class OutlineEntry(NSObject):
         
         self.x = x
         self.y = y
+        self.target_object = target
+        
         if name:
             self.name = name
         else:
@@ -216,6 +218,19 @@ class GenericDataLayer(Layer.Layer):
         
         return point
     
+    def setDescription_ForPoint_(self, description, point):
+        entry = None
+        for e in self.outline:
+            if e.target_object == point:
+                entry = e
+                break
+        
+        if entry is None:
+            raise IndexError("No such point")
+        
+        e.description = description
+        e.target_object.description = description
+    
     def appendToTrack_PointWithX_Y_(self, t, x, y):
         # If the track was empty before, we need to set it's outline point to it's start
         needsOutline = False
@@ -258,6 +273,12 @@ class GenericDataLayer(Layer.Layer):
             self.view.setNeedsDisplay_(True)
         
         return result
+    
+    def getTrackByID_(self, t):
+        return self.tracks[t]
+    
+    def getPolygonByID_(self, p):
+        return self.polygons[p]
     
     def addPolygon_(self, rings):
         return self.addPolygon_WithName_(self, rings, None)
@@ -437,12 +458,25 @@ def fromGPXFile(filename):
         for wpt in gpx_data.findall(prefix + "wpt"):
             name = wpt.find(prefix + "name")
             cmt  = wpt.find(prefix + "cmt")
+            desc = wpt.find(prefix + "desc")
+            
             if name is not None:
                 name = name.text
             elif cmt is not None:
                 name = cmt.text
             
-            layer.addPointWithX_Y_Name_(float(wpt.get("lon")), float(wpt.get("lat")), name)
+            description = ""
+            for l in [cmt, desc]:
+                if l is not None:
+                    print l, l.text
+                    if description:
+                        description += "\n\n"
+                    description += l.text
+            
+            point = layer.addPointWithX_Y_Name_(float(wpt.get("lon")), float(wpt.get("lat")), name)
+            
+            if description:
+                layer.setDescription_ForPoint_(description, point)
             
         for trk in gpx_data.findall(prefix + "trk"):
             for seg in trk.findall(prefix + "trkseg"):
@@ -496,6 +530,7 @@ def fromKMLFile(filename):
         prefix = kml_data.getroot().tag[:-3]
         kml_doc = kml_data.find(prefix + "Document")
         if not kml_doc:
+            #FIXME: This is probably a valid KML document
             raise FileParseException("No Document node")
         
         #document_name = kml_doc.find(prefix + "name")

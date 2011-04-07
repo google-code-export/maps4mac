@@ -19,6 +19,7 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
     mapName = objc.ivar()
     mapExtent = objc.ivar()
     db_args = objc.ivar()
+    internal_projection = objc.ivar()
 
     def init(self):
         self = super(osm2pgsql_MapnikLayer, self).init()
@@ -35,6 +36,14 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         
         self.setMapXML_(self.buildXML(mapName,style_filename))
         self.setName_("Mapnik: " + mapName)
+        
+        self.description  = "Database:\n" + self.db_args["database"] + " @ " + self.db_args["host"] + ":" + str(self.db_args["port"])
+        self.description += "\n\n"
+        self.description += "Style File:\n" + style_filename
+        self.description += "\n\n"
+        self.description += "Internal Projection:\n" + self.internal_projection
+        self.description += "\n\n"
+        self.description += "Rendered Projection:\n" + self.projectionString
     
     def setStyle(self, style_filename):
         self.setMapXML_(self.buildXML(self.mapName,style_filename))
@@ -66,6 +75,8 @@ class osm2pgsql_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             proj4 = cur.fetchall()[0][0]
         finally:
             con.close()
+        
+        self.internal_projection = proj4
         
         parameters = {
         "symbols":symbols_path,

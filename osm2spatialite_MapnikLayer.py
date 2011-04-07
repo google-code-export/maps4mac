@@ -17,7 +17,7 @@ import osm2spatialite_SearchProvider
 
 class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
     filename = objc.ivar()
-    
+    internal_projection = objc.ivar()
 
     def loadMap(self, map_filename, style_filename):
         try:
@@ -31,6 +31,14 @@ class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             print ex
             traceback.print_exc()
             raise
+        
+        self.description  = "SQlite File:\n" + map_filename 
+        self.description += "\n\n"
+        self.description += "Style File:\n" + style_filename
+        self.description += "\n\n"
+        self.description += "Internal Projection:\n" + self.internal_projection
+        self.description += "\n\n"
+        self.description += "Rendered Projection:\n" + self.projectionString
         
     def buildXML(self, map_filename, style_filename):
         db_prefix = "world"
@@ -53,6 +61,8 @@ class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
             proj4 = cur.fetchone()[0]
         finally:
             con.close()
+        
+        self.internal_projection = proj4
         
         parameters = {
         "symbols":symbols_path,

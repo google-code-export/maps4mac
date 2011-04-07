@@ -35,6 +35,7 @@ class Maps4MacAppDelegate(NSObject):
     openOSM2PGSQLMenuItem = objc.IBOutlet()
     openOSM2SpatialLiteMenuItem = objc.IBOutlet()
     openMapnikXMLMenuItem = objc.IBOutlet()
+    openHTTPTilesMenuItem = objc.IBOutlet()
     
     gpsDataController = objc.IBOutlet()
     satelliteTableController = objc.IBOutlet()
@@ -79,35 +80,33 @@ class Maps4MacAppDelegate(NSObject):
                 self.openosm2pgsql_(self)
             elif defaultWindow == 3:
                 self.openMapnikXML_(self)
-            else:
-                print "Warning: Unknown default window:", defaultWindow
+            elif defaultWindow == 4:
+                self.openHTTPTiles_(self)
         
         
         if not defaults.integerForKey_("defaultOpenCommand"):
             defaults.setInteger_forKey_(0, "defaultOpenCommand")
-        #defaults.addObserver_forKeyPath_options_context_(self, u"defaultOpenCommand", 0, None)
         NSUserDefaultsController.sharedUserDefaultsController().addObserver_forKeyPath_options_context_(self, u"values.defaultOpenCommand", 0, None)
         self.setCommandOAction_(defaults.integerForKey_("defaultOpenCommand"))
     
     def setCommandOAction_(self, menuTag):
+        self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("")
+        self.openOSM2PGSQLMenuItem.setKeyEquivalent_("")
+        self.openMapnikXMLMenuItem.setKeyEquivalent_("")
+        self.openHTTPTilesMenuItem.setKeyEquivalent_("")
+        
         if not menuTag or menuTag == 1:
             self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("o")
             self.openOSM2SpatialLiteMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
-            
-            self.openOSM2PGSQLMenuItem.setKeyEquivalent_("")
-            self.openMapnikXMLMenuItem.setKeyEquivalent_("")
         elif menuTag == 2:
             self.openOSM2PGSQLMenuItem.setKeyEquivalent_("o")
             self.openOSM2PGSQLMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
-            
-            self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("")
-            self.openMapnikXMLMenuItem.setKeyEquivalent_("")
         elif menuTag == 3:
             self.openMapnikXMLMenuItem.setKeyEquivalent_("o")
             self.openMapnikXMLMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
-            
-            self.openOSM2SpatialLiteMenuItem.setKeyEquivalent_("")
-            self.openOSM2PGSQLMenuItem.setKeyEquivalent_("")
+        elif menuTag == 4:
+            self.openHTTPTilesMenuItem.setKeyEquivalent_("o")
+            self.openHTTPTilesMenuItem.setKeyEquivalentModifierMask_(NSCommandKeyMask)
         
     def fetchMapnikFiles(self):
         urls = [
@@ -154,9 +153,11 @@ class Maps4MacAppDelegate(NSObject):
             self.openOSM2PGSQLDelegate.window.makeKeyAndOrderFront_(self)
         except ImportError as error:
             self.openOSM2PGSQLDelegate.window.orderOut_(self)
-            title = "Import failed"
-            msg = "Couldn't find the modules needed for the osm2pgsql layer.\nYou probably need to install PyGreSQL.\n\n%s" % str(error)
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+            
+            alert = NSAlert.alloc().init()
+            alert.setMessageText_("Import failed")
+            # Use this instead of informativeTextWithFormat to avoid % related errors:
+            alert.setInformativeText_("Couldn't find the modules needed for the osm2pgsql layer.\nYou probably need to install PyGreSQL.\n\n%s" % str(error))
             alert.runModal()
     
     def loadosm2pgsqlWithName_dbArgs_(self, mapName, db_args):
@@ -206,7 +207,10 @@ class Maps4MacAppDelegate(NSObject):
             
                 title = "Couldn't open file"
                 msg = "Maps4Mac couldn't open: \n%s\n\nReason:\n%s" % (filename,str(error))
-                alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+                
+                alert = NSAlert.alloc().init()
+                alert.setMessageText_(title)
+                alert.setInformativeText_(msg) # Use this instead of informativeTextWithFormat to avoid % related errors
                 alert.runModal()
 
     @objc.IBAction
@@ -288,7 +292,10 @@ class Maps4MacAppDelegate(NSObject):
         
             title = "Couldn't open file"
             msg = "Maps4Mac couldn't open: \n%s\n\nReason:\n%s" % (path,str(error))
-            alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, None, None, None, msg)
+            
+            alert = NSAlert.alloc().init()
+            alert.setMessageText_(title)
+            alert.setInformativeText_(msg) # Use this instead of informativeTextWithFormat to avoid % related errors
             alert.runModal()
     
     def application_openFile_(self, app, filename):
