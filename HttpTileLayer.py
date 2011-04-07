@@ -24,7 +24,6 @@ def calcTileXY(lat_deg, lon_deg, zoom):
     n = 2.0 ** zoom
     x = int((lon_deg + 180.0) / 360.0 * n)
     y = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
-    #return self.url % {'z':z,'x':x,'y':y}
     return NSPoint(x, y)
 
 
@@ -33,7 +32,6 @@ def num2deg(xtile, ytile, zoom):
     lon_deg = xtile / n * 360.0 - 180.0
     lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
     lat_deg = math.degrees(lat_rad)
-    #return(lat_deg, lon_deg)
     return mapnik.Coord(lon_deg,lat_deg)
 
 class HttpTileLayer(MapLayer.MapLayer):
@@ -67,18 +65,20 @@ class HttpTileLayer(MapLayer.MapLayer):
         # Expand our simple vars into real python substitutions
         self.url = url.replace("%z", "%(z)d").replace("%x", "%(x)d").replace("%y", "%(y)d")
         print "HTTP Tile Layer URL:", self.url
+        
+        self.description = "HTTP Tiles from:\n" + self.url
     
     def getSearchProvider(self):
         return NominatimSearchProvider.NominatimSearchProvider.alloc().init()
+    
+    def getDefaultZoom(self):
+        return 78271 # z1
     
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         try:
             # map zoom to tile zoom
             #FIXME: The google zooms don't appear to be whole numbers (in terms of pixels/projection), either we need to support
-            #       fractional zooms for this type of layer or we need to just pick the closes tile size and just stretch it.
-            z = 18
-            #zoomIn  = [1, 25, 50,125,250,500,1000,2000,4000,7500,15000,30000,65000,125000,250000,500000,1000000,2000000,2000000]
-            #zoomOut = [18,17, 16, 15, 14, 13,  12,  11,  10,   9,    8,    7,    6,     5,     4,     3,      2,      1,      0]
+            #       fractional zooms for this type of layer or we need to pick the closes tile size and just stretch it.
             
             zoomMap = {
                         0: 156543.033928,
@@ -100,15 +100,10 @@ class HttpTileLayer(MapLayer.MapLayer):
                         16: 2.38865713391,
                         17: 1.19432856695,
                         18: 0.597164283477,
+                        19: 0.30 # From Bing zoom list: http://msdn.microsoft.com/en-us/library/cc161076.aspx
                       }
             
-            #index = 0
-            #while index < len(zoomIn) and zoomIn[index] < zoom:
-            #    index += 1
-            #    z = zoomOut[index]
-            #z -= 1
-            
-            z = 18
+            z = 19
             while z > 0 and zoomMap[z] < zoom * .8:
                 z -= 1
             #print "zoom",zoom,"true zoom",zoomMap[z],"z-level",z
@@ -142,6 +137,8 @@ class HttpTileLayer(MapLayer.MapLayer):
                         tileTop -= origin
                         tileTop /= zoom
                         tileSize = tileTop - tileOrigin
+                        #FIXME: It would look nicer to force these to integers so we didn't end up with lines between tiles, but
+                        #       simple rounding isn't enough.
                         targetRect = NSRect([tileOrigin.x, tileOrigin.y], [tileSize.x, tileSize.y])
                         #print "Tile is z:", tileSize.x / 256, tileSize.y / 256
                         if tile:
@@ -189,6 +186,7 @@ class HttpTileLayer(MapLayer.MapLayer):
     
     # Connection delegate methods:
     def connection_didReceiveResponse_(self, connection, response):
+        #FIXME: Take care of 404 here? response.statusCode()
         self.connections[connection]["data"].setLength_(0)
     
     def connection_didReceiveData_(self, connection, data):
