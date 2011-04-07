@@ -9,8 +9,6 @@
 from Foundation import *
 from AppKit import *
 
-import glob, os.path
-
 class StyleMenuDelegate(NSObject):
     items = objc.ivar()
     menu = objc.IBOutlet()
@@ -59,36 +57,6 @@ class StyleMenuDelegate(NSObject):
         
         for i in self.items:
             menu.addItem_(i[0])
-        
-    def oldmenuNeedsUpdate_(self, menu):
-        if not self.items:
-            resources_prefix   = NSBundle.mainBundle().resourcePath() + "/styles/"
-            app_support_prefix = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0] + "/" + NSBundle.mainBundle().infoDictionary()["CFBundleName"] + "/styles/"
-            
-            path_prefixs = [resources_prefix, app_support_prefix]
-            
-            self.items = list()
-            
-            for path_prefix in path_prefixs:
-                #print "Looking for styles:", path_prefix
-                
-                files = glob.glob(path_prefix + "*.template")
-                
-                for stylefile in files:
-                    stylename = os.path.basename(stylefile)[:-9]
-                    #sel = objc.selector(None, selector="styleSelected_", signature="v:@")
-                    sel = objc.selector(self.styleSelected_, signature="v:@@")
-
-                    menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(stylename, sel, "")
-                    menuitem.setTarget_(self)
-                    #menuitem.setEnabled_(True)
-                    
-                    item = [menuitem, stylefile]
-                    
-                    self.items.append(item)
-                
-            for i in self.items:
-                menu.addItem_(i[0])
     
     def styleSelected_(self, sender):
         selected = None
