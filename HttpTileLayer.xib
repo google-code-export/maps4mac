@@ -41,7 +41,7 @@
 			<object class="NSWindowTemplate" id="1005">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 346}, {607, 164}}</string>
+				<string key="NSWindowRect">{{332, 319}, {607, 164}}</string>
 				<int key="NSWTFlags">1618477056</int>
 				<string key="NSWindowTitle">Open tileserver URL</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -94,20 +94,23 @@
 									<string>http://tile.openstreetmap.org/%z/%x/%y.png</string>
 									<string>http://otile1.mqcdn.com/tiles/1.0.0/osm/%z/%x/%y.jpg</string>
 									<string>http://oatile1.mqcdn.com/naip/%z/%x/%y.jpg</string>
+									<string>http://tah.openstreetmap.org/Tiles/tile/%z/%x/%y.png</string>
+									<string>http://tile.opencyclemap.org/cycle/%z/%x/%y.png</string>
 								</object>
 								<reference key="NSDelegate" ref="800265887"/>
 								<object class="NSComboTableView" key="NSTableView" id="1015972594">
 									<reference key="NSNextResponder"/>
 									<int key="NSvFlags">274</int>
-									<string key="NSFrameSize">{13, 21}</string>
+									<string key="NSFrameSize">{523, 63}</string>
 									<reference key="NSSuperview"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSMutableArray" key="NSTableColumns">
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSTableColumn">
 											<integer value="0" key="NSIdentifier"/>
-											<double key="NSWidth">10</double>
+											<double key="NSWidth">520</double>
 											<double key="NSMinWidth">10</double>
 											<double key="NSMaxWidth">1000</double>
 											<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -128,6 +131,7 @@
 											<object class="NSTextFieldCell" key="NSDataCell">
 												<int key="NSCellFlags">338820672</int>
 												<int key="NSCellFlags2">268436480</int>
+												<string key="NSContents">http://oatile1.mqcdn.com/naip/%z/%x/%y.jpg</string>
 												<reference key="NSSupport" ref="253564290"/>
 												<reference key="NSControlView" ref="1015972594"/>
 												<bool key="NSDrawsBackground">YES</bool>
@@ -161,7 +165,7 @@
 									</object>
 									<double key="NSRowHeight">19</double>
 									<string key="NSAction">tableViewAction:</string>
-									<int key="NSTvFlags">-765427712</int>
+									<int key="NSTvFlags">-767524864</int>
 									<reference key="NSDelegate" ref="265178640"/>
 									<reference key="NSDataSource" ref="265178640"/>
 									<reference key="NSTarget" ref="265178640"/>
@@ -258,7 +262,7 @@
 					<string key="NSFrameSize">{607, 164}</string>
 					<reference key="NSSuperview"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 		</object>
@@ -445,9 +449,9 @@
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>{{339, 279}, {607, 164}}</string>
+					<string>{{332, 319}, {607, 164}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{339, 279}, {607, 164}}</string>
+					<string>{{332, 319}, {607, 164}}</string>
 					<integer value="1"/>
 					<string>{196, 240}</string>
 					<string>{{202, 428}, {480, 270}}</string>
