@@ -172,8 +172,11 @@ class MapView(NSView):
             center_dot_width = 10
             
             if self.hdop:
-                # Degree offset for HDOP = (360 * HDOP * 4 meters) / (earth circumference in meters)
-                hdop_deg = 360 * (self.hdop * 4) / (2 * 6370986 *  math.pi)
+                # Degree offset for HDOP = (360 * HDOP * UERE) / (earth circumference in meters)
+                # UERE Values:
+                # Non-DGPS: 8m @ 66% confidence, 15m @ 95% confidence
+                # DGPS: 2m @ 66% confidence, 4m @ 95% confidence
+                hdop_deg = 360 * (self.hdop * 15) / (2 * 6370986 *  math.pi)
                 
                 hdop_bound = mapnik.Coord(self.center.x + hdop_deg, self.center.y)
                 if hdop_bound.x > 180:
