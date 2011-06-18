@@ -65,6 +65,7 @@ class osm2pgsql_SearchProvider(NSObject):
             print 
             knownTags = [x[0] for x in cursor.fetchall()]
             del knownTags[knownTags.index("way")]
+            del knownTags[knownTags.index("z_order")]
             
             cursor.execute("select Find_SRID('public', '%s','way')" % (self.layer.mapName + "_point"))
             srid = cursor.fetchone()[0]
@@ -81,6 +82,30 @@ class osm2pgsql_SearchProvider(NSObject):
             print "SQL:", query
             
             results = list()
+            
+            if False: # Simplify SQL, add support of getting all tags, compute the distance after the query becasue we'll need to update it later anyway
+                query_params = [
+                    {"table":"point",   "center_func":"way"},
+                    {"table":"line",    "center_func":"ST_StartPoint(way)"},
+                    {"table":"polygon", "center_func":"ST_Centroid(way)"},
+                ]
+                
+                sql_tags = ", ".join(['"%s"' % tag for tag in knownTags])
+                
+                for query_result in query_params:
+                    query_params.update({"mapName":self.layer.mapName, "query":query, "tags":sql_tags})
+                    
+                    sql = """SELECT
+                             ST_AsText(ST_Transform(%(center_func)s, 4326)) as point,
+                             ST_AsText(ST_Transform(way, 4326)) as geom,
+                             '%(table)s' as type,
+                             %(tags)%
+                             FROM %(mapName)s_%(table)s WHERE %(query)s)""" % query_params
+                    
+                    rows = cursor.fetchall()
+                    
+                    # Compute distance
+                    # Append to results
             
             sql = \
     """with unsorted_results as (

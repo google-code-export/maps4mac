@@ -76,11 +76,12 @@ class SearchWindowDelegate(NSObject):
             print error
             traceback.print_exc()
             
-            self.returnSearchError_(str(error))
+            self.returnSearch_Error_(commands, str(error))
         else:
-            self.returnSearchResults_(results)
+            self.returnSearch_Results_(commands, results)
     
-    def returnSearchResults_(self, results):
+    def returnSearch_Results_(self, search_string, results):
+        self.willChangeValueForKey_("results")
         self.results = list()
         layer = GenericDataLayer.alloc().init()
         for result in results:
@@ -89,25 +90,35 @@ class SearchWindowDelegate(NSObject):
                 name = None
             if "line" in result:
                 track = [mapnik.Coord(p[0], p[1]) for p in result["line"]]
-                layer.addTrack_WithName_(track,name)
+                t = layer.addTrack_WithName_(track,name)
                 result["loc"] = "%f, %f" % (result["line"][0][1],result["line"][0][0])
+                
+                if "description" in result:
+                    layer.setDescription_ForTrack_(result["description"], t)
                 
                 del result["line"] #FIXME: Use another object so we don't have to worry about cleanup here
             else:
-                layer.addPointWithX_Y_Name_(result["loc"][0],result["loc"][1],name)
+                p = layer.addPointWithX_Y_Name_(result["loc"][0],result["loc"][1],name)
                 result["loc"] = "%f, %f" % (result["loc"][1],result["loc"][0])
+                
+                if "description" in result:
+                    layer.setDescription_ForPoint_(result["description"], p)
             
             self.results.append(result)
+        self.didChangeValueForKey_("results")
         
         layer.setName_("Search Results")
+        layer.setDescription_(search_string)
         self.mapView.addLayer_(layer)
         
         if self.resultsView is not None:
             self.resultsView.reloadData()
     
-    def returnSearchError_(self, error):
+    def returnSearch_Error_(self, search_string, error):
         self.resultsView.setToolTip_(str(error))
+        self.willChangeValueForKey_("results")
         self.results = [{"type":"DB Error", "name":"DB Error", "loc":"DB Error", "distance":"DB Error"}]
+        self.didChangeValueForKey_("results")
         
         title = "Search Error"
         msg =  "Couldn't parse the search:\n" + str(error)

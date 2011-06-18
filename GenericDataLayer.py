@@ -231,6 +231,35 @@ class GenericDataLayer(Layer.Layer):
         e.description = description
         e.target_object.description = description
     
+    
+    def setDescription_ForTrack_(self, description, track_id):
+        entry = None
+        track = self.getTrackByID_(track_id)
+        for e in self.outline:
+            if e.target_object == track:
+                entry = e
+                break
+        
+        if entry is None:
+            raise IndexError("No such track")
+        
+        e.description = description
+        e.target_object.description = description
+    
+    def setDescription_ForPolygon_(self, description, poly_id):
+        entry = None
+        poly  = self.getPolygonByID_(poly_id)
+        for e in self.outline:
+            if e.target_object == poly:
+                entry = e
+                break
+        
+        if entry is None:
+            raise IndexError("No such polygon")
+        
+        e.description = description
+        e.target_object.description = description
+
     def appendToTrack_PointWithX_Y_(self, t, x, y):
         # If the track was empty before, we need to set it's outline point to it's start
         needsOutline = False
@@ -438,6 +467,9 @@ class GenericDataLayer(Layer.Layer):
     
     def setName_(self, name):
         self.name = name
+        
+    def setDescription_(self, description):
+        self.description = description
 
 class FileParseException(Exception):
     pass
@@ -536,57 +568,43 @@ def fromKMLFile(filename):
         #document_name = kml_doc.find(prefix + "name")
         
         layer = GenericDataLayer.alloc().init()
-
-        # Find all placemarks
-        def parse_linestring(placemark):
-            """Parse geometry or multigeometry, just linestrings for now"""
-            multi_geom = placemark.find(prefix + "MultiGeometry")
-            
-            if multi_geom:
-                geoms = multi_geom.findall(prefix + "LineString")
-            else:
-                ls = placemark.find(prefix + "LineString")
-                if ls:
-                    geoms = [ls]
-                else:
-                    return None
-            
-            result = list()
-            
-            for geom in geoms:
-                coords = geom.find(prefix + "coordinates")
-                if coords is not None:
-                    coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
-                    coords = [mapnik.Coord(c[0],c[1]) for c in coords]
-                result.append(coords)
-            
-            return result
-            
         
         def do_placemarks(node):
             for placemark in node.findall(prefix + "Placemark"):
                 name = placemark.find(prefix + "name")
                 if name is not None:
                     name = name.text
+                description = placemark.find(prefix + "description")
+                if description is not None:
+                    description = description.text
                 
-                geom_parent = placemark.find(prefix + "MultiGeometry")
+                
+                geom_parent = placemark.find(prefix + "GeometryCollection") #FIXME: This isn't quite right, a collection couuld contain multis
                 
                 if not geom_parent:
-                    geom_parent = placemark
+                    geom_parent = placemark.find(prefix + "MultiGeometry")
+                    
+                    if not geom_parent:
+                        geom_parent = placemark
                     
                 for point in geom_parent.findall(prefix + "Point"):
                     cord = point.find(prefix + "coordinates")
                     if cord is not None:
                         cord = cord.text.split(",")
-                        layer.addPointWithX_Y_Name_(float(cord[0]), float(cord[1]), name)
+                        p = layer.addPointWithX_Y_Name_(float(cord[0]), float(cord[1]), name)
+                        if description:
+                            layer.setDescription_ForPoint_(description, p)
+                        
                     
                 for ls in geom_parent.findall(prefix + "LineString"):
                     coords = ls.find(prefix + "coordinates")
                     if coords is not None:
                         # [:2] is to strip off altitude
-                        coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
+                        coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split()]
                         coords = [mapnik.Coord(c[0],c[1]) for c in coords]
-                    layer.addTrack_WithName_(coords, name)
+                    t = layer.addTrack_WithName_(coords, name)
+                    if description:
+                        layer.setDescription_ForTrack_(description, t)
                     
                 for poly in geom_parent.findall(prefix + "Polygon"):
                     def find_rings(node):
@@ -595,7 +613,7 @@ def fromKMLFile(filename):
                             coords = ring.find(prefix + "coordinates")
                             if coords is not None:
                                 # [:2] is to strip off altitude
-                                coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split(" ")]
+                                coords = [map(float, c.split(",")[:2]) for c in coords.text.strip().split()]
                                 coords = [mapnik.Coord(c[0],c[1]) for c in coords]
                                 result.append(coords)
                         return result
@@ -612,7 +630,9 @@ def fromKMLFile(filename):
                         if inner_rings:
                             rings.extend(inner_rings)
                     
-                    layer.addPolygon_WithName_(rings, name)
+                    p = layer.addPolygon_WithName_(rings, name)
+                    if description:
+                        layer.setDescription_ForPolygon_(description, p)
                     
             
             for folder in node.findall(prefix + "Folder"):
