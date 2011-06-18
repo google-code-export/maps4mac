@@ -52,7 +52,9 @@ class HttpTileLayer(MapLayer.MapLayer):
         self.tileZoom = 18
         self.view = None
         
+        self.maxConnections = 4
         self.connections = dict()
+        self.requestQueue = list()
         
         return self
     
@@ -67,6 +69,11 @@ class HttpTileLayer(MapLayer.MapLayer):
         print "HTTP Tile Layer URL:", self.url
         
         self.description = "HTTP Tiles from:\n" + self.url
+        
+        if "openstreetmap.org" in url:
+            self.maxConnections = 2 # Obey OSMs max tile query limits
+        else:
+            self.maxConnections = 4
     
     def getSearchProvider(self):
         return NominatimSearchProvider.NominatimSearchProvider.alloc().init()
@@ -163,26 +170,34 @@ class HttpTileLayer(MapLayer.MapLayer):
             NSRectFill(rect)
     
     def requestTileAtX_Y_Zoom_(self, x, y, zoom):
-        #FIXME: We need to limit the number of requests made or the system freaks out when it can't complete them
         if not x in self.cache:
             self.cache[x] = dict()
         self.cache[x][y] = None
-        #print "Requesting", x, y, zoom
-        
-        url = self.url % {'x':x, 'y':y, 'z':zoom}
-        #print "Requesting:", url
-        request = NSURLRequest.requestWithURL_(NSURL.URLWithString_(url))
-        conn = NSURLConnection.connectionWithRequest_delegate_(request, self)
-        self.connections[conn] = {"data":NSMutableData.dataWithLength_(0),
-                                  "url":url,
-                                  "tileX":x,
-                                  "tileY":y,
-                                  "tileZoom":zoom,
-                                 }
+
+        self.requestQueue.append([x, y, zoom])
+        print "Requesting:", [x, y, zoom], "Active:", len(self.connections), "Pending:", len(self.requestQueue)
+        self.fetchQueue()
     
     def cancelPending(self):
-        for conn in self.connections.keys():
-            conn.cancel()
+        self.requestQueue = list()
+        for connection in self.connections.keys():
+            connection.cancel()
+            self.connections[connection] = None
+            del self.connections[connection]
+    
+    def fetchQueue(self):
+        while len(self.connections) < self.maxConnections and self.requestQueue:
+            x, y, zoom = self.requestQueue.pop()
+            url = self.url % {'x':x, 'y':y, 'z':zoom}
+            request = NSURLRequest.requestWithURL_(NSURL.URLWithString_(url))
+            conn = NSURLConnection.connectionWithRequest_delegate_(request, self)
+            self.connections[conn] = {"data":NSMutableData.dataWithLength_(0),
+                                      "url":url,
+                                      "tileX":x,
+                                      "tileY":y,
+                                      "tileZoom":zoom,
+                                     }
+            print "Connecting:", url, "Active:", len(self.connections), "Pending:", len(self.requestQueue)
     
     # Connection delegate methods:
     def connection_didReceiveResponse_(self, connection, response):
@@ -196,6 +211,8 @@ class HttpTileLayer(MapLayer.MapLayer):
         print "HTTP tile fetch failed:", error
         self.connections[connection] = None
         del self.connections[connection]
+        
+        self.fetchQueue()
     
     def connectionDidFinishLoading_(self, connection):
         # If the request was for an old zoom just ignore it
@@ -211,6 +228,8 @@ class HttpTileLayer(MapLayer.MapLayer):
         
         self.connections[connection] = None
         del self.connections[connection]
+        
+        self.fetchQueue()
 
 
 
