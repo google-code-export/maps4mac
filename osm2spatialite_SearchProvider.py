@@ -156,50 +156,7 @@ class osm2spatialite_SearchProvider(NSObject):
                 result["description"] = description
                 
                 results.append(result)
-    
-        
-#        #TODO: Keep lines instead of centroid
-#        sql = \
-#"""select name, ST_AsText(Transform(point, 4326)), type, distance, ST_AsText(Transform(geom, 4326)) from (
-#select name, point, GeoDistanceSphere(X(Transform(point, 4326)), Y(Transform(point, 4326)), X(ST_GeomFromText('%(center)s', 4326)), Y(ST_GeomFromText('%(center)s', 4326))) as distance, type, way as geom from (
-#select name, way as point, way, 'point' as type from %(mapName)s_point as osm, idx_%(mapName)s_point_way as spatial_idx where %(query)s
-#union
-#select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line as osm, idx_%(mapName)s_line_way as spatial_idx where %(query)s
-#union
-#select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon as osm, idx_%(mapName)s_polygon_way as spatial_idx where %(query)s
-#)
-#) order by distance
-#""" % {"mapName":"world", "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
-#        cursor.execute(sql)
-#    
-#        rows = cursor.fetchall()
-#        
-#        for row in rows:
-#            loc = row[1]
-#            try:
-#                loc = loc.split("(")[1].split(")")[0].split(" ")
-#            except IndexError:
-#                print "Bad geometry for \"%s\": %s" % (row[0], loc)
-#                break
-#            loc = map(float, loc)
-#            
-#            result = {"type":row[2], "name":row[0], "loc":loc, "distance":row[3]}
-#            
-#            if row[2] == "line":
-#                if not row[4]:
-#                    print "Bad geometry for \"%s\": %s" % (row[0], loc)
-#                    continue
-#                try:
-#                    points = row[4].split("(")[1].split(")")[0].split(",")
-#                    points = [map(float, p.strip().split(" ")) for p in points]
-#                except IndexError:
-#                    print "Bad geometry for \"%s\": %s" % (row[0], loc)
-#                except:
-#                    print row[4]
-#                    raise
-#                result["line"] = points
-#            
-#            results.append(result)
+
         db.close()
         
         return results

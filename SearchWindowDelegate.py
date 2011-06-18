@@ -122,7 +122,9 @@ class SearchWindowDelegate(NSObject):
         
         title = "Search Error"
         msg =  "Couldn't parse the search:\n" + str(error)
-        alert = NSAlert.alertWithMessageText_defaultButton_alternateButton_otherButton_informativeTextWithFormat_(title, "OK", None, None, msg)
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_(title)
+        alert.setInformativeText_(msg) # Use this instead of informativeTextWithFormat to avoid % related errors
         alert.runModal()
         
         if self.resultsView is not None:

@@ -60,12 +60,22 @@ class osm2pgsql_SearchProvider(NSObject):
                             database=self.layer.db_args["database"])
         
         try:
+            # osm2pgsql doesn't have a uniform tag list between tables, for now only allow searching on the common tags
             cursor = con.cursor()
             cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = %s", [str(self.layer.mapName) + "_point"])
-            print 
             knownTags = [x[0] for x in cursor.fetchall()]
             del knownTags[knownTags.index("way")]
             del knownTags[knownTags.index("z_order")]
+            knownTags = set(knownTags)
+            print knownTags
+            
+            cursor = con.cursor()
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = %s", [str(self.layer.mapName) + "_line"])
+            knownTags = knownTags.intersection([x[0] for x in cursor.fetchall()])
+            
+            cursor = con.cursor()
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = %s", [str(self.layer.mapName) + "_polygon"])
+            knownTags = knownTags.intersection([x[0] for x in cursor.fetchall()])
             
             cursor.execute("select Find_SRID('public', '%s','way')" % (self.layer.mapName + "_point"))
             srid = cursor.fetchone()[0]
@@ -83,71 +93,57 @@ class osm2pgsql_SearchProvider(NSObject):
             
             results = list()
             
-            if False: # Simplify SQL, add support of getting all tags, compute the distance after the query becasue we'll need to update it later anyway
-                query_params = [
-                    {"table":"point",   "center_func":"way"},
-                    {"table":"line",    "center_func":"ST_StartPoint(way)"},
-                    {"table":"polygon", "center_func":"ST_Centroid(way)"},
-                ]
-                
-                sql_tags = ", ".join(['"%s"' % tag for tag in knownTags])
-                
-                for query_result in query_params:
-                    query_params.update({"mapName":self.layer.mapName, "query":query, "tags":sql_tags})
-                    
-                    sql = """SELECT
-                             ST_AsText(ST_Transform(%(center_func)s, 4326)) as point,
-                             ST_AsText(ST_Transform(way, 4326)) as geom,
-                             '%(table)s' as type,
-                             %(tags)%
-                             FROM %(mapName)s_%(table)s WHERE %(query)s)""" % query_params
-                    
-                    rows = cursor.fetchall()
-                    
-                    # Compute distance
-                    # Append to results
+            query_params_list = [
+                {"table":"point",   "center_func":"way"},
+                {"table":"line",    "center_func":"ST_StartPoint(way)"},
+                {"table":"polygon", "center_func":"ST_Centroid(way)"},
+            ]
             
-            sql = \
-    """with unsorted_results as (
-    (select name, way as point, way, 'point' as type from %(mapName)s_point where %(query)s)
-    union
-    (select name, ST_StartPoint(way) as point, way, 'line' as type from %(mapName)s_line where %(query)s)
-    union
-    (select name, ST_Centroid(way) as point, way, 'polygon' as type from %(mapName)s_polygon where %(query)s)
-    ), results as (
-    select name, point, ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)) as distance, type, way as geom from unsorted_results
-    )
-
-    select name, ST_AsText(ST_Transform(point, 4326)), type, distance, ST_AsText(ST_Transform(geom, 4326)) from results order by distance
-    """ % {"mapName":self.layer.mapName, "query":query, "center":"POINT(%f %f)" % (center.x, center.y)}
-            cursor.execute(sql)
+            sql_tags = ", ".join(['"%s"' % tag for tag in knownTags])
             
-            rows = cursor.fetchall()
-            
-            for row in rows:
-                loc = row[1]
-                try:
-                    loc = loc.split("(")[1].split(")")[0].split(" ")
-                except IndexError:
-                    print "Bad geometry for \"%s\": %s" % (row[0], loc)
-                    break
-                loc = map(float, loc)
+            for query_params in query_params_list:
+                query_params.update({"mapName":self.layer.mapName, "query":query, "tags":sql_tags, "center":"POINT(%f %f)" % (center.x, center.y)})
                 
-                result = {"type":row[2], "name":row[0], "loc":loc, "distance":row[3]}
-                
-                if row[2] == "line":
+                sql = """SELECT
+                         ST_AsText(ST_Transform(%(center_func)s, 4326)) as point,
+                         ST_AsText(ST_Transform(way, 4326)) as geom,
+                         ST_Distance_Sphere(ST_Transform(way, 4326), ST_GeomFromText('%(center)s', 4326)),
+                         '%(table)s' as type,
+                         %(tags)s
+                         FROM %(mapName)s_%(table)s WHERE %(query)s""" % query_params
+                print sql
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                for row in rows:
+                    loc, geom, distance, type = row[:4]
+                    
+                    tags = dict(zip(knownTags, row[4:]))
+                    
+                    description = "\n".join(["%s: %s" % t for t in tags.items() if t[1]])
+                    name = tags["name"]
+                    
                     try:
-                        print row[4]
-                        points = row[4].split("(")[1].split(")")[0].split(",")
-                        points = [map(float, p.strip().split(" ")) for p in points]
+                        loc = loc.split("(")[1].split(")")[0].split(" ")
                     except IndexError:
-                        print "Bad geometry for \"%s\": %s" % (row[0], loc)
-                    except ValueError:
-                        print row[4]
-                        raise
-                    result["line"] = points
-                
-                results.append(result)
+                        print "Bad geometry for \"%s\": %s" % (name, loc)
+                        break
+                    loc = map(float, loc)
+                    
+                    result = {"type":type, "name":name, "loc":loc, "distance":distance, "description": description}
+                    
+                    if type == "line":
+                        try:
+                            print geom
+                            points = geom.split("(")[1].split(")")[0].split(",")
+                            points = [map(float, p.strip().split(" ")) for p in points]
+                        except IndexError:
+                            print "Bad geometry for \"%s\": %s" % (name, loc)
+                        except ValueError:
+                            print geom
+                            raise
+                        result["line"] = points
+                    
+                    results.append(result)
             
             return results
         finally:
