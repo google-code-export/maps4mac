@@ -175,7 +175,7 @@ class HttpTileLayer(MapLayer.MapLayer):
         self.cache[x][y] = None
 
         self.requestQueue.append([x, y, zoom])
-        print "Requesting:", [x, y, zoom], "Active:", len(self.connections), "Pending:", len(self.requestQueue)
+        #print "Requesting:", [x, y, zoom], "Active:", len(self.connections), "Pending:", len(self.requestQueue)
         self.fetchQueue()
     
     def cancelPending(self):
@@ -197,7 +197,7 @@ class HttpTileLayer(MapLayer.MapLayer):
                                       "tileY":y,
                                       "tileZoom":zoom,
                                      }
-            print "Connecting:", url, "Active:", len(self.connections), "Pending:", len(self.requestQueue)
+            #print "Connecting:", url, "Active:", len(self.connections), "Pending:", len(self.requestQueue)
     
     # Connection delegate methods:
     def connection_didReceiveResponse_(self, connection, response):
@@ -218,10 +218,14 @@ class HttpTileLayer(MapLayer.MapLayer):
         # If the request was for an old zoom just ignore it
         request = self.connections[connection]
         if self.tileZoom == request["tileZoom"]:
-            img = NSImage.alloc().initWithData_(request["data"])
+            url = request["url"]
+            
+            img = NSImage.alloc().initWithData_(request["data"]) #FIXME: This leaks on an invalid image
             if img:
-                url = request["url"]
                 self.cache[request["tileX"]][request["tileY"]] = {"url":url, "img":img, "fetched":time.time()}
+            else:
+                print "Couldn't parse image:", url
+                self.cache[request["tileX"]][request["tileY"]] = {"url":url, "img":None}
             
             if self.view:
                 self.view.setNeedsDisplay_(True)
