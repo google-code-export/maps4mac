@@ -89,8 +89,6 @@ class osm2spatialite_SearchProvider(NSObject):
         db.create_function("GeoDistanceSphere",4,GeoDistanceSphere)
         sqlite.enable_callback_tracebacks(True)
         
-        cursor = db.cursor()
-        
         print "Search Query:", commands
         
         # We assume that all the tables have the same tag set
