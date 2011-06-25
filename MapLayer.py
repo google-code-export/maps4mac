@@ -28,3 +28,7 @@ class MapLayer(Layer.Layer):
     def getDefaultZoom(self):
         """Return a default zoom (pixels per projected unit)"""
         return 25
+        
+    def getZoomList(self):
+        """Return the default zoom levels for this layer"""
+        return [1,5,25,50,125,250,500,1000,2000,4000,7500]

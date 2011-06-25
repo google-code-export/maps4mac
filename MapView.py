@@ -85,8 +85,9 @@ class MapView(NSView):
         self.scrollByX_Y_(event.deviceDeltaX(), event.deviceDeltaY())
                     
     def swipeWithEvent_(self, event):
+        # Don't try to zoom if there's nothing there
         if self.layers:
-            # Don't try to zoom if there's nothing there
+            defaultZooms = self.layers[0].getZoomList()
             if event.deltaY() > 0:
                 if self.zoom >= defaultZooms[-1]:
                     self.zoom = int(self.zoom * 2)

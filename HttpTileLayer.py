@@ -18,6 +18,29 @@ import time
 import NominatimSearchProvider
 
 #TODO: http://developer.mapquest.com/web/products/open/map
+
+zoomMap = {
+            0: 156543.033928,
+            1: 78271.516964,
+            2: 39135.758482,
+            3: 19567.879241,
+            4: 9783.9396205,
+            5: 4891.96981025,
+            6: 2445.98490513,
+            7: 1222.99245256,
+            8: 611.496226281,
+            9: 305.748113141,
+            10: 152.87405657,
+            11: 76.4370282852,
+            12: 38.2185141426,
+            13: 19.1092570713,
+            14: 9.55462853565,
+            15: 4.77731426782,
+            16: 2.38865713391,
+            17: 1.19432856695,
+            18: 0.597164283477,
+            19: 0.30 # From Bing zoom list: http://msdn.microsoft.com/en-us/library/cc161076.aspx
+          }
         
 def calcTileXY(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -56,6 +79,10 @@ class HttpTileLayer(MapLayer.MapLayer):
         self.connections = dict()
         self.requestQueue = list()
         
+        projection = mapnik.Projection(self.projectionString)
+        extent = [projection.forward(mapnik.Coord(180.0,85.0511)),projection.forward(mapnik.Coord(-180.0,-85.0511))]
+        self.extent = [extent[0].x, extent[0].y, extent[1].x, extent[1].y]
+        
         return self
     
     def setMapURL_(self, url):
@@ -66,7 +93,10 @@ class HttpTileLayer(MapLayer.MapLayer):
         
         # Expand our simple vars into real python substitutions
         self.url = url.replace("%z", "%(z)d").replace("%x", "%(x)d").replace("%y", "%(y)d")
-        print "HTTP Tile Layer URL:", self.url
+        #print "HTTP Tile Layer URL:", self.url
+        
+        # Validate url
+        self.url % {'x':0, 'y':0, 'z':0}
         
         self.description = "HTTP Tiles from:\n" + self.url
         
@@ -81,34 +111,19 @@ class HttpTileLayer(MapLayer.MapLayer):
     def getDefaultZoom(self):
         return 78271 # z1
     
+    def getZoomList(self):
+        zooms = [int(i) for i in zoomMap.values() if i >= 1]
+        zooms.sort()
+        return zooms
+    
+    def getExtent(self):
+        return self.extent
+    
     def drawRect_WithProjection_Origin_Zoom_(self, rect, proj, origin, zoom):
         try:
             # map zoom to tile zoom
             #FIXME: The google zooms don't appear to be whole numbers (in terms of pixels/projection), either we need to support
             #       fractional zooms for this type of layer or we need to pick the closes tile size and just stretch it.
-            
-            zoomMap = {
-                        0: 156543.033928,
-                        1: 78271.516964,
-                        2: 39135.758482,
-                        3: 19567.879241,
-                        4: 9783.9396205,
-                        5: 4891.96981025,
-                        6: 2445.98490513,
-                        7: 1222.99245256,
-                        8: 611.496226281,
-                        9: 305.748113141,
-                        10: 152.87405657,
-                        11: 76.4370282852,
-                        12: 38.2185141426,
-                        13: 19.1092570713,
-                        14: 9.55462853565,
-                        15: 4.77731426782,
-                        16: 2.38865713391,
-                        17: 1.19432856695,
-                        18: 0.597164283477,
-                        19: 0.30 # From Bing zoom list: http://msdn.microsoft.com/en-us/library/cc161076.aspx
-                      }
             
             z = 19
             while z > 0 and zoomMap[z] < zoom * .8:
@@ -160,7 +175,18 @@ class HttpTileLayer(MapLayer.MapLayer):
                             NSColor.darkGrayColor().setFill()
                             NSRectFill(NSRect([int(tileOrigin.x), int(tileOrigin.y)], [256,256]))
                     else:
-                        self.requestTileAtX_Y_Zoom_(x, y, z)
+                        # Check tile bounds: http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+                        if (
+                            x < 0 or
+                            x > 2 ** self.tileZoom - 1 or
+                            y < 0 or
+                            y > 2 ** self.tileZoom - 1
+                           ):
+                            if not x in self.cache:
+                                self.cache[x] = dict()
+                            self.cache[x][y] = None
+                        else:
+                            self.requestTileAtX_Y_Zoom_(x, y, z)
         except Exception as e:
             print e
             import traceback

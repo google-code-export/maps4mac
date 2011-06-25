@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10J567</string>
-		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
-		<string key="IBDocument.HIToolboxVersion">462.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">804</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -61,7 +61,7 @@
 							<object class="NSComboBoxCell" key="NSCell" id="265178640">
 								<int key="NSCellFlags">343014976</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">http://tile.openstreetmap.org/%z/%x/%y.png</string>
+								<string key="NSContents">http://otile1.mqcdn.com/tiles/1.0.0/osm/%z/%x/%y.jpg</string>
 								<object class="NSFont" key="NSSupport" id="253564290">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">13</double>
@@ -91,8 +91,8 @@
 								<bool key="NSHasVerticalScroller">YES</bool>
 								<object class="NSMutableArray" key="NSPopUpListData">
 									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>http://tile.openstreetmap.org/%z/%x/%y.png</string>
 									<string>http://otile1.mqcdn.com/tiles/1.0.0/osm/%z/%x/%y.jpg</string>
+									<string>http://tile.openstreetmap.org/%z/%x/%y.png</string>
 									<string>http://oatile1.mqcdn.com/naip/%z/%x/%y.jpg</string>
 									<string>http://tah.openstreetmap.org/Tiles/tile/%z/%x/%y.png</string>
 									<string>http://tile.opencyclemap.org/cycle/%z/%x/%y.png</string>
@@ -101,7 +101,7 @@
 								<object class="NSComboTableView" key="NSTableView" id="1015972594">
 									<reference key="NSNextResponder"/>
 									<int key="NSvFlags">274</int>
-									<string key="NSFrameSize">{523, 63}</string>
+									<string key="NSFrameSize">{523, 105}</string>
 									<reference key="NSSuperview"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView"/>
@@ -131,7 +131,7 @@
 											<object class="NSTextFieldCell" key="NSDataCell">
 												<int key="NSCellFlags">338820672</int>
 												<int key="NSCellFlags2">268436480</int>
-												<string key="NSContents">http://oatile1.mqcdn.com/naip/%z/%x/%y.jpg</string>
+												<string key="NSContents">http://tile.opencyclemap.org/cycle/%z/%x/%y.png</string>
 												<reference key="NSSupport" ref="253564290"/>
 												<reference key="NSControlView" ref="1015972594"/>
 												<bool key="NSDrawsBackground">YES</bool>
