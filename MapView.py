@@ -85,27 +85,38 @@ class MapView(NSView):
         self.scrollByX_Y_(event.deviceDeltaX(), event.deviceDeltaY())
                     
     def swipeWithEvent_(self, event):
+        if event.deltaY() > 0:
+            self.zoomOut_(self)
+                
+        elif event.deltaY() < 0:
+            self.zoomIn_(self)
+    
+    @objc.IBAction
+    def zoomIn_(self, sender):
         # Don't try to zoom if there's nothing there
         if self.layers:
             defaultZooms = self.layers[0].getZoomList()
-            if event.deltaY() > 0:
-                if self.zoom >= defaultZooms[-1]:
-                    self.zoom = int(self.zoom * 2)
-                else:
-                    zoomIndex = 0
-                    while defaultZooms[zoomIndex] <= self.zoom:
-                        zoomIndex += 1
-                    self.zoom = defaultZooms[zoomIndex]
-                    
-            elif event.deltaY() < 0:
-                if int(self.zoom / 2) >= defaultZooms[-1]:
-                    self.zoom = int(self.zoom / 2)
-                else:
-                    zoomIndex = len(defaultZooms) - 1
-                    while defaultZooms[zoomIndex] >= self.zoom and zoomIndex > 0:
-                        zoomIndex -= 1
-                    self.zoom = defaultZooms[zoomIndex]
-            
+            if int(self.zoom / 2) >= defaultZooms[-1]:
+                self.zoom = int(self.zoom / 2)
+            else:
+                zoomIndex = len(defaultZooms) - 1
+                while defaultZooms[zoomIndex] >= self.zoom and zoomIndex > 0:
+                    zoomIndex -= 1
+                self.zoom = defaultZooms[zoomIndex]
+            self.setNeedsDisplay_(True)
+    
+    @objc.IBAction
+    def zoomOut_(self, sender):
+        # Don't try to zoom if there's nothing there
+        if self.layers:
+            defaultZooms = self.layers[0].getZoomList()
+            if self.zoom >= defaultZooms[-1]:
+                self.zoom = int(self.zoom * 2)
+            else:
+                zoomIndex = 0
+                while defaultZooms[zoomIndex] <= self.zoom:
+                    zoomIndex += 1
+                self.zoom = defaultZooms[zoomIndex]
             self.setNeedsDisplay_(True)
 
     def drawRect_(self, rect):
