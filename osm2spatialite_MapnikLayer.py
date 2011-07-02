@@ -56,6 +56,11 @@ class osm2spatialite_MapnikLayer(TiledMapnikLayer.TiledMapnikLayer):
         con = sqlite.connect(map_filename)
         
         try:
+            con.execute("select spatialite_version()")
+        except:
+            raise Exception("pysqlite2 is installed, but it doesn't have SpatiaLite")
+        
+        try:
             cur = con.cursor()            
             cur.execute("select proj4text from geometry_columns,spatial_ref_sys where f_table_name = ? and geometry_columns.srid = spatial_ref_sys.srid", [db_prefix + "_point"])
             proj4 = cur.fetchone()[0]
