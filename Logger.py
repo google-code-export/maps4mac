@@ -316,9 +316,9 @@ class Logger(NSObject):
                 break
         self.didChangeValueForKey_("tracks")
         
-        #FIXME: track, track_segments, trackpoints
-        #cur = self.sqlCon.cursor()
-        #cur.execute("delete from waypoints where id = ?", [id])
-        #cur.execute("delete from waypoint_tags where waypoint_id = ?", [id])
-        #self.sqlCon.commit()
-        
+        cur = self.sqlCon.cursor()
+        for segment_row in cur.execute("select id from track_segments where track_id = ?", [id]).fetchall():
+            cur.execute("delete from trackpoints where segment_id = ?", [segment_row[0]]).fetchall()
+        cur.execute("delete from track_segments where track_id = ?", [id]).fetchall()
+        cur.execute("delete from tracks where id = ?", [id]).fetchall()
+        self.sqlCon.commit()        
